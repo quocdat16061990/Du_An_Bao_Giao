@@ -55,27 +55,38 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # ── Database ──
-# Dùng PostgreSQL Supabase. DATABASE_URL bắt buộc trong .env
+# Dùng PostgreSQL Supabase. DATABASE_URL bắt buộc trong .env khi runtime
 DATABASE_URL = os.getenv('DATABASE_URL')
-if not DATABASE_URL:
-    raise RuntimeError('DATABASE_URL is required in .env')
-
-m = re.match(r'postgres(?:ql)?://(.+?):(.+?)@(.+?):(\d+)/(.+)', DATABASE_URL)
-if not m:
-    raise RuntimeError(f'Invalid DATABASE_URL format')
-
-user, password, host, port, db_name = m.groups()
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': db_name,
-        'USER': user,
-        'PASSWORD': password,
-        'HOST': host,
-        'PORT': port,
-        'OPTIONS': {'sslmode': 'require'},
+if DATABASE_URL:
+    m = re.match(r'postgres(?:ql)?://(.+?):(.+?)@(.+?):(\d+)/(.+)', DATABASE_URL)
+    if m:
+        user, password, host, port, db_name = m.groups()
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': db_name,
+                'USER': user,
+                'PASSWORD': password,
+                'HOST': host,
+                'PORT': port,
+                'OPTIONS': {'sslmode': 'require'},
+            }
+        }
+    else:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
+else:
+    # Fallback cho Docker build (collectstatic ko cần DB)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 LANGUAGE_CODE = 'vi'
 TIME_ZONE = 'Asia/Ho_Chi_Minh'
@@ -83,6 +94,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
