@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: turbodiesel-backend
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - DEBUG=False
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: turbodiesel-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  static_volume:
+  media_volume:
