@@ -11,9 +11,13 @@ services:
       - .env
     environment:
       - DEBUG=False
+    expose:
+      - "8000"
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
+    networks:
+      - internal
 
   frontend:
     build:
@@ -21,11 +25,27 @@ services:
       dockerfile: Dockerfile.frontend
     container_name: turbodiesel-frontend
     restart: always
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       - backend
+    networks:
+      - internal
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.turbodiesel.rule=Host(`luanmienam.devoverflow.xyz`)"
+      - "traefik.http.routers.turbodiesel.entrypoints=web,websecure"
+      - "traefik.http.routers.turbodiesel.tls=true"
+      - "traefik.http.routers.turbodiesel.tls.certresolver=mytlschallenge"
+      - "traefik.http.services.turbodiesel.loadbalancer.server.port=80"
 
 volumes:
   static_volume:
   media_volume:
+
+networks:
+  internal:
+  traefik:
+    external: true
+    name: traefik
