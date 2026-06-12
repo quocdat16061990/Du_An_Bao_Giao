@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page {
+      size: A4;
+      margin: 10mm;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'VietnameseFont', 'DejaVu Sans', Arial, sans-serif;
+      font-size: 10px;
+      color: #1e293b;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 3px double #1a56db;
+    }
+    .logo { font-size: 26px; font-weight: 800; color: #1a56db; }
+    .slogan { font-size: 9px; color: #64748b; margin-top: 2px; }
+    .company-info { font-size: 8px; color: #64748b; margin-top: 4px; line-height: 1.4; }
+    .title { text-align: center; font-size: 16px; font-weight: 800; margin: 14px 0; text-transform: uppercase; letter-spacing: 2px; }
+    .meta { margin-bottom: 12px; }
+    .meta-table { width: 100%; border-collapse: collapse; }
+    .meta-table td { padding: 6px 10px; font-size: 9px; border: 1px solid #e2e8f0; vertical-align: top; }
+    .meta-label { font-size: 7px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+    .meta-value { font-weight: 600; }
+    .product-table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 8px; }
+    .product-table th { background: #1a56db; color: #fff; padding: 5px 4px; font-size: 7px; text-transform: uppercase; text-align: left; }
+    .product-table td { padding: 3px 4px; border: 1px solid #e2e8f0; vertical-align: top; }
+    .product-table .num { text-align: right; white-space: nowrap; }
+    .product-table tr:nth-child(even) td { background: #f8fafc; }
+    .total { text-align: right; font-size: 13px; font-weight: 800; margin: 12px 0; padding: 8px 12px; background: #f0f4ff; border-radius: 4px; border: 1px solid #bfdbfe; }
+    .terms { font-size: 7px; color: #64748b; margin: 12px 0; padding: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; white-space: pre-line; }
+    .signature { margin-top: 36px; }
+    .sig-table { width: 100%; }
+    .sig-table td { text-align: center; padding: 0 20px; width: 50%; }
+    .sig-line { border-top: 1px solid #000; margin-top: 40px; padding-top: 6px; font-weight: 600; font-size: 10px; }
+    .sig-sub { font-size: 7px; color: #999; margin-top: 3px; }
+    .footer { text-align: center; margin-top: 24px; font-size: 7px; color: #999; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">{{ company.name }}</div>
+    <div class="slogan">{{ company.slogan }}</div>
+    <div class="company-info">
+      {{ company.address }} · {{ company.phone }} · {{ company.email }}<br>
+      MST: {{ company.tax_code }} · {{ company.bank }}
+    </div>
+  </div>
+
+  <div class="title">BÁO GIÁ</div>
+
+  <div class="meta">
+    <table class="meta-table">
+      <tr>
+        <td width="33%">
+          <div class="meta-label">Số báo giá / Ngày</div>
+          <div class="meta-value">{{ quote_number }} · {{ quote_date }}</div>
+        </td>
+        <td width="33%">
+          <div class="meta-label">Khách hàng</div>
+          <div class="meta-value">{{ customer.ten_kh }}</div>
+          <div style="font-size:8px;color:#64748b;">
+            {{ customer.dien_thoai }}{% if customer.dia_chi %} · {{ customer.dia_chi }}{% endif %}{% if customer.tinh_tp %} · {{ customer.tinh_tp }}{% endif %}
+          </div>
+        </td>
+        <td width="33%">
+          <div class="meta-label">Phân loại / Giá áp dụng</div>
+          <div class="meta-value">{{ customer.phan_loai }} — {{ gia_label }}</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <table class="product-table">
+    <thead>
+      <tr>
+        <th width="20">#</th>
+        <th>MÃ VT</th>
+        <th>MODEL TURBO</th>
+        <th>MÃ ĐỘNG CƠ</th>
+        <th>OEM</th>
+        <th>ĐẶC ĐIỂM</th>
+        <th width="90">ĐƠN GIÁ</th>
+        <th width="30">SL</th>
+        <th width="90">THÀNH TIỀN</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in products %}
+      <tr>
+        <td style="text-align:center;">{{ forloop.counter }}</td>
+        <td>{{ item.ma_vt }}</td>
+        <td>{{ item.model_turbo|default:"—" }}</td>
+        <td>{{ item.ma_dong_co|default:"—" }}</td>
+        <td>{{ item.oem_short|default:"—" }}</td>
+        <td>{{ item.dac_diem|default:"—" }}</td>
+        <td class="num">{{ item.don_gia_fmt }}</td>
+        <td class="num">1</td>
+        <td class="num">{{ item.thanh_tien_fmt }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="total">
+    TỔNG CỘNG: {{ tong_cong_fmt }}
+  </div>
+
+  <div class="terms">
+    <strong>Điều khoản:</strong>
+    {{ company.terms }}
+
+    <strong>Khách hàng:</strong> {{ customer.ten_kh }}{% if customer.dien_thoai %} — {{ customer.dien_thoai }}{% endif %}
+    <strong>Nhà xe:</strong> {{ customer.nha_xe_name|default:"Không có" }}
+  </div>
+
+  <div class="signature">
+    <table class="sig-table">
+      <tr>
+        <td>
+          <div class="sig-line">KHÁCH HÀNG</div>
+          <div class="sig-sub">(Ký, ghi rõ họ tên)</div>
+        </td>
+        <td>
+          <div class="sig-line">{{ company.signature }}</div>
+          <div class="sig-sub">(Ký, đóng dấu)</div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="footer">
+    🤖 Báo giá được tạo tự động — {{ quote_date }}
+  </div>
+</body>
+</html>

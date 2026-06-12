@@ -1,0 +1,200 @@
+
+================================================================================
+  SHEET: "DASHBOARD"  (xl/worksheets/sheet1.xml)
+================================================================================
+Dimension: A1:M59
+Data rows: 1-59 (59 rows)
+Columns: 13 cols (A-M)
+Detected header row: 11
+--- ALL HEADERS ---
+  A: 
+  B: HÃNG MÁY
+  C: SỐ LOẠI
+  D: TỶ LỆ
+  E: BAR
+  F: 
+  G: THƯƠNG HIỆU
+  H: SỐ LOẠI
+  I: TỶ LỆ
+  J: BAR
+  K: 
+  L: 
+  M: 
+
+Data rows (after header): 48
+--- SAMPLE (first 3 data rows) ---
+  Row 12: A= | B=HYUNDAI | C=68 | D=16.0% | E=████████████ | F= | G=SL | H=157 | I=37.0% | J=██████████████ | K= | L= | M=
+  Row 13: A= | B=CUMMINS | C=57 | D=13.4% | E=██████████ | F= | G=JRONE | H=63 | I=14.9% | J=█████ | K= | L= | M=
+  Row 14: A= | B=KOMATSU | C=44 | D=10.4% | E=███████ | F= | G=VIDARIR | H=45 | I=10.6% | J=████ | K= | L= | M=
+
+--- UNIQUE VALUES ANALYSIS ---
+  Col C (SỐ LOẠI): 15 unique → ['68', '57', '44', '34', '31', '19', '15', '13', '12', '11']
+  Col D (TỶ LỆ): 13 unique → ['16.0%', '13.4%', '10.4%', '8.0%', '7.3%', '4.5%', '3.5%', '3.1%', '2.8%', '2.6%']
+  Col E (BAR): 13 unique → ['████████████', '██████████', '███████', '██████', '█████', '███', '██', '█', 'HOÀN THÀNH', '100.0%']
+  Col G (THƯƠNG HIỆU): 15 unique → ['SL', 'JRONE', 'VIDARIR', 'TBS', 'FIRE', 'EE', 'MX', 'GARRETT', '⚙️  HÃNG SẢN XUẤT TURBO', 'HÃNG SX']
+  Col H (SỐ LOẠI): 14 unique → ['157', '63', '45', '18', '15', '14', '9', '2', 'SỐ LOẠI', '121']
+  Col I (TỶ LỆ): 14 unique → ['37.0%', '14.9%', '10.6%', '4.2%', '3.5%', '3.3%', '2.1%', '0.5%', 'TỶ LỆ', '28.5%']
+  Col J (BAR): 8 unique → ['██████████████', '█████', '████', '█', 'BAR', '█████████', '████████', '██████']
+
+================================================================================
+  SHEET: "TRA CỨU TỔNG HỢP"  (xl/worksheets/sheet2.xml)
+================================================================================
+Dimension: A1:I51
+Data rows: 1-51 (47 rows)
+Columns: 9 cols (A-I)
+Detected header row: 7
+--- ALL HEADERS ---
+  A: HÃNG MÁY
+  B: MÃ VT
+  C: MODEL TURBO
+  D: MÃ ĐỘNG CƠ
+  E: OEM PART NO
+  F: ĐẶC ĐIỂM
+  G: ỨNG DỤNG
+  H: GHI CHÚ
+  I: THƯƠNG HIỆU
+
+Data rows (after header): 42
+--- SAMPLE (first 3 data rows) ---
+  Row 8: A= | B= | C= | D= | E= | F= | G= | H= | I=
+  Row 9: A= | B= | C= | D= | E= | F= | G= | H= | I=
+  Row 10: A= | B= | C= | D= | E= | F= | G= | H= | I=
+
+--- UNIQUE VALUES ANALYSIS ---
+
+================================================================================
+  SHEET: "🚗 BÁO GIÁ TURBO "  (xl/worksheets/sheet3.xml)
+================================================================================
+Dimension: A1:W690
+Data rows: 1-690 (690 rows)
+Columns: 23 cols (A-W)
+Detected header row: 3
+--- ALL HEADERS ---
+  A: HÃNG MÁY
+  B: MÃ VT
+  C: HÃNG SX
+  D: MODEL TURBO
+  E: MÃ ĐỘNG CƠ
+  F: OEM PART NO
+  G: ĐẶC ĐIỂM
+  H: ỨNG DỤNG
+  I: GHI CHÚ
+  J: THƯƠNG HIỆU
+  K: GIÁ VIP
+  L: GIÁ ƯU ĐÃI
+  M: GIÁ ĐẠI LÝ
+  N: GIÁ ĐL +10%
+  O: CG Ø DƯỚI
+  P: CG Ø ĐỈNH
+  Q: CG SỐ
+  R: CL Ø DƯỚI
+  S: CL Ø ĐỈNH
+  T: CL SỐ
+  V: _BLOB
+  W: 0
+
+Data rows (after header): 687
+--- SAMPLE (first 3 data rows) ---
+  Row 4: A=  🏭  CAT   ·   34 loại turbo | B= | C= | D= | E= | F= | G= | H= | I= | J= | K= | L= | M= | N=
+  Row 5: A=CAT | B=HH077147 | C= | D=Cat E320D/C6.4/ TD06H | E= | F=49179-02910
+8M06-100-E63 | G= | H= | I= | J=JRONE | K= | L= | M= | N=
+  Row 6: A=  └─ CAT | B=HH081913 | C= | D=Cat E320D/C6.4/ TD06H | E= | F=49179-02910
+8M06-100-E63 | G= | H= | I= | J=VIDARIR | K= | L= | M= | N=
+
+--- UNIQUE VALUES ANALYSIS ---
+  Col C (HÃNG SX): 5 unique → ['Mitsubishi', 'BorgWarner', 'IHI', 'Garrett', 'Holset']
+  Col Q (CG SỐ): 14 unique → ['7/7', '5/5', '8/8', '6/6', '8/8反', '9', '8', '10', '12', '8/8（反）']
+
+================================================================================
+  SHEET: "RUỘT TURBO"  (xl/worksheets/sheet4.xml)
+================================================================================
+Dimension: A1:U892
+Data rows: 1-892 (892 rows)
+Columns: 21 cols (A-U)
+Detected header row: 3
+--- ALL HEADERS ---
+  A: HÃNG MÁY
+  B: MÃ VT
+  C: HÃNG SX
+  D: MODEL TURBO
+  E: MÃ ĐỘNG CƠ
+  F: OEM PART NO
+  G: GHI CHÚ
+  H: THƯƠNG HIỆU
+  I: GIÁ VIP
+  J: GIÁ ƯU ĐÃI
+  K: GIÁ ĐẠI LÝ
+  L: GIÁ ĐL +10%
+  M: CG Ø DƯỚI
+  N: CG Ø ĐỈNH
+  O: CG SỐ
+  P: CL Ø DƯỚI
+  Q: CL Ø ĐỈNH
+  R: CL SỐ
+  T: _BLOB
+  U: 0
+
+Data rows (after header): 889
+--- SAMPLE (first 3 data rows) ---
+  Row 4: A=  🏭  CAT   ·   34 loại turbo | B= | C= | D= | E= | F= | G= | H= | I= | J= | K= | L= | M= | N=
+  Row 5: A=CAT | B=HH077147 | C= | D=Cat E320D/C6.4/ TD06H | E= | F=49179-02910
+8M06-100-E63 | G= | H=JRONE | I= | J= | K= | L= | M= | N=
+  Row 6: A=CAT | B=HH081913 | C= | D=Cat E320D/C6.4/ TD06H | E= | F=49179-02910
+8M06-100-E63 | G= | H=VIDARIR | I= | J= | K= | L= | M= | N=
+
+--- UNIQUE VALUES ANALYSIS ---
+  Col C (HÃNG SX): 5 unique → ['Mitsubishi', 'BorgWarner', 'IHI', 'Garrett', 'Holset']
+  Col O (CG SỐ): 14 unique → ['7/7', '5/5', '8/8', '6/6', '8/8反', '9', '8', '10', '12', '8/8（反）']
+  Col R (CL SỐ): 9 unique → ['10', '9', '11', '12', '12反', '8', '8/8反', '11反', '11（反）']
+
+================================================================================
+  SHEET: "📒 DANH SÁCH KH"  (xl/worksheets/sheet5.xml)
+================================================================================
+Dimension: A1:J4351
+Data rows: 1-4351 (4351 rows)
+Columns: 10 cols (A-J)
+Detected header row: 2
+--- ALL HEADERS ---
+  A: STT
+  B: Mã KH
+  C: Tên khách hàng
+  D: Điện thoại
+  E: Phân loại
+  F: Địa chỉ
+  G: Tỉnh/TP
+  H: Ghi chú
+  I: Nhà xe
+  J: _SK
+
+Data rows (after header): 4349
+--- SAMPLE (first 3 data rows) ---
+  Row 3: A=1 | B=KH3751 | C=Keishin Machinery - bình chánh | D= | E=KHÁCH VIP | F= | G= | H= | I= | J=
+  Row 4: A=2 | B=KH3724 | C=Anh Tuệ-Gia Lai/0335.786.077 | D=0335.786.077 | E= | F=Gia Lai | G=GLAI | H= | I= | J=
+  Row 5: A=3 | B=KH3723 | C=CH Phụ Tùng Ri Tuyền-Kiên Giang/ A Ri- 0961.616.170 | D=0961.616.170 | E= | F=Xã Hoà Chánh, Huyện U Minh Thượng, Kiên Giang | G=KG | H= | I= | J=
+
+--- UNIQUE VALUES ANALYSIS ---
+  Col E (Phân loại): 3 unique → ['KHÁCH VIP', 'KHÁCH ƯU ĐÃI', 'VIP NGOẠI LỆ']
+
+================================================================================
+  SHEET: "🚌 NHÀ XE"  (xl/worksheets/sheet6.xml)
+================================================================================
+Dimension: A1:F269
+Data rows: 1-269 (265 rows)
+Columns: 6 cols (A-F)
+Detected header row: 6
+--- ALL HEADERS ---
+  A: STT
+  B: TÊN CHÀNH / NHÀ XE
+  C: ĐIỆN THOẠI
+  D: ĐỊA CHỈ
+  E: GIỜ NHẬN
+  F: GHI CHÚ
+
+Data rows (after header): 260
+--- SAMPLE (first 3 data rows) ---
+  Row 7: A=1 | B=10 ĐỒNG | C= | D= | E= | F=
+  Row 8: A=2 | B=5 SANG | C= | D= | E=<9H | F=
+  Row 9: A=3 | B=5 SỦNG | C= | D= | E= | F=
+
+--- UNIQUE VALUES ANALYSIS ---
+  Col F (GHI CHÚ): 11 unique → ['GHI CHÚ', 'tấn tài bình phước', 'A Trường - Ba Tri', 'A Shin', 'Turbo Quang Tuấn', 'chạy dọc tuyến QL1A', 'Phú Toàn', 'Tất Cả Các Khách Ở Long Xuyên', 'Ch  Bình Thi', 'KỲ - Nhệ An']
