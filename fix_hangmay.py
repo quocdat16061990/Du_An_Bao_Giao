@@ -28,6 +28,7 @@ if env_file.exists():
 
 import django; django.setup()
 from products.models import Product, HangMay
+from django.db.models import Count
 from django.utils.text import slugify
 import openpyxl
 
@@ -223,7 +224,7 @@ def fix_hangmay(dry_run: bool = True):
     remaining = HangMay.objects.filter(
         id__in=numeric_ids
     ).annotate(
-        pc=models.Count('products')
+        pc=Count('products')
     ).filter(pc=0) if not dry_run else []
 
     if dry_run:
