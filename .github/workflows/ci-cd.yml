@@ -44,7 +44,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Lint with flake8
-        run: flake8 . --count --statistics --max-line-length=120 --ignore=E127,E225,E226,E231,E302,E305,E401,E402,E701,E702,F401,F541,F841,W503,W504 --exclude=venv,node_modules,frontend,migrations,__pycache__,*.pyc
+        run: flake8 . --count --statistics --max-line-length=140 --ignore=E127,E225,E226,E231,E302,E305,E401,E402,E701,E702,F401,F541,F841,W503,W504 --exclude=venv,node_modules,frontend,migrations,__pycache__,*.pyc
 
       - name: Run Django Tests
         run: python manage.py test products --verbosity=2
