@@ -1,6 +1,25 @@
-version: '3.8'
-
 services:
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    restart: always
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      - "--certificatesresolvers.mytlschallenge.acme.email=admin@devoverflow.xyz"
+      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - traefik
+
   backend:
     build:
       context: .
@@ -8,7 +27,7 @@ services:
     container_name: turbodiesel-backend
     restart: always
     env_file:
-      - .env
+      - backend/.env
     environment:
       - DEBUG=False
     expose:
@@ -34,13 +53,19 @@ services:
       - traefik
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik"
+      - "traefik.http.routers.turbodiesel-http.rule=Host(`luanmienam.devoverflow.xyz`)"
+      - "traefik.http.routers.turbodiesel-http.entrypoints=web"
+      - "traefik.http.routers.turbodiesel-http.middlewares=turbodiesel-https-redirect"
+      - "traefik.http.middlewares.turbodiesel-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.routers.turbodiesel.rule=Host(`luanmienam.devoverflow.xyz`)"
-      - "traefik.http.routers.turbodiesel.entrypoints=web,websecure"
+      - "traefik.http.routers.turbodiesel.entrypoints=websecure"
       - "traefik.http.routers.turbodiesel.tls=true"
       - "traefik.http.routers.turbodiesel.tls.certresolver=mytlschallenge"
       - "traefik.http.services.turbodiesel.loadbalancer.server.port=80"
 
 volumes:
+  traefik_letsencrypt:
   static_volume:
   media_volume:
 

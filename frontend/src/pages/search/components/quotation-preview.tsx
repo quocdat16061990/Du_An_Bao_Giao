@@ -27,7 +27,7 @@ export function QuotationPreview({
   }
 
   const getPriceLabel = (): string => {
-    switch (customer.phanLoai) {
+    switch (customer.phan_loai) {
       case 'VIP':
         return 'GIÁ VIP'
       case 'ƯU_ĐÃI':
@@ -158,9 +158,9 @@ export function QuotationPreview({
       {/* Terms */}
       <div className="quote-terms">
         <strong>Điều khoản:</strong>{'\n'}{COMPANY.terms}{'\n\n'}
-        <strong>Người nhận hàng:</strong> {customer.tenKh} — {customer.dienThoai}{'\n'}
-        <strong>Nhà xe:</strong> {customer.nhaXe || 'Không có'}{'\n'}
-        <strong>Ghi chú KH:</strong> {customer.ghiChu || 'Không có'}
+        <strong>Người nhận hàng:</strong> {customer.ten_kh} — {customer.dien_thoai}{'\n'}
+        <strong>Nhà xe:</strong> {customer.nha_xe_name || 'Không có'}{'\n'}
+        <strong>Ghi chú KH:</strong> {customer.ghi_chu || 'Không có'}
       </div>
 
       {/* Signature */}

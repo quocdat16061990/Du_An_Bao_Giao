@@ -57,7 +57,7 @@ export interface Category {
 }
 
 // ── Customer (khớp API) ──
-export type PhanLoai = 'VIP' | 'ƯU_ĐÃI' | 'NGOẠI_LỆ' | 'CHƯA_PL'
+export type PhanLoai = 'VIP' | 'ƯU_ĐÃI' | 'ĐẠI_LÝ' | 'KHÁC' | 'NGOẠI_LỆ' | 'CHƯA_PL'
 
 export interface Customer {
   id: number

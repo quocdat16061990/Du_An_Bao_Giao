@@ -8,6 +8,7 @@ import { QuotationPreview } from './quotation-preview'
 import { useSearchStore } from '../store'
 import { Printer, Loader2, FileDown } from 'lucide-react'
 import { generateQuotationPdf } from './quotation-pdf'
+import { apiClient } from '@/lib/api/client'
 import type { Product } from '../helper/types'
 
 interface QuotationDialogProps {
@@ -18,7 +19,6 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
   const isOpen = useSearchStore((s) => s.isQuotationOpen)
   const closeQuotation = useSearchStore((s) => s.closeQuotation)
   const selectedCustomer = useSearchStore((s) => s.selectedCustomer)
-  const selectedIds = useSearchStore((s) => s.selectedProductIds)
   const [isDownloading, setIsDownloading] = useState(false)
 
   const quoteNumber = `BG${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-01`
@@ -31,6 +31,13 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
       const now = new Date()
       const quoteNumber = `BG${now.toISOString().slice(0, 10).replace(/-/g, '')}-01`
       const quoteDate = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
+
+      // Lưu báo giá vào backend
+      apiClient.post('/quotations/save/', {
+        product_ids: selectedProducts.map((p) => p.id),
+        customer_id: selectedCustomer.id,
+        nhan_vien: '',
+      }).catch((err) => console.warn('Lưu báo giá thất bại:', err))
 
       const blob = await generateQuotationPdf(selectedProducts, selectedCustomer, quoteNumber, quoteDate)
       const url = URL.createObjectURL(blob)

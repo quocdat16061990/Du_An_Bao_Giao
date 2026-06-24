@@ -1,7 +1,6 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { apiClient } from '@/lib/api/client'
 import type { PaginatedResponse, Product, SearchParams } from './types'
-import { DEFAULT_PAGE_SIZE } from '@/services/config'
 
 async function fetchProducts(
   params: SearchParams,

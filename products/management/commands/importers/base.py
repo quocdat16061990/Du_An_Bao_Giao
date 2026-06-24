@@ -37,7 +37,7 @@ def col_to_index(letters: str) -> int:
     return idx
 
 
-def cell_text(cell) -> str:
+def cell_text(cell, shared_strings=None) -> str:
     """Trích xuất text từ cell XML Excel."""
     ct = cell.attrib.get('t', '')
     if ct == 'inlineStr':
@@ -45,7 +45,27 @@ def cell_text(cell) -> str:
         return ''.join(pieces)
     if ct == 'str':
         return cell.findtext('x:v', default='', namespaces=NS)
+    if ct == 's':
+        # Shared string — tra bảng shared strings
+        raw = cell.findtext('x:v', default='', namespaces=NS)
+        if raw.isdigit() and shared_strings is not None:
+            idx = int(raw)
+            if 0 <= idx < len(shared_strings):
+                return shared_strings[idx]
+        return raw
     return (cell.findtext('x:v', default='', namespaces=NS) or '').strip()
+
+
+def load_shared_strings(zf) -> list:
+    """Tải shared strings table từ file Excel."""
+    if 'xl/sharedStrings.xml' not in zf.namelist():
+        return []
+    root = ET.fromstring(zf.read('xl/sharedStrings.xml'))
+    values = []
+    for si in root.findall('x:si', NS):
+        pieces = [n.text or '' for n in si.findall('.//x:t', NS)]
+        values.append(''.join(pieces))
+    return values
 
 
 def parse_price(value: str) -> Optional[Decimal]:
@@ -189,6 +209,13 @@ class BaseExcelImporter(ABC):
 
     def parse_rows(self, zf, target: str) -> dict:
         """Parse tất cả rows từ 1 sheet thành dict {row_number: {col_index: text}}."""
+        # Cache shared strings per zipfile
+        cache_key = f'_ss_{id(zf)}'
+        if not hasattr(self, cache_key):
+            ss = load_shared_strings(zf)
+            setattr(self, cache_key, ss)
+        shared_strings = getattr(self, cache_key, [])
+
         root = ET.fromstring(zf.read(target))
         rows = {}
         for row in root.findall('x:sheetData/x:row', NS):
@@ -202,7 +229,7 @@ class BaseExcelImporter(ABC):
                 if not m:
                     continue
                 ci = col_to_index(m.group(1))
-                cells[ci] = cell_text(cell)
+                cells[ci] = cell_text(cell, shared_strings)
             if cells:
                 rows[ri] = cells
         return rows

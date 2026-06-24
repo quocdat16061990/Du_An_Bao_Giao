@@ -130,3 +130,48 @@ class QuotationResponseSerializer(serializers.Serializer):
     tong_cong = serializers.DecimalField(max_digits=14, decimal_places=0)
     tong_chu = serializers.CharField()
     company = serializers.DictField()
+
+
+# ═══════════ Quotation History ═══════════
+
+class QuotationItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.QuotationItem
+        fields = ['id', 'ma_vt', 'ten_hang', 'don_gia', 'so_luong', 'thanh_tien']
+
+
+class QuotationListSerializer(serializers.ModelSerializer):
+    """Danh sách báo giá (không include items để nhẹ)."""
+    items = QuotationItemSerializer(many=True, read_only=True)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+
+    class Meta:
+        model = models.Quotation
+        fields = [
+            'id', 'quote_number', 'quote_date', 'customer_id',
+            'customer_name', 'customer_phone', 'gia_ap_dung',
+            'tong_cong', 'product_count', 'nhan_vien',
+            'status', 'status_display', 'ghi_chu',
+            'created_at', 'updated_at', 'items',
+        ]
+        read_only_fields = ['id', 'quote_number', 'created_at', 'updated_at']
+
+
+class QuotationUpdateSerializer(serializers.ModelSerializer):
+    """Cập nhật trạng thái + ghi chú báo giá."""
+
+    class Meta:
+        model = models.Quotation
+        fields = ['status', 'ghi_chu', 'nhan_vien']
+
+
+class QuotationSaveSerializer(serializers.Serializer):
+    """Nhận request lưu báo giá đã gởi."""
+    product_ids = serializers.ListField(child=serializers.IntegerField(), min_length=1)
+    customer_id = serializers.IntegerField()
+    nhan_vien = serializers.CharField(max_length=100, required=False, default='', allow_blank=True)
+
+    def validate_product_ids(self, value):
+        if len(value) > 200:
+            raise serializers.ValidationError('Tối đa 200 sản phẩm mỗi lần báo giá')
+        return value

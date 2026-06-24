@@ -1,0 +1,131 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ============================================
+  # 1. Kiểm thử Django Backend
+  # ============================================
+  test-backend:
+    runs-on: ubuntu-latest
+    # Mặc định dùng SQLite để test (settings.py fallback khi không có DATABASE_URL)
+    # Nếu muốn test với PostgreSQL, thêm block services bên dưới:
+    # services:
+    #   postgres:
+    #     image: postgres:16
+    #     env:
+    #       POSTGRES_USER: ci_user
+    #       POSTGRES_PASSWORD: ci_password
+    #       POSTGRES_DB: ci_test
+    #     ports:
+    #       - 5432:5432
+    #     options: >-
+    #       --health-cmd "pg_isready -U ci_user -d ci_test"
+    #       --health-interval 10s
+    #       --health-timeout 5s
+    #       --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Lint with flake8
+        run: flake8 . --count --statistics --exclude=venv,node_modules,frontend,migrations,__pycache__
+
+      - name: Run Django Tests
+        run: python manage.py test products --verbosity=2
+        env:
+          SECRET_KEY: github-actions-ci-secret-not-for-production
+          DEBUG: "False"
+          # Nếu dùng SQLite (mặc định khi không có DATABASE_URL):
+          # settings.py sẽ tự fallback về SQLite → không cần config thêm
+          #
+          # Nếu dùng PostgreSQL service bên trên, uncomment:
+          # DATABASE_URL: postgres://ci_user:ci_password@localhost:5432/ci_test
+
+  # ============================================
+  # 2. Kiểm thử Frontend React
+  # ============================================
+  test-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Lint with ESLint
+        run: |
+          cd frontend
+          npm run lint
+
+      - name: Build (TypeScript check + Vite build)
+        run: |
+          cd frontend
+          npm run build
+
+  # ============================================
+  # 3. Deploy tự động lên Hostinger VPS
+  # ============================================
+  deploy:
+    needs: [test-backend, test-frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy on Hostinger VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          port: ${{ secrets.VPS_PORT }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            PROJECT_DIR=/root/Du_An_Bao_Giao
+
+            # Clone nếu chưa có, pull nếu có rồi
+            if [ ! -d "$PROJECT_DIR/.git" ]; then
+              mkdir -p "$PROJECT_DIR"
+              git clone https://github.com/quocdat16061990/Du_An_Bao_Giao.git "$PROJECT_DIR"
+            fi
+
+            cd "$PROJECT_DIR"
+            git pull origin main
+
+            # Tạo file .env nếu chưa có
+            mkdir -p "$PROJECT_DIR/backend"
+            if [ ! -f "$PROJECT_DIR/backend/.env" ]; then
+              echo 'SECRET_KEY=thay-bang-secret-key-that-cua-ban' > "$PROJECT_DIR/backend/.env"
+              echo 'DEBUG=False' >> "$PROJECT_DIR/backend/.env"
+              echo 'DATABASE_URL=postgresql://user:password@host:5432/dbname' >> "$PROJECT_DIR/backend/.env"
+            fi
+
+            # Đảm bảo network traefik tồn tại
+            docker network create traefik 2>/dev/null || true
+
+            docker compose down
+            docker compose up -d --build
+            docker image prune -f

@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
@@ -74,7 +73,7 @@ export function FilterSidebar({
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+          <Filter className="h-4 w-4 text-primary" />
           <h3 className="font-semibold text-sm">Bộ lọc</h3>
         </div>
         {hasActiveFilters && (
@@ -160,7 +159,7 @@ function FilterSection({
     <div>
       <button
         onClick={onToggle}
-        className="flex items-center justify-between w-full text-left py-1.5 hover:text-foreground transition-colors"
+        className="flex items-center justify-between w-full text-left py-1.5 text-foreground hover:text-primary transition-colors"
       >
         <div className="flex items-center gap-1.5">
           {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
@@ -184,11 +183,11 @@ function FilterItem({
   return (
     <label className={cn(
       'flex items-center gap-2 px-2 py-1 rounded-md cursor-pointer transition-colors',
-      'hover:bg-muted/50',
-      checked && 'bg-primary/5',
+      'hover:bg-accent/70',
+      checked && 'bg-primary/10 text-primary',
     )}>
       <Checkbox checked={checked} onCheckedChange={onChange} className="h-3.5 w-3.5" />
-      <span className="text-xs text-secondary-foreground truncate flex-1">{label}</span>
+      <span className="text-xs text-foreground truncate flex-1">{label}</span>
       {count !== undefined && <span className="text-[10px] text-muted-foreground">{count}</span>}
     </label>
   )

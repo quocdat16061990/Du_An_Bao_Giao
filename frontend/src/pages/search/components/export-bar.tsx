@@ -5,7 +5,8 @@ import { CustomerSearch } from './customer-search'
 import { useSearchStore } from '../store'
 import { FileText, FileSpreadsheet, FileDown, ShoppingCart, X, Loader2 } from 'lucide-react'
 import type { Product } from '../helper/types'
-import { formatVnd, shortOem } from '@/lib/utils'
+import { shortOem } from '@/lib/utils'
+import { apiClient } from '@/lib/api/client'
 import { generateQuotationPdf } from './quotation-pdf'
 
 interface ExportBarProps {
@@ -20,6 +21,7 @@ export function ExportBar({ products }: ExportBarProps) {
   const selectedCount = selectedIds.size
   const selectedProducts = products.filter((p) => selectedIds.has(p.id))
   const [isExportingPdf, setIsExportingPdf] = useState(false)
+  const [customerError, setCustomerError] = useState(false)
 
   // ── Export CSV ──
   const handleExportCSV = () => {
@@ -63,9 +65,27 @@ export function ExportBar({ products }: ExportBarProps) {
     }
   }
 
+  const handleOpenQuotation = async () => {
+    if (!selectedCustomer) {
+      setCustomerError(true)
+      return
+    }
+    // Tự động lưu báo giá vào backend để hiện trong Nhật Ký Báo Giá
+    try {
+      await apiClient.post('/quotations/save/', {
+        product_ids: selectedProducts.map((p) => p.id),
+        customer_id: selectedCustomer.id,
+        nhan_vien: '',
+      })
+    } catch (err) {
+      console.warn('Lưu báo giá thất bại:', err)
+    }
+    openQuotation()
+  }
+
   if (selectedCount === 0) {
     return (
-      <div className="flex items-center gap-2 px-4 py-2.5 bg-card border rounded-lg shadow-sm text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-card/95 border border-border/80 rounded-lg shadow-sm text-sm text-muted-foreground">
         <ShoppingCart className="h-4 w-4" />
         <span>Tick chọn sản phẩm để tạo báo giá hoặc xuất Excel/PDF</span>
       </div>
@@ -73,7 +93,7 @@ export function ExportBar({ products }: ExportBarProps) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-card border rounded-lg shadow-sm">
+    <div className="flex flex-wrap items-center gap-3 px-4 py-3 bg-card/95 border border-border/80 rounded-lg shadow-sm">
       <div className="flex items-center gap-2 mr-2">
         <Badge variant="default" className="h-7 px-3 text-sm font-bold">{selectedCount}</Badge>
         <span className="text-sm font-medium">sản phẩm được chọn</span>
@@ -81,9 +101,19 @@ export function ExportBar({ products }: ExportBarProps) {
           <X className="h-3 w-3 mr-1" />Bỏ chọn
         </Button>
       </div>
-      <div className="border-l pl-3 ml-1"><CustomerSearch /></div>
+      <div className="border-l pl-3 ml-1">
+        <CustomerSearch
+          hasError={customerError && !selectedCustomer}
+          onValidSelect={() => setCustomerError(false)}
+        />
+        {customerError && !selectedCustomer && (
+          <p className="mt-1 text-xs font-medium text-destructive">
+            Vui lòng chọn hoặc thêm khách hàng trước khi tạo báo giá.
+          </p>
+        )}
+      </div>
       <div className="flex items-center gap-2 ml-auto">
-        <Button size="sm" className="h-9 bg-turbo-blue hover:bg-turbo-blue/90 text-white shadow-sm" onClick={openQuotation}>
+        <Button size="sm" className="h-9 bg-turbo-blue hover:bg-turbo-blue/90 text-white shadow-sm" onClick={handleOpenQuotation}>
           <FileText className="h-4 w-4 mr-1.5" />Tạo Báo Giá
         </Button>
         <Button variant="outline" size="sm" className="h-9" onClick={handleExportCSV}>

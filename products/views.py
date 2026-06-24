@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from django.conf import settings
-from django.db.models import Q, Count, Min, Max
+from django.db.models import Q, Count, Min, Max, Case, When, Value, IntegerField
 from django.http import HttpResponse
 from rest_framework import generics, status
 from rest_framework.response import Response
@@ -25,13 +25,29 @@ class ProductListCreateView(generics.ListCreateAPIView):
     ordering = ['ma_vt']
 
     def get_queryset(self):
-        qs = (
+        return (
             models.Product.objects
             .filter(is_active=True)
             .select_related('hang_may', 'hang_sx', 'thuong_hieu', 'category')
             .defer('oem_part_no')
+            .annotate(
+                image_priority=Case(
+                    When(hinh_anh='', then=Value(1)),
+                    When(hinh_anh__isnull=True, then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            )
         )
-        return qs
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        active_ordering = list(queryset.query.order_by) or list(self.ordering)
+        active_ordering = [
+            field for field in active_ordering
+            if str(field).lstrip('-') != 'image_priority'
+        ]
+        return queryset.order_by('image_priority', *active_ordering)
 
 
 class ProductDetailView(generics.RetrieveAPIView):
@@ -324,3 +340,207 @@ class QuotationExportPDFView(APIView):
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         response['X-Saved-Path'] = str(filepath)
         return response
+
+
+# ═══════════ Quotation Save & History ═══════════
+
+class QuotationSaveView(APIView):
+    """Lưu báo giá đã gởi vào database."""
+
+    def post(self, request):
+        req_serializer = serializers.QuotationSaveSerializer(data=request.data)
+        req_serializer.is_valid(raise_exception=True)
+
+        product_ids = req_serializer.validated_data['product_ids']
+        customer_id = req_serializer.validated_data['customer_id']
+        nhan_vien = req_serializer.validated_data.get('nhan_vien', '')
+
+        try:
+            customer = models.Customer.objects.get(id=customer_id, is_active=True)
+        except models.Customer.DoesNotExist:
+            return Response({'error': 'Không tìm thấy khách hàng'}, status=404)
+
+        products_qs = models.Product.objects.filter(
+            id__in=product_ids, is_active=True
+        ).order_by('ma_vt')
+
+        gia_labels = {
+            'VIP': 'GIÁ VIP', 'ƯU_ĐÃI': 'GIÁ ƯU ĐÃI',
+            'ĐẠI_LÝ': 'GIÁ ĐẠI LÝ', 'NGOẠI_LỆ': 'GIÁ ĐL+10%',
+        }
+
+        now = datetime.now()
+        tong_cong = Decimal('0')
+        quote_number = f"BG{now.strftime('%Y%m%d%H%M%S')}-{len(product_ids):02d}"
+
+        quotation = models.Quotation.objects.create(
+            quote_number=quote_number,
+            quote_date=now.date(),
+            customer=customer,
+            customer_name=customer.ten_kh,
+            customer_phone=customer.dien_thoai or '',
+            gia_ap_dung=gia_labels.get(customer.phan_loai, 'GIÁ ĐL+10%'),
+            tong_cong=Decimal('0'),
+            product_count=len(product_ids),
+            nhan_vien=nhan_vien,
+        )
+
+        for p in products_qs:
+            don_gia = p.get_price_for_type(customer.phan_loai)
+            thanh_tien = don_gia
+            tong_cong += thanh_tien
+            models.QuotationItem.objects.create(
+                quotation=quotation,
+                product=p,
+                ma_vt=p.ma_vt,
+                ten_hang=p.ten_hang or p.model_turbo or '',
+                don_gia=don_gia,
+                so_luong=1,
+                thanh_tien=thanh_tien,
+            )
+
+        quotation.tong_cong = tong_cong
+        quotation.save(update_fields=['tong_cong'])
+
+        return Response({
+            'success': True,
+            'id': quotation.id,
+            'quote_number': quotation.quote_number,
+        }, status=status.HTTP_201_CREATED)
+
+
+class QuotationTodayListView(generics.ListAPIView):
+    """Danh sách báo giá đã gởi trong ngày hôm nay."""
+
+    serializer_class = serializers.QuotationListSerializer
+    pagination_class = None  # Không phân trang, trả về array trực tiếp
+
+    def get_queryset(self):
+        from django.utils import timezone
+        today = timezone.localdate()
+        return models.Quotation.objects.filter(
+            quote_date=today
+        ).select_related('customer').prefetch_related('items').order_by('-created_at')
+
+
+class QuotationTodayStatsView(APIView):
+    """Thống kê nhanh báo giá hôm nay."""
+
+    def get(self, request):
+        from django.utils import timezone
+        from django.db.models import Count, Sum, Q
+        today = timezone.localdate()
+        qs = models.Quotation.objects.filter(quote_date=today)
+        stats = qs.aggregate(
+            tong_bg=Count('id'),
+            tong_sp=Sum('product_count'),
+            tong_tien=Sum('tong_cong'),
+            so_kh=Count('customer_id', distinct=True),
+        )
+        by_status = qs.values('status').annotate(cnt=Count('id')).order_by('status')
+        da_chot = next((s['cnt'] for s in by_status if s['status'] == 'DA_CHOT'), 0)
+        da_gui = next((s['cnt'] for s in by_status if s['status'] == 'DA_GUI'), 0)
+        thua = next((s['cnt'] for s in by_status if s['status'] == 'THUA'), 0)
+
+        return Response({
+            'tong_bg': stats['tong_bg'] or 0,
+            'tong_sp': stats['tong_sp'] or 0,
+            'tong_tien': int(stats['tong_tien'] or 0),
+            'so_kh': stats['so_kh'] or 0,
+            'da_chot': da_chot,
+            'da_gui': da_gui,
+            'thua': thua,
+        })
+
+
+class QuotationUpdateView(generics.UpdateAPIView):
+    """Cập nhật trạng thái + ghi chú báo giá."""
+
+    queryset = models.Quotation.objects.all()
+    serializer_class = serializers.QuotationUpdateSerializer
+
+
+class QuotationHistoryListView(generics.ListAPIView):
+    """Danh sách báo giá theo khoảng ngày (date_from, date_to)."""
+
+    serializer_class = serializers.QuotationListSerializer
+    pagination_class = None  # Không phân trang, trả về array trực tiếp
+
+    def get_queryset(self):
+        from datetime import datetime, date
+        date_from = self.request.query_params.get('date_from')
+        date_to = self.request.query_params.get('date_to')
+
+        qs = models.Quotation.objects.all()
+
+        if date_from:
+            try:
+                d = datetime.strptime(date_from, '%Y-%m-%d').date()
+                qs = qs.filter(quote_date__gte=d)
+            except ValueError:
+                pass
+
+        if date_to:
+            try:
+                d = datetime.strptime(date_to, '%Y-%m-%d').date()
+                qs = qs.filter(quote_date__lte=d)
+            except ValueError:
+                pass
+
+        # Default: hôm nay nếu không có params
+        if not date_from and not date_to:
+            from django.utils import timezone
+            qs = qs.filter(quote_date=timezone.localdate())
+
+        return qs.select_related('customer').prefetch_related('items').order_by('-created_at')
+
+
+class QuotationHistoryStatsView(APIView):
+    """Thống kê báo giá theo khoảng ngày."""
+
+    def get(self, request):
+        from datetime import datetime
+        from django.db.models import Count, Sum
+        date_from = request.query_params.get('date_from')
+        date_to = request.query_params.get('date_to')
+
+        qs = models.Quotation.objects.all()
+
+        if date_from:
+            try:
+                d = datetime.strptime(date_from, '%Y-%m-%d').date()
+                qs = qs.filter(quote_date__gte=d)
+            except ValueError:
+                pass
+
+        if date_to:
+            try:
+                d = datetime.strptime(date_to, '%Y-%m-%d').date()
+                qs = qs.filter(quote_date__lte=d)
+            except ValueError:
+                pass
+
+        if not date_from and not date_to:
+            from django.utils import timezone
+            qs = qs.filter(quote_date=timezone.localdate())
+
+        stats = qs.aggregate(
+            tong_bg=Count('id'),
+            tong_sp=Sum('product_count'),
+            tong_tien=Sum('tong_cong'),
+            so_kh=Count('customer_id', distinct=True),
+        )
+        by_status = qs.values('status').annotate(cnt=Count('id')).order_by('status')
+        da_chot = next((s['cnt'] for s in by_status if s['status'] == 'DA_CHOT'), 0)
+        da_gui = next((s['cnt'] for s in by_status if s['status'] == 'DA_GUI'), 0)
+        thua = next((s['cnt'] for s in by_status if s['status'] == 'THUA'), 0)
+
+        return Response({
+            'tong_bg': stats['tong_bg'] or 0,
+            'tong_sp': stats['tong_sp'] or 0,
+            'tong_tien': int(stats['tong_tien'] or 0),
+            'so_kh': stats['so_kh'] or 0,
+            'da_chot': da_chot,
+            'da_gui': da_gui,
+            'thua': thua,
+        })

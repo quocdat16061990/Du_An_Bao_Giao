@@ -5,7 +5,7 @@ from .base import BaseExcelImporter, ImportResult, parse_price, parse_decimal
 
 
 class TurboV13GiaImporter(BaseExcelImporter):
-    file_pattern = 'BAO_GIA_TURBO_v13_GIA.xlsx'
+    file_pattern = 'BAO_GIA_TURBO_v13_GIA*.xlsx'
     importer_name = 'turbo-v13-gia'
 
     def import_file(self, file_path: Path) -> ImportResult:

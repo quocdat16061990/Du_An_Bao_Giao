@@ -16,14 +16,19 @@ SHEET_MAP = {
     'NẮP SINH HÀN': ('nap_sinh_han', 'nap-sinh-han', 'Nắp sinh hàn', 71),
     'RUỘT SINH HÀN': ('ruot_sinh_han', 'ruot-sinh-han', 'Ruột sinh hàn', 72),
     'NHÍP TAY BIÊN': ('nhip_tay_bien', 'nhip-tay-bien', 'Nhíp tay biên', 33),
+    'NHẬP TAY BIÊN': ('nhip_tay_bien', 'nhip-tay-bien', 'Nhíp tay biên', 33),
     'THUN RON': ('thun_co', 'thun-co', 'Thun cò', 23),
     'THUN XY LANH': ('thun_xy_lanh', 'thun-xy-lanh', 'Thun xy lanh', 24),
     'LỌC MÁY': ('loc_may', 'loc-may', 'Lọc máy', 80),
     'SAM BẠC': ('sam_bac', 'sam-bac', 'Sam bạc', 32),
+    'SAM BÉC': ('sam_bac', 'sam-bac', 'Sam béc', 32),
+    'SAM B?C': ('sam_bac', 'sam-bac', 'Sam bạc', 32),
     'VAN HẰNG NHIỆT': ('van_hang_nhiet', 'van-hang-nhiet', 'Van hằng nhiệt', 81),
     'VÀNH RĂNG BÁNH ĐÀ': ('vanh_rang_banh_da', 'vanh-rang-banh-da', 'Vành răng bánh đà', 82),
     'ỐNG DẪN NHIÊN LIỆU': ('ong_dan_nhien_lieu', 'ong-dan-nhien-lieu', 'Ống dẫn nhiên liệu', 83),
     'SÊN CAM': ('sen_cam', 'sen-cam', 'Sên cam', 53),
+    'KÉT NƯỚC': ('ket_nuoc', 'ket-nuoc', 'Két nước', 73),
+    'KÉT NHỚT': ('ket_nhot', 'ket-nhot', 'Két nhớt', 74),
 }
 
 
@@ -55,7 +60,7 @@ def match_sheet(sname: str):
 
 
 class TongHopPhuTungImporter(BaseExcelImporter):
-    file_pattern = 'TONG_HOP_PHU_TUNG_10062026_1.xlsx'
+    file_pattern = 'TONG_HOP_PHU_TUNG_10062026_2_updated.xlsx'
     importer_name = 'tong-hop'
 
     def import_file(self, file_path: Path) -> ImportResult:
@@ -86,8 +91,11 @@ class TongHopPhuTungImporter(BaseExcelImporter):
                 hang_may_name = r.get(2, '').strip()
                 ten_dong_co = r.get(3, '').strip()
                 parno = r.get(4, '').strip()
-                gia = parse_price(r.get(5, ''))
-                ghi_chu = r.get(6, '').strip()
+                # Col E=GIÁ BÁN, Col F=GIÁ ƯU ĐÃI, Col G=GIÁ VIP
+                gia_ban = parse_price(r.get(5, ''))        # Col E
+                gia_uu_dai = parse_price(r.get(6, ''))      # Col F
+                gia_vip = parse_price(r.get(7, ''))         # Col G
+                ghi_chu = r.get(8, '').strip()              # Col H
 
                 # Dòng header của hãng (VD: "HINO   (14 sản phẩm)")
                 if not ma_hh.startswith('HH') and not ma_hh.startswith('hh'):
@@ -105,6 +113,10 @@ class TongHopPhuTungImporter(BaseExcelImporter):
                     'hang_may': hm,
                     'ten_hang': ten_hang,
                     'parno': parno,
+                    'gia_vip': gia_vip,
+                    'gia_uu_dai': gia_uu_dai,
+                    'gia_dai_ly': gia_ban,
+                    'gia_von': gia_ban,
                     'ghi_chu': ghi_chu,
                     'sheet_name': sname,
                     'attributes': {
@@ -112,9 +124,6 @@ class TongHopPhuTungImporter(BaseExcelImporter):
                         'parno': parno,
                     },
                 }
-                # Gán giá vào gia_vip (chỉ có 1 cột giá duy nhất)
-                if gia is not None:
-                    defaults['gia_vip'] = gia
 
                 self.add_to_batch(ma_hh, loai, defaults)
 

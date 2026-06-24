@@ -235,6 +235,60 @@ class Customer(models.Model):
         return f"{self.ten_kh} ({self.dien_thoai or self.ma_kh})"
 
 
+class Quotation(models.Model):
+    """Báo giá đã gởi cho khách hàng"""
+
+    class Status(models.TextChoices):
+        DA_GUI = 'DA_GUI', 'Đã gởi'
+        DA_CHOT = 'DA_CHOT', 'Đã chốt'
+        THUA = 'THUA', 'Thua'
+
+    quote_number = models.CharField("Số báo giá", max_length=50, unique=True)
+    quote_date = models.DateField("Ngày báo giá", auto_now_add=True)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='quotations')
+    customer_name = models.CharField("Tên KH (snapshot)", max_length=300)
+    customer_phone = models.CharField("ĐT KH (snapshot)", max_length=20, blank=True, default='')
+    gia_ap_dung = models.CharField("Loại giá áp dụng", max_length=50)
+    tong_cong = models.DecimalField("Tổng cộng", max_digits=14, decimal_places=0)
+    product_count = models.PositiveIntegerField("Số lượng SP", default=0)
+    nhan_vien = models.CharField("Nhân viên báo giá", max_length=100, blank=True, default='')
+    status = models.CharField("Trạng thái", max_length=20, choices=Status.choices, default=Status.DA_GUI)
+    ghi_chu = models.TextField("Ghi chú", blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'quotations'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['quote_date']),
+            models.Index(fields=['customer']),
+            models.Index(fields=['created_at']),
+            models.Index(fields=['status']),
+        ]
+
+    def __str__(self):
+        return f"{self.quote_number} — {self.customer_name}"
+
+
+class QuotationItem(models.Model):
+    """Chi tiết từng dòng sản phẩm trong báo giá"""
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name='quotation_items')
+    ma_vt = models.CharField("Mã VT", max_length=100)
+    ten_hang = models.CharField("Tên hàng", max_length=500, blank=True, default='')
+    don_gia = models.DecimalField("Đơn giá", max_digits=12, decimal_places=0)
+    so_luong = models.PositiveIntegerField("Số lượng", default=1)
+    thanh_tien = models.DecimalField("Thành tiền", max_digits=12, decimal_places=0)
+
+    class Meta:
+        db_table = 'quotation_items'
+        ordering = ['id']
+
+    def __str__(self):
+        return f"{self.ma_vt} — {self.don_gia:,}đ"
+
+
 class ImportLog(models.Model):
     """Ghi log mỗi lần import Excel"""
     file_name = models.CharField(max_length=255)

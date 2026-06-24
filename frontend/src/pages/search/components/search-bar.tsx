@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, Loader2 } from 'lucide-react'
+import { Search, X, Loader2, PackageSearch } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -21,7 +21,7 @@ export function SearchBar({
 }: SearchBarProps) {
   const [localValue, setLocalValue] = useState(value)
   const inputRef = useRef<HTMLInputElement>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Sync external value
   useEffect(() => {
@@ -89,9 +89,23 @@ export function SearchBar({
 
       {/* Result count */}
       {value && !isLoading && (
-        <p className="mt-2 ml-1 text-sm text-muted-foreground">
-          Tìm thấy <span className="font-semibold text-foreground">{resultCount.toLocaleString('vi-VN')}</span> sản phẩm
-        </p>
+        <div
+          className={cn(
+            'mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm',
+            resultCount > 0
+              ? 'border-primary/20 bg-primary/10 text-primary'
+              : 'border-border bg-muted text-muted-foreground',
+          )}
+        >
+          <PackageSearch className="h-3.5 w-3.5" />
+          <span className="text-muted-foreground">
+            {resultCount > 0 ? 'Tìm thấy' : 'Không tìm thấy'}
+          </span>
+          <span className="rounded-full bg-background px-2 py-0.5 font-bold tabular-nums text-foreground">
+            {resultCount.toLocaleString('vi-VN')}
+          </span>
+          <span className="font-medium">sản phẩm</span>
+        </div>
       )}
     </div>
   )

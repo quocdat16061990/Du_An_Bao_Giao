@@ -15,11 +15,14 @@ SHEET_CATEGORY_MAP = {
     'RON MIẾNG': ('ron_mieng', 'ron-mieng', 'Ron miếng', 21),
     'MIẾNG TNC': ('mieng_bac', 'mieng-bac', 'Miếng bạc', 30),
     'MIẾNG TRA CỨU': ('mieng_bac', 'mieng-bac', 'Miếng bạc', 30),
-    'CĂN THAU': ('can_thau', 'can-thau', 'Căn thau', 31),
+    'BẠC THAU': ('can_thau', 'can-thau', 'Bạc thau', 31),
+    'CĂN DỌC': ('can_doc', 'can-doc', 'Căn dóc', 32),
     'RON CÁT TE': ('ron_cat_te', 'ron-cat-te', 'Ron cát te', 22),
     'THUN CÒ': ('thun_co', 'thun-co', 'Thun cò', 23),
     'PHỐT ĐẦU TRỤC CƠ': ('phot_dau', 'phot-dau-truc-co', 'Phốt đầu trục cơ', 40),
     'PHỐT ĐUÔI TRỤC CƠ': ('phot_duoi', 'phot-duoi-truc-co', 'Phốt đuôi trục cơ', 41),
+    'KÉT NƯỚC': ('ket_nuoc', 'ket-nuoc', 'Két nước', 73),
+    'KÉT NHỚT': ('ket_nhot', 'ket-nhot', 'Két nhớt', 74),
     'KHÁCH HÀNG': ('_skip_customer', None, None, 0),
     'NHÀ XE': ('_skip_nhaxe', None, None, 0),
     'CHÚ GIẢI': ('_skip', None, None, 0),
@@ -70,6 +73,20 @@ SEC_MANG_COLS = {
     'ghi_chu': 17, 'parno': 16,
 }
 
+# Bạc thau + Căn dóc (11 cols): A=Mã HH, B=Tên vật tư, C=ĐVT, D=Vốn, E=VIP, F=Ưu đãi, G=Đại lý, H=Gara, I=Tồn, J=PARNO, K=Ghi chú
+BAC_THAU_COLS = {
+    'ma_vt': 1, 'ten_hang': 2, 'dvt': 3,
+    'gia_von': 4, 'gia_vip': 5, 'gia_uu_dai': 6, 'gia_dai_ly': 7, 'gia_gara': 8,
+    'parno': 10, 'ghi_chu': 11,
+}
+
+# Két nước/Két nhớt (11 cols): A=Mã HH, B=Hãng SX, C=Tên két, D=Cao, E=Rộng, F=Dày, G=PARNO, H=ĐVT, I=Giá bán, J=Đại lý, K=VIP
+KET_NUOC_COLS = {
+    'ma_vt': 1, 'ten_hang': 3, 'hang_may': 2, 'dvt': 8,
+    'gia_von': 9, 'gia_dai_ly': 10, 'gia_vip': 11,
+    'parno': 7,
+}
+
 # Sheet-specific column maps
 SHEET_COL_MAP = {
     'sec_mang': SEC_MANG_COLS,
@@ -77,6 +94,10 @@ SHEET_COL_MAP = {
     'xy_lanh': XY_LANH_COLS,
     'xy_lanh_cu': XY_LANH_COLS,
     'mieng_bac': MIENG_TNC_COLS,
+    'can_thau': BAC_THAU_COLS,
+    'can_doc': BAC_THAU_COLS,
+    'ket_nuoc': KET_NUOC_COLS,
+    'ket_nhot': KET_NUOC_COLS,
 }
 
 
@@ -128,7 +149,7 @@ def detect_sheet_category(sname: str):
 
 
 class BoHoiMoiImporter(BaseExcelImporter):
-    file_pattern = 'BANG_GIA_BO_HOI_MOI_1.xlsx'
+    file_pattern = 'BANG_GIA_BO_HOI_MOI*.xlsx'
     importer_name = 'bo-hoi-moi'
 
     def import_file(self, file_path: Path) -> ImportResult:

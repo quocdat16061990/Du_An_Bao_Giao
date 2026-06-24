@@ -19,6 +19,7 @@ RUN pip install --no-cache-dir \
     djangorestframework \
     django-cors-headers \
     django-filter \
+    python-dotenv \
     psycopg2-binary \
     gunicorn
 

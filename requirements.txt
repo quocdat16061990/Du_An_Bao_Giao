@@ -1,0 +1,18 @@
+# Django Core
+django>=5.0,<6.0
+djangorestframework>=3.15,<4.0
+djangorestframework-simplejwt>=5.4,<6.0
+django-cors-headers>=4.4,<5.0
+django-filter>=24.1,<25.0
+
+# Database
+psycopg2-binary>=2.9,<3.0
+
+# Server
+gunicorn>=22.0,<23.0
+
+# Utils
+python-dotenv>=1.0,<2.0
+
+# Dev / Lint
+flake8>=7.0,<8.0

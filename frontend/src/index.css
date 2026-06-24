@@ -4,80 +4,199 @@
 
 @layer base {
   :root {
-    --background: 210 40% 96%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 221 83% 53%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%;
-    --radius: 0.5rem;
-  }
-}
+    --background: 210 27% 96%;
+    --foreground: 218 39% 13%;
 
-@layer base {
+    --card: 0 0% 100%;
+    --card-foreground: 218 39% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 218 39% 13%;
+
+    --primary: 39 82% 43%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 24% 93%;
+    --secondary-foreground: 218 28% 23%;
+
+    --muted: 210 24% 93%;
+    --muted-foreground: 215 16% 45%;
+
+    --accent: 205 55% 92%;
+    --accent-foreground: 207 54% 25%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 25% 84%;
+    --input: 214 25% 84%;
+    --ring: 39 82% 43%;
+
+    --radius: 0.5rem;
+
+    --turbo-amber: 39 82% 43%;
+    --turbo-blue: 205 70% 37%;
+    --turbo-dark: 218 39% 13%;
+
+    --price-vip: 39 82% 43%;
+    --price-uu-dai: 24 75% 47%;
+    --price-dai-ly: 205 70% 37%;
+    --price-dl10: 171 55% 32%;
+  }
+
+  .dark {
+    --background: 218 39% 8%;
+    --foreground: 210 20% 96%;
+
+    --card: 218 30% 12%;
+    --card-foreground: 210 20% 96%;
+    --popover: 218 30% 12%;
+    --popover-foreground: 210 20% 96%;
+
+    --primary: 39 82% 50%;
+    --primary-foreground: 218 39% 8%;
+
+    --secondary: 218 24% 18%;
+    --secondary-foreground: 210 20% 96%;
+
+    --muted: 218 24% 18%;
+    --muted-foreground: 215 16% 68%;
+
+    --accent: 207 30% 20%;
+    --accent-foreground: 210 20% 96%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 20% 96%;
+
+    --border: 218 20% 24%;
+    --input: 218 20% 24%;
+    --ring: 39 82% 50%;
+  }
+
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     margin: 0;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(circle at 18% -12%, hsl(39 82% 43% / 0.12), transparent 30rem),
+      linear-gradient(180deg, hsl(210 27% 98%), hsl(var(--background)) 18rem);
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  .dark body {
+    background:
+      radial-gradient(circle at 18% -12%, hsl(39 82% 50% / 0.14), transparent 30rem),
+      linear-gradient(180deg, hsl(218 39% 10%), hsl(var(--background)) 18rem);
   }
 
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
+
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
-    border-radius: 3px;
+    border-radius: 999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
   }
 }
 
-/* ── Table animations + utilities ── */
+@layer components {
+  .glass {
+    background: hsl(0 0% 100% / 0.98);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border-bottom: 1px solid hsl(214 25% 78%);
+    box-shadow: 0 8px 22px hsl(218 39% 13% / 0.08);
+  }
+
+  .dark .glass {
+    background: hsl(218 30% 10% / 0.86);
+    border-bottom-color: hsl(218 20% 24% / 0.75);
+    box-shadow: 0 10px 30px hsl(0 0% 0% / 0.2);
+  }
+
+  .glass-card {
+    background: hsl(0 0% 100% / 1);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid hsl(214 25% 78%);
+    border-radius: var(--radius);
+    box-shadow: 0 14px 35px hsl(218 39% 13% / 0.08);
+  }
+
+  .dark .glass-card {
+    background: hsl(218 30% 12% / 0.88);
+    border-color: hsl(218 20% 24% / 0.75);
+    box-shadow: 0 14px 35px hsl(0 0% 0% / 0.22);
+  }
+
+  .card-hover {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px hsl(205 70% 37% / 0.1);
+    border-color: hsl(39 82% 43% / 0.34);
+  }
+
+  .price-vip { color: hsl(var(--price-vip)); }
+  .price-uu-dai { color: hsl(var(--price-uu-dai)); }
+  .price-dai-ly { color: hsl(var(--price-dai-ly)); }
+  .price-dl10 { color: hsl(var(--price-dl10)); }
+
+  .status-dot {
+    @apply inline-block w-2 h-2 rounded-full;
+  }
+
+  .status-dot.active { @apply bg-emerald-500; }
+  .status-dot.pending { @apply bg-amber-500; }
+  .status-dot.lost { @apply bg-red-500; }
+}
+
 @layer utilities {
   .animate-in {
     animation-duration: 0.3s;
-    animation-timing-function: ease-out;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   }
+
   .fade-in {
     animation-name: fadeIn;
   }
+
   .slide-in-from-bottom-4 {
     animation-name: slideInFromBottom4;
+  }
+
+  .slide-in-from-right {
+    animation-name: slideInFromRight;
   }
 
   @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
   }
+
   @keyframes slideInFromBottom4 {
-    from {
-      opacity: 0;
-      transform: translateY(16px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideInFromRight {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: translateX(0); }
   }
 
   .line-clamp-2 {
@@ -86,23 +205,8 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-}
 
-/* ── Table specific styles ── */
-@layer base {
-  table tbody tr {
+  .row-hover {
     transition: background-color 0.15s ease;
-  }
-
-  /* Smooth row highlight on hover */
-  table tbody tr:hover td {
-    transition: background-color 0.15s ease, color 0.15s ease;
-  }
-
-  /* Sticky header */
-  table thead {
-    position: sticky;
-    top: 0;
-    z-index: 5;
   }
 }

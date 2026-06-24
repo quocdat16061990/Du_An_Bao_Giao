@@ -42,12 +42,18 @@ export default {
         },
         // TURBO DIESEL brand colors
         turbo: {
-          blue: "#1a56db",
-          dark: "#0f172a",
-          gold: "#f59e0b",
-          orange: "#f97316",
-          green: "#22c55e",
+          blue: "hsl(var(--turbo-blue))",
+          dark: "hsl(var(--turbo-dark))",
+          gold: "hsl(var(--turbo-amber))",
+          orange: "#F97316",
+          green: "#10B981",
+          purple: "#0F766E",
         },
+        // Price tier colors (text)
+        'price-vip': "hsl(38 92% 50%)",
+        'price-uu-dai': "hsl(25 95% 53%)",
+        'price-dai-ly': "hsl(217 91% 60%)",
+        'price-dl10': "hsl(262 83% 58%)",
       },
       borderRadius: {
         lg: "var(--radius)",

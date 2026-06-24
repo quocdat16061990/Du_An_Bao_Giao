@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { Loader2, SlidersHorizontal } from 'lucide-react'
+import { Loader2, SlidersHorizontal, CheckSquare, Square } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
+import { AppHeader } from '@/components/app-header'
 import { SearchBar } from './components/search-bar'
 import { FilterSidebar } from './components/filter-sidebar'
 import { ProductGrid } from './components/product-grid'
@@ -22,7 +23,7 @@ import { useSearchStore } from './store'
 import { useDebounce } from '@/hook/use-debounce'
 import { SORT_OPTIONS } from './helper/constants'
 import { DEFAULT_PAGE_SIZE } from '@/services/config'
-import type { SearchParams } from './helper/types'
+import type { Product, SearchParams } from './helper/types'
 import { cn } from '@/lib/utils'
 
 export default function SearchPage() {
@@ -41,13 +42,11 @@ export default function SearchPage() {
   const [selectedThuongHieu, setSelectedThuongHieu] = useState<Array<number>>([])
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false)
 
-  // ── UI state ──
-  const viewMode = 'table' as const
-
   // ── Store ──
   const selectedIds = useSearchStore((s) => s.selectedProductIds)
   const toggleProduct = useSearchStore((s) => s.toggleProduct)
   const selectAll = useSearchStore((s) => s.selectAll)
+  const clearSelection = useSearchStore((s) => s.clearSelection)
 
   // ── Build search params ──
   const searchParams: SearchParams = useMemo(() => {
@@ -61,9 +60,8 @@ export default function SearchPage() {
     return params
   }, [debouncedKeyword, sorting, page, pageSize, selectedCategories])
 
-  // ⚠️ HangMay + ThuongHieu filters are client-side (filter after fetch)
-  // since backend only supports single category filter
-  const filterClientSide = useCallback((p: typeof products[0]) => {
+  // Client-side filters for hang_may + thuong_hieu
+  const filterClientSide = useCallback((p: Product) => {
     if (selectedHangMay.length > 0 && !selectedHangMay.includes(p.hang_may)) return false
     if (selectedThuongHieu.length > 0 && p.thuong_hieu && !selectedThuongHieu.includes(p.thuong_hieu)) return false
     return true
@@ -90,12 +88,16 @@ export default function SearchPage() {
   }, [])
 
   const handleSelectAll = useCallback(() => {
-    selectAll(products.map((p) => p.id))
-  }, [products, selectAll])
+    if (selectedIds.size >= products.length) {
+      clearSelection()
+    } else {
+      selectAll(products.map((p) => p.id))
+    }
+  }, [products, selectedIds, selectAll, clearSelection])
 
   const hasActiveFilters = selectedCategories.length > 0 || selectedHangMay.length > 0 || selectedThuongHieu.length > 0
 
-  // ── Filter sidebar content ──
+  // ── Filter sidebar ──
   const filterSidebar = (
     <FilterSidebar
       selectedCategories={selectedCategories}
@@ -109,16 +111,44 @@ export default function SearchPage() {
     />
   )
 
+  // ── Stats for header ──
+  const headerStats = (
+    <div className="flex items-center gap-4 text-sm">
+      <div className="text-right">
+        <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">Tổng SP</div>
+        <div className="font-bold tabular-nums text-foreground">
+          {totalCount.toLocaleString('vi-VN')}
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── Search slot ──
+  const searchSlot = (
+    <SearchBar
+      value={keyword}
+      onChange={(val) => { setKeyword(val); setPage(1) }}
+      isLoading={isLoading}
+      resultCount={totalCount}
+    />
+  )
+
   // ── Error state ──
   if (isError) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-destructive mb-2">Lỗi kết nối</h2>
-          <p className="text-muted-foreground mb-4">
-            Không thể kết nối đến máy chủ. Vui lòng thử lại sau.
-          </p>
-          <Button onClick={() => window.location.reload()}>Thử lại</Button>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mx-auto mb-4">
+              <Loader2 className="h-8 w-8 text-red-400" />
+            </div>
+            <h2 className="text-xl font-bold text-foreground mb-2">Lỗi kết nối</h2>
+            <p className="text-muted-foreground mb-4">
+              Không thể kết nối đến máy chủ. Vui lòng thử lại sau.
+            </p>
+            <Button onClick={() => window.location.reload()}>Thử lại</Button>
+          </div>
         </div>
       </div>
     )
@@ -126,47 +156,15 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* ═══════════ HEADER ═══════════ */}
-      <header className="bg-gradient-to-r from-turbo-dark via-slate-800 to-turbo-blue text-white sticky top-0 z-50 shadow-lg">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
-          {/* Brand */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 bg-white/10 backdrop-blur rounded-xl flex items-center justify-center">
-              <span className="text-xl font-black tracking-tighter">TD</span>
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-lg font-bold leading-tight">TURBO DIESEL</h1>
-              <p className="text-[10px] text-white/60 leading-tight">
-                Chuyên Cung Cấp Turbo & Phụ Tùng Động Cơ
-              </p>
-            </div>
-          </div>
+      {/* ═════ HEADER ═════ */}
+      <AppHeader
+        stats={headerStats}
+        searchSlot={searchSlot}
+      />
 
-          {/* Search in header */}
-          <SearchBar
-            value={keyword}
-            onChange={(val) => {
-              setKeyword(val)
-              setPage(1)
-            }}
-            isLoading={isLoading}
-            resultCount={totalCount}
-            className="flex-1 max-w-lg"
-          />
-
-          {/* Stats (hidden on mobile) */}
-          <div className="hidden lg:flex items-center gap-4 text-sm">
-            <div className="text-right">
-              <div className="text-white/50 text-[10px] uppercase tracking-wider">Tổng SP</div>
-              <div className="font-bold tabular-nums">{totalCount.toLocaleString('vi-VN')}</div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* ═══════════ MAIN LAYOUT ═══════════ */}
+      {/* ═════ MAIN ═════ */}
       <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-4">
-        {/* ── Export Bar (top) ── */}
+        {/* ── Export Bar ── */}
         {products.length > 0 && (
           <div className="mb-4">
             <ExportBar products={products} />
@@ -176,45 +174,60 @@ export default function SearchPage() {
         <div className="flex gap-6">
           {/* ── Desktop Sidebar ── */}
           <aside className="hidden lg:block w-56 shrink-0">
-            <div className="sticky top-[90px] bg-card rounded-xl border shadow-xs p-4 max-h-[calc(100vh-120px)] overflow-y-auto">
+            <div className="sticky top-[80px] glass-card p-4 max-h-[calc(100vh-120px)] overflow-y-auto">
               {filterSidebar}
             </div>
           </aside>
 
           {/* ── Main Content ── */}
           <main className="flex-1 min-w-0">
-            {/* Toolbar: mobile filter + sort + select all */}
+            {/* Toolbar */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
-              {/* Mobile filter button */}
+              {/* Mobile filter */}
               <Button
-                variant="outline" size="sm" className="lg:hidden h-9 gap-1.5"
+                variant="outline"
+                size="sm"
+                className="lg:hidden h-9 gap-1.5 border-border/50"
                 onClick={() => setMobileFilterOpen(true)}
               >
-                <SlidersHorizontal className="h-4 w-4" />Bộ lọc
-                {hasActiveFilters && <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
+                <SlidersHorizontal className="h-4 w-4" />
+                Bộ lọc
+                {hasActiveFilters && (
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                )}
               </Button>
 
-              {/* Result summary */}
+              {/* Result count */}
               <p className="text-sm text-muted-foreground mr-auto flex items-center gap-2">
                 {isFetching && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
                 <span>
                   <span className="font-semibold text-foreground">
                     {totalCount.toLocaleString('vi-VN')}
-                  </span>{' '}
-                  sản phẩm
+                  </span>
+                  {' '}sản phẩm
                 </span>
               </p>
 
               {/* Select all */}
               {products.length > 0 && (
-                <Button variant="ghost" size="sm" className="text-xs" onClick={handleSelectAll}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs gap-1.5 text-muted-foreground hover:text-foreground"
+                  onClick={handleSelectAll}
+                >
+                  {selectedIds.size >= products.length ? (
+                    <CheckSquare className="h-3.5 w-3.5 text-primary" />
+                  ) : (
+                    <Square className="h-3.5 w-3.5" />
+                  )}
                   {selectedIds.size >= products.length ? 'Bỏ chọn tất cả' : 'Chọn tất cả'}
                 </Button>
               )}
 
               {/* Sort */}
               <Select value={sorting} onValueChange={(v) => { setSorting(v); setPage(1) }}>
-                <SelectTrigger className="h-9 w-[160px] text-xs">
+                <SelectTrigger className="h-9 w-[160px] text-xs border-border/50">
                   <SelectValue placeholder="Sắp xếp" />
                 </SelectTrigger>
                 <SelectContent>
@@ -225,12 +238,11 @@ export default function SearchPage() {
                   ))}
                 </SelectContent>
               </Select>
-
             </div>
 
             {/* ── Content ── */}
             {showSkeleton ? (
-              <SearchSkeleton viewMode={viewMode} />
+              <SearchSkeleton viewMode="grid" />
             ) : products.length === 0 ? (
               <EmptyState onClearFilters={handleClearFilters} />
             ) : (
@@ -240,11 +252,11 @@ export default function SearchPage() {
                     products={products}
                     selectedIds={selectedIds}
                     onToggleSelect={toggleProduct}
-                    viewMode={viewMode}
+                    viewMode="grid"
                   />
                 </div>
 
-                <div className={cn('transition-opacity duration-200', isFetching && 'opacity-60')}>
+                <div className={cn('transition-opacity duration-200 mt-4', isFetching && 'opacity-60')}>
                   <PaginationBar
                     currentPage={page}
                     totalPages={totalPages}
@@ -259,22 +271,21 @@ export default function SearchPage() {
                 </div>
               </>
             )}
-
           </main>
         </div>
       </div>
 
-      {/* ═══════════ MOBILE FILTER SHEET ═══════════ */}
+      {/* ═════ MOBILE FILTER SHEET ═════ */}
       <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
-        <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0">
+        <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 bg-card border-r border-border">
           <SheetHeader className="px-6 pt-6">
-            <SheetTitle>Bộ lọc</SheetTitle>
+            <SheetTitle className="text-foreground">Bộ lọc</SheetTitle>
           </SheetHeader>
           <div className="px-6 pb-6 h-full">{filterSidebar}</div>
         </SheetContent>
       </Sheet>
 
-      {/* ═══════════ QUOTATION DIALOG ═══════════ */}
+      {/* ═════ QUOTATION DIALOG ═════ */}
       <QuotationDialog selectedProducts={selectedProducts} />
     </div>
   )
