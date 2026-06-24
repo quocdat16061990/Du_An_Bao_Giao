@@ -51,11 +51,6 @@ jobs:
         env:
           SECRET_KEY: github-actions-ci-secret-not-for-production
           DEBUG: "False"
-          # Nếu dùng SQLite (mặc định khi không có DATABASE_URL):
-          # settings.py sẽ tự fallback về SQLite → không cần config thêm
-          #
-          # Nếu dùng PostgreSQL service bên trên, uncomment:
-          # DATABASE_URL: postgres://ci_user:ci_password@localhost:5432/ci_test
 
   # ============================================
   # 2. Kiểm thử Frontend React
@@ -106,14 +101,16 @@ jobs:
           script: |
             PROJECT_DIR=/root/Du_An_Bao_Giao
 
-            # Clone nếu chưa có, pull nếu có rồi
+            # Clone nếu chưa có
             if [ ! -d "$PROJECT_DIR/.git" ]; then
               mkdir -p "$PROJECT_DIR"
               git clone https://github.com/quocdat16061990/Du_An_Bao_Giao.git "$PROJECT_DIR"
             fi
 
             cd "$PROJECT_DIR"
-            git pull origin main
+            # Luôn đồng bộ với GitHub (force sync)
+            git fetch origin main
+            git reset --hard origin/main
 
             # Tạo file .env nếu chưa có
             mkdir -p "$PROJECT_DIR/backend"
