@@ -24,6 +24,16 @@ const AuthContext = createContext<AuthState | undefined>(undefined)
 const TOKEN_KEY = 'turbo_access_token'
 const REFRESH_KEY = 'turbo_refresh_token'
 
+function applyAuthToken(nextToken: string | null) {
+  if (nextToken) {
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${nextToken}`
+    localStorage.setItem(TOKEN_KEY, nextToken)
+  } else {
+    delete apiClient.defaults.headers.common['Authorization']
+    localStorage.removeItem(TOKEN_KEY)
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_KEY))
@@ -31,13 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Set token on axios
   useEffect(() => {
-    if (token) {
-      apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      localStorage.setItem(TOKEN_KEY, token)
-    } else {
-      delete apiClient.defaults.headers.common['Authorization']
-      localStorage.removeItem(TOKEN_KEY)
-    }
+    applyAuthToken(token)
   }, [token])
 
   // Try to load user on mount if token exists
@@ -58,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return apiClient
             .post('/auth/refresh/', { refresh })
             .then(({ data }) => {
+              applyAuthToken(data.access)
               setToken(data.access)
               localStorage.setItem(REFRESH_KEY, data.refresh)
               return apiClient.get('/auth/me/')
@@ -78,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (username: string, password: string) => {
     const { data } = await apiClient.post('/auth/login/', { username, password })
+    applyAuthToken(data.access)
     setToken(data.access)
     localStorage.setItem(REFRESH_KEY, data.refresh)
 
@@ -98,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!refresh) return null
     try {
       const { data } = await apiClient.post('/auth/refresh/', { refresh })
+      applyAuthToken(data.access)
       setToken(data.access)
       localStorage.setItem(REFRESH_KEY, data.refresh)
       return data.access

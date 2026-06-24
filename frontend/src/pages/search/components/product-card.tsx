@@ -80,7 +80,7 @@ export const ProductCard = memo(function ProductCard({
   return (
     <div
       className={cn(
-        'group relative flex flex-col rounded-lg border border-slate-300 bg-card',
+        'group relative flex flex-col rounded-lg border border-slate-300 bg-card cursor-pointer',
         'transition-all duration-300 ease-out',
         'hover:-translate-y-1 hover:shadow-xl hover:shadow-sky-900/10 hover:border-primary/40',
         isSelected && 'ring-2 ring-primary border-primary bg-primary/5',

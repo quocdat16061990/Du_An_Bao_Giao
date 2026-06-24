@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 
 from . import models, serializers, filters
 from .pagination import FastPagination
+from .quotation_excel import build_quotation_excel, safe_excel_filename
 
 logger = logging.getLogger('products')
 
@@ -237,6 +238,36 @@ class QuotationExportCSVView(APIView):
 
         response = Response(buf.getvalue(), content_type='text/csv; charset=utf-8')
         response['Content-Disposition'] = 'attachment; filename="bao_gia_turbo.csv"'
+        return response
+
+
+class QuotationExportExcelView(APIView):
+    def post(self, request):
+        req_serializer = serializers.QuotationRequestSerializer(data=request.data)
+        req_serializer.is_valid(raise_exception=True)
+
+        product_ids = req_serializer.validated_data['product_ids']
+        customer_id = req_serializer.validated_data['customer_id']
+
+        try:
+            customer = models.Customer.objects.select_related('nha_xe').get(id=customer_id, is_active=True)
+        except models.Customer.DoesNotExist:
+            return Response({'error': 'Khong tim thay khach hang'}, status=404)
+
+        products_qs = models.Product.objects.filter(
+            id__in=product_ids, is_active=True
+        ).order_by('ma_vt')
+
+        now = datetime.now()
+        quote_number = f"BG{now.strftime('%Y%m%d%H%M%S')}-{len(product_ids):02d}"
+        excel_bytes = build_quotation_excel(customer, products_qs, quote_number)
+        filename = safe_excel_filename(customer.ten_kh)
+
+        response = HttpResponse(
+            excel_bytes,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
 

@@ -5,7 +5,6 @@ import { CustomerSearch } from './customer-search'
 import { useSearchStore } from '../store'
 import { FileText, FileSpreadsheet, FileDown, ShoppingCart, X, Loader2 } from 'lucide-react'
 import type { Product } from '../helper/types'
-import { shortOem } from '@/lib/utils'
 import { apiClient } from '@/lib/api/client'
 import { generateQuotationPdf } from './quotation-pdf'
 
@@ -21,25 +20,47 @@ export function ExportBar({ products }: ExportBarProps) {
   const selectedCount = selectedIds.size
   const selectedProducts = products.filter((p) => selectedIds.has(p.id))
   const [isExportingPdf, setIsExportingPdf] = useState(false)
+  const [isExportingExcel, setIsExportingExcel] = useState(false)
   const [customerError, setCustomerError] = useState(false)
 
-  // ── Export CSV ──
-  const handleExportCSV = () => {
-    if (selectedCount === 0) return
-    const headers = ['Mã VT', 'Model Turbo', 'Mã động cơ', 'OEM', 'Đặc điểm', 'Ứng dụng', 'Hãng máy', 'Thương hiệu', 'Giá VIP', 'Giá Ưu đãi', 'Giá Đại lý']
-    let csv = '﻿' + headers.join(',') + '\n'
-    selectedProducts.forEach((p) => {
-      const row = [p.ma_vt, p.model_turbo, p.ma_dong_co, shortOem(p.oem_part_no), p.dac_diem, p.ung_dung, p.hang_may_name, p.thuong_hieu_name, p.gia_vip ?? '', p.gia_uu_dai ?? '', p.gia_dai_ly ?? '']
-      csv += row.map((v) => '"' + String(v).replace(/"/g, '""') + '"').join(',') + '\n'
-    })
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `bao_gia_turbo_${new Date().toISOString().slice(0, 10)}.csv`
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
-  // ── Export PDF (dùng @react-pdf/renderer client-side) ──
+  const handleExportExcel = async () => {
+    if (selectedCount === 0 || !selectedCustomer) {
+      setCustomerError(true)
+      return
+    }
+
+    setIsExportingExcel(true)
+    try {
+      const response = await apiClient.post(
+        '/quotations/export-excel/',
+        {
+          product_ids: selectedProducts.map((p) => p.id),
+          customer_id: selectedCustomer.id,
+        },
+        { responseType: 'blob' },
+      )
+      const disposition = response.headers['content-disposition']
+      const match = /filename="?([^"]+)"?/i.exec(disposition ?? '')
+      const safeName = selectedCustomer.ten_kh.replace(/[^a-zA-Z0-9À-ỹ]/g, '_').substring(0, 30)
+      downloadBlob(response.data, match?.[1] ?? `bao_gia_${safeName}_${new Date().toISOString().slice(0, 10)}.xlsx`)
+    } catch (err) {
+      console.error('Excel export failed:', err)
+    } finally {
+      setIsExportingExcel(false)
+    }
+  }
+
   const handleExportPDF = async () => {
     if (selectedCount === 0 || !selectedCustomer) return
     setIsExportingPdf(true)
@@ -49,15 +70,8 @@ export function ExportBar({ products }: ExportBarProps) {
       const quoteDate = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
 
       const blob = await generateQuotationPdf(selectedProducts, selectedCustomer, quoteNumber, quoteDate)
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
       const safeName = selectedCustomer.ten_kh.replace(/[^a-zA-Z0-9À-ỹ]/g, '_').substring(0, 30)
-      a.download = `bao_gia_${safeName}_${now.toISOString().slice(0, 10)}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      downloadBlob(blob, `bao_gia_${safeName}_${now.toISOString().slice(0, 10)}.pdf`)
     } catch (err) {
       console.error('PDF export failed:', err)
     } finally {
@@ -70,7 +84,6 @@ export function ExportBar({ products }: ExportBarProps) {
       setCustomerError(true)
       return
     }
-    // Tự động lưu báo giá vào backend để hiện trong Nhật Ký Báo Giá
     try {
       await apiClient.post('/quotations/save/', {
         product_ids: selectedProducts.map((p) => p.id),
@@ -116,8 +129,20 @@ export function ExportBar({ products }: ExportBarProps) {
         <Button size="sm" className="h-9 bg-turbo-blue hover:bg-turbo-blue/90 text-white shadow-sm" onClick={handleOpenQuotation}>
           <FileText className="h-4 w-4 mr-1.5" />Tạo Báo Giá
         </Button>
-        <Button variant="outline" size="sm" className="h-9" onClick={handleExportCSV}>
-          <FileSpreadsheet className="h-4 w-4 mr-1.5" />Excel
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-9"
+          onClick={handleExportExcel}
+          disabled={isExportingExcel || !selectedCustomer}
+          title={!selectedCustomer ? 'Vui lòng chọn khách hàng trước' : 'Tải Excel báo giá'}
+        >
+          {isExportingExcel ? (
+            <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+          ) : (
+            <FileSpreadsheet className="h-4 w-4 mr-1.5" />
+          )}
+          Excel
         </Button>
         <Button
           variant="outline"

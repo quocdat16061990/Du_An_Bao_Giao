@@ -12,23 +12,6 @@ jobs:
   # ============================================
   test-backend:
     runs-on: ubuntu-latest
-    # Mặc định dùng SQLite để test (settings.py fallback khi không có DATABASE_URL)
-    # Nếu muốn test với PostgreSQL, thêm block services bên dưới:
-    # services:
-    #   postgres:
-    #     image: postgres:16
-    #     env:
-    #       POSTGRES_USER: ci_user
-    #       POSTGRES_PASSWORD: ci_password
-    #       POSTGRES_DB: ci_test
-    #     ports:
-    #       - 5432:5432
-    #     options: >-
-    #       --health-cmd "pg_isready -U ci_user -d ci_test"
-    #       --health-interval 10s
-    #       --health-timeout 5s
-    #       --health-retries 5
-
     steps:
       - uses: actions/checkout@v4
 
@@ -123,6 +106,29 @@ jobs:
             # Đảm bảo network traefik tồn tại
             docker network create traefik 2>/dev/null || true
 
-            docker compose down
-            docker compose up -d --build
+            docker compose config
+            docker compose build --pull --no-cache backend frontend
+            docker compose up -d --remove-orphans
+
+            echo "Waiting for backend health..."
+            for i in $(seq 1 30); do
+              if docker compose exec -T frontend wget -qO- http://backend:8000/api/v1/categories/ >/dev/null 2>&1; then
+                echo "Backend is healthy"
+                break
+              fi
+
+              if [ "$i" -eq 30 ]; then
+                echo "Backend health check failed"
+                docker compose ps
+                docker compose logs --tail=120 backend frontend
+                exit 1
+              fi
+
+              sleep 3
+            done
+
+            if command -v curl >/dev/null 2>&1; then
+              curl -kfsS https://luanmienam.devoverflow.xyz/api/v1/categories/ >/dev/null
+            fi
+
             docker image prune -f

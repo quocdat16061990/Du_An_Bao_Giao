@@ -24,6 +24,7 @@ urlpatterns = [
     # Quotation
     path('quotations/preview/', views.QuotationPreviewView.as_view(), name='quotation-preview'),
     path('quotations/export-csv/', views.QuotationExportCSVView.as_view(), name='quotation-export-csv'),
+    path('quotations/export-excel/', views.QuotationExportExcelView.as_view(), name='quotation-export-excel'),
     path('quotations/export-pdf/', views.QuotationExportPDFView.as_view(), name='quotation-export-pdf'),
     path('quotations/save/', views.QuotationSaveView.as_view(), name='quotation-save'),
     path('quotations/today/', views.QuotationTodayListView.as_view(), name='quotation-today'),
