@@ -20,6 +20,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source
 COPY . .
 
+# Keep a copy of bundled media outside MEDIA_ROOT. Docker named volumes hide
+# /app/media at runtime, so entrypoint can seed the volume from this folder.
+RUN mkdir -p /app/media_seed && \
+    if [ -d /app/media ]; then cp -a /app/media/. /app/media_seed/; fi
+
 # Fix permission entrypoint
 RUN chmod +x /app/entrypoint.sh
 

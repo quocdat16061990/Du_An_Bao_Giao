@@ -1,6 +1,7 @@
 import { memo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Badge } from '@/components/ui/badge'
+import { getMediaUrl } from '@/lib/media'
 import { cn, formatVnd } from '@/lib/utils'
 import type { Product } from '../helper/types'
 import { Check, Wrench } from 'lucide-react'
@@ -75,7 +76,8 @@ export const ProductCard = memo(function ProductCard({
 
   const bestPrice = getBestPrice()
   const displayName = product.ten_hang || product.model_turbo || product.ma_vt
-  const hasImage = product.hinh_anh && !imgError
+  const imageUrl = getMediaUrl(product.hinh_anh)
+  const hasImage = imageUrl && !imgError
 
   return (
     <div
@@ -92,7 +94,7 @@ export const ProductCard = memo(function ProductCard({
       <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-slate-100">
         {hasImage ? (
           <img
-            src={product.hinh_anh}
+            src={imageUrl}
             alt={displayName}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Wrench, Cpu, Tag, Flame, Cog, Factory, Building2,
@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { AppHeader } from '@/components/app-header'
 import { useProduct } from '@/pages/search/helper/use-product'
 import { useSearchStore } from '@/pages/search/store'
+import { getMediaUrl } from '@/lib/media'
 import { cn, formatVnd } from '@/lib/utils'
 
 export default function ProductDetailPage() {
@@ -22,6 +23,10 @@ export default function ProductDetailPage() {
   const selectedIds = useSearchStore((s) => s.selectedProductIds)
   const toggleProduct = useSearchStore((s) => s.toggleProduct)
   const [imageError, setImageError] = useState(false)
+
+  useEffect(() => {
+    setImageError(false)
+  }, [product?.hinh_anh])
 
   if (isNaN(productId)) {
     return (
@@ -50,6 +55,7 @@ export default function ProductDetailPage() {
   const isSelected = selectedIds.has(product.id)
   const isTurbo = product.loai === 'turbo' || product.loai === 'ruot' || product.loai === 'so_linh_kien_turbo'
   const displayName = product.ten_hang || product.model_turbo || 'Sản phẩm'
+  const imageUrl = getMediaUrl(product.hinh_anh)
   const attrs = product.attributes && Object.keys(product.attributes).length > 0 ? product.attributes : null
 
   // ── Price tiers ──
@@ -91,16 +97,16 @@ export default function ProductDetailPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                   {/* Image */}
                   <div className="sm:col-span-1">
-                    {product.hinh_anh && !imageError ? (
+                    {imageUrl && !imageError ? (
                       <div className="relative group rounded-xl overflow-hidden border border-border/30 bg-muted/20">
                         <img
-                          src={product.hinh_anh}
+                          src={imageUrl}
                           alt={displayName}
                           className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-105"
                           onError={() => setImageError(true)}
                         />
                         <a
-                          href={product.hinh_anh}
+                          href={imageUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"

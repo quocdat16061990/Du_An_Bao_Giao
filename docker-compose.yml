@@ -48,6 +48,8 @@ services:
       - "80"
     depends_on:
       - backend
+    volumes:
+      - media_volume:/usr/share/nginx/media:ro
     networks:
       - internal
       - traefik
