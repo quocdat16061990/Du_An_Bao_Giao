@@ -1,8 +1,12 @@
-import { API_BASE_URL } from '@/services/config'
+import { API_BASE_URL, MEDIA_BASE_URL } from '@/services/config'
 
 const API_VERSION_PATH = /\/api\/v\d+\/?$/
 
 function getBackendOrigin() {
+  if (MEDIA_BASE_URL) {
+    return MEDIA_BASE_URL.replace(/\/$/, '')
+  }
+
   if (API_BASE_URL.startsWith('http://') || API_BASE_URL.startsWith('https://')) {
     return API_BASE_URL.replace(API_VERSION_PATH, '')
   }

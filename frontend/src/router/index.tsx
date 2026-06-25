@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import SearchPage from '@/pages/search'
 import ProductDetailPage from '@/pages/product-detail'
+import QuotationDashboardPage from '@/pages/quotation-dashboard'
 import QuotationHistoryPage from '@/pages/quotation-history'
 import LoginPage from '@/pages/login'
 
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
   {
     path: '/bao-gia',
     element: <QuotationHistoryPage />,
+  },
+  {
+    path: '/bao-gia/dashboard',
+    element: <QuotationDashboardPage />,
   },
   {
     path: '/bao-gia-hom-nay',
