@@ -272,7 +272,7 @@ class QuotationExportExcelView(APIView):
 
 
 # ═══════════ PDF Export ═══════════
-class QuotationExportPDFView(APIView):
+class LegacyQuotationExportPDFView(APIView):
     def post(self, request):
         req_serializer = serializers.QuotationRequestSerializer(data=request.data)
         req_serializer.is_valid(raise_exception=True)
@@ -374,6 +374,14 @@ class QuotationExportPDFView(APIView):
 
 
 # ═══════════ Quotation Save & History ═══════════
+
+class QuotationExportPDFView(APIView):
+    def post(self, request):
+        return Response(
+            {'error': 'PDF export is disabled. Please use Excel export.'},
+            status=status.HTTP_410_GONE,
+        )
+
 
 class QuotationSaveView(APIView):
     """Lưu báo giá đã gởi vào database."""

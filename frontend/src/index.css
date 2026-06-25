@@ -209,4 +209,15 @@
   .row-hover {
     transition: background-color 0.15s ease;
   }
+
+  .home-loading-bar {
+    animation: homeLoadingBar 1.1s ease-in-out infinite;
+    transform-origin: left center;
+  }
+
+  @keyframes homeLoadingBar {
+    0% { transform: translateX(-120%); }
+    55% { transform: translateX(140%); }
+    100% { transform: translateX(320%); }
+  }
 }
