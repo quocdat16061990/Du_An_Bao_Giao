@@ -23,13 +23,12 @@
   --fc-button-active-bg-color: #7367f0;
   --fc-button-active-border-color: #7367f0;
   --fc-button-active-text-color: #fff;
-  padding: 0 1.25rem 1.25rem;
+  padding: 0 1rem 1rem;
 }
 
 .quotation-calendar-scroll {
-  max-height: calc(100dvh - 320px);
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: visible;
   padding-bottom: 0.15rem;
   scrollbar-color: #c8c4f9 #f3f2f3;
   scrollbar-width: thin;
@@ -58,8 +57,8 @@
 
 .quotation-calendar-shell .fc-header-toolbar {
   gap: 0.75rem;
-  margin-bottom: 1rem !important;
-  padding-top: 0.25rem;
+  margin-bottom: 0.75rem !important;
+  padding-top: 0;
 }
 
 .quotation-calendar-shell .fc-toolbar-title {
@@ -97,7 +96,7 @@
 
 .quotation-calendar-shell .fc-col-header-cell {
   background: #f3f2f3;
-  padding: 0.72rem 0;
+  padding: 0.56rem 0;
 }
 
 .quotation-calendar-shell .fc-col-header-cell-cushion {
@@ -113,8 +112,12 @@
 }
 
 .quotation-calendar-shell .fc-daygrid-day-frame {
-  min-height: 126px;
-  padding: 0.35rem;
+  min-height: 108px;
+  padding: 0.3rem;
+}
+
+.quotation-calendar-shell .fc-dayGridWeek-view .fc-daygrid-day-frame {
+  min-height: 340px;
 }
 
 .quotation-calendar-shell .fc-daygrid-day-top {
@@ -261,6 +264,7 @@
 @media (max-width: 900px) {
   .quotation-calendar-scroll {
     max-height: calc(100dvh - 300px);
+    overflow-y: auto;
   }
 
   .quotation-calendar-shell {
@@ -286,6 +290,10 @@
     padding: 0.25rem;
   }
 
+  .quotation-calendar-shell .fc-dayGridWeek-view .fc-daygrid-day-frame {
+    min-height: 260px;
+  }
+
   .quote-event-content {
     padding: 0.35rem 0.4rem;
   }
@@ -299,6 +307,7 @@
 @media (max-width: 640px) {
   .quotation-calendar-scroll {
     max-height: calc(100dvh - 260px);
+    overflow-y: auto;
   }
 
   .quotation-calendar-shell .fc {
@@ -307,6 +316,10 @@
 
   .quotation-calendar-shell .fc-daygrid-day-frame {
     min-height: 84px;
+  }
+
+  .quotation-calendar-shell .fc-dayGridWeek-view .fc-daygrid-day-frame {
+    min-height: 220px;
   }
 
   .quotation-calendar-shell .fc-col-header-cell-cushion {
@@ -321,5 +334,12 @@
 
   .quote-event-number {
     font-size: 0.64rem;
+  }
+}
+
+@media (max-height: 760px) and (min-width: 901px) {
+  .quotation-calendar-scroll {
+    max-height: calc(100dvh - 300px);
+    overflow-y: auto;
   }
 }

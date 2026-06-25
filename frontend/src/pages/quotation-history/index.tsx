@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import FullCalendar from '@fullcalendar/react'
@@ -8,6 +8,7 @@ import type { DatesSetArg, EventClickArg, EventContentArg } from '@fullcalendar/
 import { format, parseISO } from 'date-fns'
 import {
   ArrowLeft,
+  BarChart3,
   CalendarDays,
   CheckCircle,
   DollarSign,
@@ -89,6 +90,14 @@ interface HistoryStats {
 }
 
 type QuotationStatus = QuotationEntry['status']
+type CalendarViewMode = 'dayGridDay' | 'dayGridWeek' | 'dayGridMonth' | 'dayGridQuarter'
+
+const CALENDAR_VIEW_OPTIONS: Array<{ value: CalendarViewMode; label: string }> = [
+  { value: 'dayGridDay', label: 'Ngày' },
+  { value: 'dayGridWeek', label: 'Tuần' },
+  { value: 'dayGridMonth', label: 'Tháng' },
+  { value: 'dayGridQuarter', label: 'Quý' },
+]
 
 const STATUS_META: Record<
   QuotationStatus,
@@ -215,8 +224,8 @@ function StatsCards({ stats }: { stats: HistoryStats | undefined }) {
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {cards.map((card) => (
         <Card key={card.label} className="border-border/60 bg-card/95 shadow-sm">
-          <CardContent className="p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
+          <CardContent className="p-3.5">
+            <div className="mb-2 flex items-center justify-between gap-3">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {card.label}
               </span>
@@ -224,7 +233,7 @@ function StatsCards({ stats }: { stats: HistoryStats | undefined }) {
             </div>
             <div
               className={cn(
-                'text-2xl font-extrabold tabular-nums text-foreground',
+                'text-[1.65rem] font-extrabold leading-tight tabular-nums text-foreground',
                 card.highlight && 'text-[#28c76f]',
               )}
             >
@@ -443,6 +452,8 @@ function EditDialog({
 export default function QuotationHistoryPage() {
   const navigate = useNavigate()
   const today = toApiDate(new Date())
+  const calendarRef = useRef<FullCalendar | null>(null)
+  const [calendarView, setCalendarView] = useState<CalendarViewMode>('dayGridWeek')
   const [dateFrom, setDateFrom] = useState(today)
   const [dateTo, setDateTo] = useState(today)
   const [visibleTitle, setVisibleTitle] = useState('')
@@ -473,6 +484,11 @@ export default function QuotationHistoryPage() {
     setDateFrom(toApiDate(arg.start))
     setDateTo(toApiDate(endInclusive))
     setVisibleTitle(arg.view.title)
+  }
+
+  const handleCalendarViewChange = (nextView: CalendarViewMode) => {
+    setCalendarView(nextView)
+    calendarRef.current?.getApi().changeView(nextView)
   }
 
   const handleEventClick = (arg: EventClickArg) => {
@@ -510,9 +526,9 @@ export default function QuotationHistoryPage() {
     <div className="quotation-page-bg min-h-screen">
       <AppHeader stats={headerStats} />
 
-      <main className="mx-auto max-w-[1500px] space-y-5 px-4 py-6 md:px-6">
+      <main className="mx-auto max-w-[1500px] space-y-4 px-4 py-4 md:px-5">
         <Card className="border-border/50 bg-card shadow-sm">
-          <CardContent className="flex flex-wrap items-center gap-3 p-4">
+          <CardContent className="flex flex-wrap items-center gap-3 p-3.5">
             <CalendarDays className="h-5 w-5 text-[#ff9f43]" />
             <div className="min-w-[190px]">
               <p className="text-sm font-semibold text-foreground">Lịch báo giá</p>
@@ -522,6 +538,24 @@ export default function QuotationHistoryPage() {
               <ArrowLeft className="h-4 w-4" />
               Về trang chính
             </Button>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/bao-gia/dashboard')}>
+              <BarChart3 className="h-4 w-4" />
+              Dashboard
+            </Button>
+            <div className="flex rounded-lg border border-border/70 bg-muted/30 p-1">
+              {CALENDAR_VIEW_OPTIONS.map((option) => (
+                <Button
+                  key={option.value}
+                  type="button"
+                  variant={calendarView === option.value ? 'default' : 'ghost'}
+                  size="sm"
+                  className="h-7 px-3 text-xs"
+                  onClick={() => handleCalendarViewChange(option.value)}
+                >
+                  {option.label}
+                </Button>
+              ))}
+            </div>
             <div className="ml-auto flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {(Object.keys(STATUS_META) as Array<QuotationStatus>).map((key) => (
                 <span key={key} className="flex items-center gap-1">
@@ -544,7 +578,7 @@ export default function QuotationHistoryPage() {
         )}
 
         <Card className="quotation-calendar-card border-border/50 bg-card shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 px-5 pb-2 pt-4">
             <CardTitle className="flex items-center gap-2 text-lg text-foreground">
               <FileText className="h-5 w-5 text-[#ff9f43]" />
               Báo giá theo lịch
@@ -568,9 +602,16 @@ export default function QuotationHistoryPage() {
               <div className={cn('quotation-calendar-shell', isLoading && 'opacity-60')}>
                 <div className="quotation-calendar-scroll">
                   <FullCalendar
+                    ref={calendarRef}
                     plugins={[dayGridPlugin, interactionPlugin]}
-                    initialView="dayGridMonth"
+                    initialView={calendarView}
                     initialDate={today}
+                    views={{
+                      dayGridQuarter: {
+                        type: 'dayGridMonth',
+                        duration: { months: 3 },
+                      },
+                    }}
                     events={calendarEvents}
                     datesSet={handleDatesSet}
                     eventClick={handleEventClick}
