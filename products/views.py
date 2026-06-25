@@ -272,7 +272,7 @@ class QuotationExportExcelView(APIView):
 
 
 # ═══════════ PDF Export ═══════════
-class QuotationExportPDFView(APIView):
+class LegacyQuotationExportPDFView(APIView):
     def post(self, request):
         req_serializer = serializers.QuotationRequestSerializer(data=request.data)
         req_serializer.is_valid(raise_exception=True)
