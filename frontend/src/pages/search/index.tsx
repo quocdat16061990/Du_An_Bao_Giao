@@ -76,6 +76,7 @@ export default function SearchPage() {
   const selectedProducts = products.filter((p) => selectedIds.has(p.id))
   const totalPages = data?.total_pages ?? Math.max(1, Math.ceil(totalCount / pageSize))
   const showSkeleton = isLoading && !data
+  const showRefreshBar = isFetching && !showSkeleton
 
   // ── Actions ──
   const handleClearFilters = useCallback(() => {
@@ -199,7 +200,6 @@ export default function SearchPage() {
 
               {/* Result count */}
               <p className="text-sm text-muted-foreground mr-auto flex items-center gap-2">
-                {isFetching && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
                 <span>
                   <span className="font-semibold text-foreground">
                     {totalCount.toLocaleString('vi-VN')}
@@ -241,6 +241,12 @@ export default function SearchPage() {
             </div>
 
             {/* ── Content ── */}
+            {showRefreshBar && (
+              <div className="mb-4 h-1 overflow-hidden rounded-full bg-muted">
+                <div className="home-loading-bar h-full w-1/3 rounded-full bg-primary" />
+              </div>
+            )}
+
             {showSkeleton ? (
               <SearchSkeleton viewMode="grid" />
             ) : products.length === 0 ? (

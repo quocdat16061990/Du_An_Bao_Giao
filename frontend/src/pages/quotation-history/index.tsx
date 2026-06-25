@@ -1,33 +1,55 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiClient } from '@/lib/api/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import FullCalendar from '@fullcalendar/react'
+import dayGridPlugin from '@fullcalendar/daygrid'
+import interactionPlugin from '@fullcalendar/interaction'
+import type { DatesSetArg, EventClickArg, EventContentArg } from '@fullcalendar/core'
+import { format, parseISO } from 'date-fns'
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table'
+  ArrowLeft,
+  CalendarDays,
+  CheckCircle,
+  DollarSign,
+  Edit3,
+  FileText,
+  Loader2,
+  MessageSquare,
+  Send,
+  TrendingUp,
+  Users,
+  XCircle,
+} from 'lucide-react'
+import { toast } from 'sonner'
+
+import { AppHeader } from '@/components/app-header'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Skeleton } from '@/components/ui/skeleton'
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
-} from '@/components/ui/dialog'
-import { AppHeader } from '@/components/app-header'
-import {
-  ArrowLeft, Eye, Edit3, Send, CheckCircle, XCircle,
-  Clock, FileText, DollarSign, Users, TrendingUp,
-  Loader2, Phone, User, MessageSquare, Calendar,
-} from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { useState, useMemo } from 'react'
-import { format } from 'date-fns'
-import { vi } from 'date-fns/locale'
-import { toast } from 'sonner'
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { Textarea } from '@/components/ui/textarea'
+import { apiClient } from '@/lib/api/client'
 import { cn } from '@/lib/utils'
+import './quotation-calendar.css'
 
-// ═══════════ Types ═══════════
 interface QuotationItem {
   id: number
   ma_vt: string
@@ -68,9 +90,45 @@ interface HistoryStats {
 
 type QuotationStatus = QuotationEntry['status']
 
-// ═══════════ Helpers ═══════════
+const STATUS_META: Record<
+  QuotationStatus,
+  {
+    label: string
+    badgeClass: string
+    eventClass: string
+    dotClass: string
+    icon: React.ReactNode
+  }
+> = {
+  DA_GUI: {
+    label: 'Đã gửi',
+    badgeClass: 'border-[#00bad1]/30 bg-[#00bad1]/10 text-[#00bad1]',
+    eventClass: 'quote-event-sent',
+    dotClass: 'bg-[#00bad1]',
+    icon: <Send className="h-3.5 w-3.5" />,
+  },
+  DA_CHOT: {
+    label: 'Đã chốt',
+    badgeClass: 'border-[#28c76f]/30 bg-[#28c76f]/10 text-[#28c76f]',
+    eventClass: 'quote-event-won',
+    dotClass: 'bg-[#28c76f]',
+    icon: <CheckCircle className="h-3.5 w-3.5" />,
+  },
+  THUA: {
+    label: 'Thua',
+    badgeClass: 'border-[#ff4c51]/30 bg-[#ff4c51]/10 text-[#ff4c51]',
+    eventClass: 'quote-event-lost',
+    dotClass: 'bg-[#ff4c51]',
+    icon: <XCircle className="h-3.5 w-3.5" />,
+  },
+}
+
 const fmMoney = (n: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(n)
+  new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(n)
 
 const fmTime = (iso: string) => {
   const d = new Date(iso)
@@ -78,24 +136,13 @@ const fmTime = (iso: string) => {
 }
 
 const fmCompact = (n: number): string => {
-  if (n >= 1_000_000_000) return (n / 1_000_000_000).toFixed(1) + 'T'
-  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'Tr'
+  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}T`
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}Tr`
   return n.toLocaleString('vi-VN')
 }
 
-const STATUS_COLOR: Record<string, string> = {
-  DA_GUI: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-  DA_CHOT: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-  THUA: 'bg-red-500/10 text-red-400 border-red-500/30',
-}
+const toApiDate = (date: Date) => format(date, 'yyyy-MM-dd')
 
-const STATUS_ICON: Record<string, React.ReactNode> = {
-  DA_GUI: <Send className="h-3.5 w-3.5" />,
-  DA_CHOT: <CheckCircle className="h-3.5 w-3.5" />,
-  THUA: <XCircle className="h-3.5 w-3.5" />,
-}
-
-// ═══════════ Hooks ═══════════
 function useQuotationHistory(dateFrom?: string, dateTo?: string) {
   const params = new URLSearchParams()
   if (dateFrom) params.set('date_from', dateFrom)
@@ -132,185 +179,260 @@ function useHistoryStats(dateFrom?: string, dateTo?: string) {
   })
 }
 
-// ═══════════ Stats Cards ═══════════
 function StatsCards({ stats }: { stats: HistoryStats | undefined }) {
   if (!stats) return null
 
+  const closeRate = stats.tong_bg > 0 ? Math.round((stats.da_chot / stats.tong_bg) * 100) : 0
   const cards = [
     {
-      label: 'Tổng báo giá', value: stats.tong_bg,
+      label: 'Tổng báo giá',
+      value: stats.tong_bg,
       icon: <FileText className="h-5 w-5" />,
-      bg: 'from-blue-500/10 to-blue-600/5',
-      sub: `${stats.da_chot} chốt · ${stats.da_gui} chờ · ${stats.thua} thua`,
+      sub: `${stats.da_chot} chốt - ${stats.da_gui} đang gửi - ${stats.thua} thua`,
     },
     {
-      label: 'Khách hàng', value: stats.so_kh,
+      label: 'Khách hàng',
+      value: stats.so_kh,
       icon: <Users className="h-5 w-5" />,
-      bg: 'from-violet-500/10 to-purple-600/5',
       sub: 'KH duy nhất',
     },
     {
-      label: 'Tổng giá trị', value: fmCompact(stats.tong_tien), isMoney: true,
+      label: 'Tổng giá trị',
+      value: fmCompact(stats.tong_tien),
       icon: <DollarSign className="h-5 w-5" />,
-      bg: 'from-emerald-500/10 to-green-600/5',
-      sub: stats.tong_tien > 0 ? fmMoney(stats.tong_tien) : '',
+      sub: stats.tong_tien > 0 ? fmMoney(stats.tong_tien) : '0 đ',
+      highlight: true,
     },
     {
-      label: 'Tỉ lệ chốt', value: stats.tong_bg > 0 ? `${Math.round((stats.da_chot / stats.tong_bg) * 100)}%` : '0%',
+      label: 'Tỉ lệ chốt',
+      value: `${closeRate}%`,
       icon: <TrendingUp className="h-5 w-5" />,
-      bg: 'from-amber-500/10 to-orange-600/5',
       sub: `${stats.tong_sp} sản phẩm`,
     },
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      {cards.map((card, i) => (
-        <div key={i} className={cn('rounded-xl overflow-hidden shadow-lg border border-border/30 flex flex-col', card.bg)}>
-          <div className="flex-1 px-4 py-4">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {cards.map((card) => (
+        <Card key={card.label} className="border-border/60 bg-card/95 shadow-sm">
+          <CardContent className="p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 {card.label}
               </span>
-              <span className="text-muted-foreground/50">{card.icon}</span>
+              <span className="text-muted-foreground/55">{card.icon}</span>
             </div>
-            <div className={cn('text-2xl font-extrabold tabular-nums', card.isMoney ? 'text-emerald-400' : 'text-foreground')}>
+            <div
+              className={cn(
+                'text-2xl font-extrabold tabular-nums text-foreground',
+                card.highlight && 'text-[#28c76f]',
+              )}
+            >
               {card.value}
             </div>
-            {card.sub && (
-              <p className="text-[11px] text-muted-foreground mt-1 truncate">{card.sub}</p>
-            )}
-          </div>
-        </div>
+            <p className="mt-1 truncate text-xs text-muted-foreground">{card.sub}</p>
+          </CardContent>
+        </Card>
       ))}
     </div>
   )
 }
 
-// ═══════════ Detail Dialog ═══════════
-function DetailDialog({ entry, open, onClose }: { entry: QuotationEntry | null; open: boolean; onClose: () => void }) {
+function DetailDialog({
+  entry,
+  open,
+  onClose,
+}: {
+  entry: QuotationEntry | null
+  open: boolean
+  onClose: () => void
+}) {
   if (!entry) return null
+  const statusMeta = STATUS_META[entry.status]
+
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
-      <DialogContent className="max-w-[640px] max-h-[85vh] flex flex-col bg-card border-border/50">
+    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose() }}>
+      <DialogContent className="max-h-[85vh] max-w-[720px] border-border/50 bg-card">
         <DialogHeader>
-          <DialogTitle className="text-base flex items-center gap-2 text-foreground">
+          <DialogTitle className="flex items-center gap-2 text-base text-foreground">
             {entry.quote_number}
-            <Badge className={cn('text-[10px] border', STATUS_COLOR[entry.status])}>
-              {STATUS_ICON[entry.status]}
-              <span className="ml-1">{entry.status_display}</span>
+            <Badge className={cn('border text-[10px]', statusMeta.badgeClass)}>
+              {statusMeta.icon}
+              <span className="ml-1">{entry.status_display || statusMeta.label}</span>
             </Badge>
           </DialogTitle>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div><span className="text-muted-foreground">Khách hàng:</span><p className="font-semibold">{entry.customer_name}</p></div>
-          <div><span className="text-muted-foreground">Điện thoại:</span><p className="font-semibold">{entry.customer_phone || '—'}</p></div>
-          <div><span className="text-muted-foreground">Giá áp dụng:</span><Badge variant="outline" className="ml-1">{entry.gia_ap_dung}</Badge></div>
-          <div><span className="text-muted-foreground">Nhân viên:</span><p className="font-semibold">{entry.nhan_vien || '—'}</p></div>
+
+        <div className="grid gap-3 text-sm sm:grid-cols-2">
+          <div>
+            <span className="text-muted-foreground">Khách hàng:</span>
+            <p className="font-semibold">{entry.customer_name}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Điện thoại:</span>
+            <p className="font-semibold">{entry.customer_phone || '-'}</p>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Giá áp dụng:</span>
+            <Badge variant="outline" className="ml-2">{entry.gia_ap_dung}</Badge>
+          </div>
+          <div>
+            <span className="text-muted-foreground">Nhân viên:</span>
+            <p className="font-semibold">{entry.nhan_vien || '-'}</p>
+          </div>
         </div>
+
         {entry.ghi_chu && (
-          <div className="bg-muted/30 rounded-lg p-3 text-sm">
-            <span className="font-semibold text-xs text-muted-foreground">Ghi chú:</span> {entry.ghi_chu}
+          <div className="rounded-lg bg-muted/35 p-3 text-sm">
+            <span className="font-semibold text-muted-foreground">Ghi chú:</span> {entry.ghi_chu}
           </div>
         )}
-        <ScrollArea className="flex-1 max-h-[350px]">
+
+        <ScrollArea className="max-h-[350px]">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="text-xs">Mã VT</TableHead>
                 <TableHead className="text-xs">Tên hàng</TableHead>
-                <TableHead className="text-xs text-right">Đơn giá</TableHead>
-                <TableHead className="text-xs text-right">T.Tiền</TableHead>
+                <TableHead className="text-right text-xs">Đơn giá</TableHead>
+                <TableHead className="text-right text-xs">Thành tiền</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {entry.items.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell className="text-xs font-mono">{item.ma_vt}</TableCell>
+                  <TableCell className="font-mono text-xs">{item.ma_vt}</TableCell>
                   <TableCell className="text-xs">{item.ten_hang}</TableCell>
-                  <TableCell className="text-xs text-right tabular-nums">{fmMoney(item.don_gia)}</TableCell>
-                  <TableCell className="text-xs text-right font-semibold tabular-nums">{fmMoney(item.thanh_tien)}</TableCell>
+                  <TableCell className="text-right text-xs tabular-nums">
+                    {fmMoney(item.don_gia)}
+                  </TableCell>
+                  <TableCell className="text-right text-xs font-semibold tabular-nums">
+                    {fmMoney(item.thanh_tien)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </ScrollArea>
-        <div className="text-right font-bold text-base border-t border-border/50 pt-3">
-          Tổng cộng: <span className="text-amber-400">{fmMoney(entry.tong_cong)}</span>
+
+        <div className="border-t border-border/50 pt-3 text-right text-base font-bold">
+          Tổng cộng: <span className="text-[#ff9f43]">{fmMoney(entry.tong_cong)}</span>
         </div>
       </DialogContent>
     </Dialog>
   )
 }
 
-// ═══════════ Edit Dialog ═══════════
-function EditDialog({ entry, open, onClose }: { entry: QuotationEntry | null; open: boolean; onClose: () => void }) {
+function EditDialog({
+  entry,
+  open,
+  onClose,
+}: {
+  entry: QuotationEntry | null
+  open: boolean
+  onClose: () => void
+}) {
   const queryClient = useQueryClient()
-  const [status, setStatus] = useState(entry?.status ?? 'DA_GUI')
-  const [ghiChu, setGhiChu] = useState(entry?.ghi_chu ?? '')
-  const [nhanVien, setNhanVien] = useState(entry?.nhan_vien ?? '')
+  const [status, setStatus] = useState<QuotationStatus>('DA_GUI')
+  const [ghiChu, setGhiChu] = useState('')
+  const [nhanVien, setNhanVien] = useState('')
+
+  useEffect(() => {
+    if (!entry) return
+    setStatus(entry.status)
+    setGhiChu(entry.ghi_chu ?? '')
+    setNhanVien(entry.nhan_vien ?? '')
+  }, [entry])
 
   const updateMutation = useMutation({
     mutationFn: async () => {
-      const { data } = await apiClient.patch(`/quotations/${entry!.id}/update/`, { status, ghi_chu: ghiChu, nhan_vien: nhanVien })
+      const { data } = await apiClient.patch(`/quotations/${entry!.id}/update/`, {
+        status,
+        ghi_chu: ghiChu,
+        nhan_vien: nhanVien,
+      })
       return data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quotations'] })
-      toast.success('Đã cập nhật báo giá!')
+      toast.success('Đã cập nhật báo giá')
       onClose()
     },
-    onError: () => toast.error('Lỗi cập nhật, thử lại sau'),
+    onError: () => toast.error('Lỗi cập nhật, vui lòng thử lại'),
   })
 
   if (!entry) return null
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
-      <DialogContent className="max-w-[480px] bg-card border-border/50">
+    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose() }}>
+      <DialogContent className="max-w-[480px] border-border/50 bg-card">
         <DialogHeader>
-          <DialogTitle className="text-base flex items-center gap-2 text-foreground">
+          <DialogTitle className="flex items-center gap-2 text-base text-foreground">
             <Edit3 className="h-4 w-4 text-muted-foreground" />
             Cập nhật {entry.quote_number}
           </DialogTitle>
         </DialogHeader>
+
         <div className="space-y-4">
           <div>
             <Label className="text-xs font-semibold">Trạng thái</Label>
-            <div className="flex gap-2 mt-1.5">
-              {[
-                { key: 'DA_GUI', label: 'Đã gởi', icon: <Send className="h-3.5 w-3.5" />, activeClass: 'border-blue-500/30 bg-blue-500/10 text-blue-400' },
-                { key: 'DA_CHOT', label: 'Đã chốt', icon: <CheckCircle className="h-3.5 w-3.5" />, activeClass: 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400' },
-                { key: 'THUA', label: 'Thua', icon: <XCircle className="h-3.5 w-3.5" />, activeClass: 'border-red-500/30 bg-red-500/10 text-red-400' },
-              ].map((opt) => (
-                <button
-                  key={opt.key}
-                  onClick={() => setStatus(opt.key as QuotationStatus)}
-                  className={cn(
-                    'flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg border text-sm font-semibold transition-all',
-                    status === opt.key
-                      ? opt.activeClass + ' ring-1 ring-offset-1 ring-offset-background'
-                      : 'border-border/50 bg-card text-muted-foreground hover:bg-muted/30',
-                  )}
-                >
-                  {opt.icon} {opt.label}
-                </button>
-              ))}
+            <div className="mt-1.5 grid grid-cols-3 gap-2">
+              {(Object.keys(STATUS_META) as Array<QuotationStatus>).map((key) => {
+                const meta = STATUS_META[key]
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setStatus(key)}
+                    className={cn(
+                      'flex items-center justify-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors',
+                      status === key
+                        ? meta.badgeClass
+                        : 'border-border/60 bg-card text-muted-foreground hover:bg-muted/40',
+                    )}
+                  >
+                    {meta.icon}
+                    {meta.label}
+                  </button>
+                )
+              })}
             </div>
           </div>
+
           <div>
             <Label className="text-xs font-semibold">Nhân viên báo giá</Label>
-            <Input value={nhanVien} onChange={(e) => setNhanVien(e.target.value)} placeholder="Tên nhân viên..." className="mt-1 h-9" />
+            <Input
+              value={nhanVien}
+              onChange={(e) => setNhanVien(e.target.value)}
+              placeholder="Tên nhân viên..."
+              className="mt-1 h-9"
+            />
           </div>
+
           <div>
-            <Label className="text-xs font-semibold flex items-center gap-1"><MessageSquare className="h-3 w-3" /> Ghi chú</Label>
-            <Textarea value={ghiChu} onChange={(e) => setGhiChu(e.target.value)} placeholder="VD: KH hẹn 3 ngày nữa trả lời..." className="mt-1 text-sm" rows={3} />
+            <Label className="flex items-center gap-1 text-xs font-semibold">
+              <MessageSquare className="h-3 w-3" />
+              Ghi chú
+            </Label>
+            <Textarea
+              value={ghiChu}
+              onChange={(e) => setGhiChu(e.target.value)}
+              placeholder="VD: KH hẹn 3 ngày nữa trả lời..."
+              className="mt-1 text-sm"
+              rows={3}
+            />
           </div>
         </div>
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Hủy</Button>
-          <Button onClick={() => updateMutation.mutate()} disabled={updateMutation.isPending} className="bg-amber-500 hover:bg-amber-600 text-black font-semibold">
-            {updateMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Lưu
+          <Button
+            onClick={() => updateMutation.mutate()}
+            disabled={updateMutation.isPending}
+            className="bg-[#ff9f43] font-semibold text-black hover:bg-[#fb8c20]"
+          >
+            {updateMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Lưu
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -318,191 +440,164 @@ function EditDialog({ entry, open, onClose }: { entry: QuotationEntry | null; op
   )
 }
 
-// ═══════════ Main Page ═══════════
 export default function QuotationHistoryPage() {
   const navigate = useNavigate()
-  const today = format(new Date(), 'yyyy-MM-dd')
+  const today = toApiDate(new Date())
   const [dateFrom, setDateFrom] = useState(today)
   const [dateTo, setDateTo] = useState(today)
-
-  const { data: quotations = [], isLoading, isError } = useQuotationHistory(dateFrom, dateTo)
-  const { data: stats, isLoading: statsLoading } = useHistoryStats(dateFrom, dateTo)
+  const [visibleTitle, setVisibleTitle] = useState('')
   const [detailEntry, setDetailEntry] = useState<QuotationEntry | null>(null)
   const [editEntry, setEditEntry] = useState<QuotationEntry | null>(null)
 
+  const { data: quotations = [], isLoading, isError } = useQuotationHistory(dateFrom, dateTo)
+  const { data: stats, isLoading: statsLoading } = useHistoryStats(dateFrom, dateTo)
+
+  const calendarEvents = useMemo(() => {
+    return quotations.map((quote) => ({
+      id: String(quote.id),
+      title: quote.quote_number,
+      start: quote.created_at || quote.quote_date,
+      classNames: [STATUS_META[quote.status].eventClass],
+      extendedProps: { quote },
+    }))
+  }, [quotations])
+
   const dateDisplay = useMemo(() => {
-    if (dateFrom === dateTo) {
-      try {
-        return format(new Date(dateFrom + 'T00:00:00'), 'EEEE, dd/MM/yyyy', { locale: vi })
-      } catch { return dateFrom }
-    }
-    return `${dateFrom} → ${dateTo}`
+    if (dateFrom === dateTo) return format(parseISO(dateFrom), 'dd/MM/yyyy')
+    return `${format(parseISO(dateFrom), 'dd/MM/yyyy')} - ${format(parseISO(dateTo), 'dd/MM/yyyy')}`
   }, [dateFrom, dateTo])
+
+  const handleDatesSet = (arg: DatesSetArg) => {
+    const endInclusive = new Date(arg.end)
+    endInclusive.setDate(endInclusive.getDate() - 1)
+    setDateFrom(toApiDate(arg.start))
+    setDateTo(toApiDate(endInclusive))
+    setVisibleTitle(arg.view.title)
+  }
+
+  const handleEventClick = (arg: EventClickArg) => {
+    const quote = arg.event.extendedProps.quote as QuotationEntry | undefined
+    if (quote) setDetailEntry(quote)
+  }
+
+  const renderEventContent = (arg: EventContentArg) => {
+    const quote = arg.event.extendedProps.quote as QuotationEntry
+    const statusMeta = STATUS_META[quote.status]
+
+    return (
+      <div className="quote-event-content">
+        <div className="quote-event-topline">
+          <span className={cn('quote-event-dot', statusMeta.dotClass)} />
+          <span className="quote-event-time">{fmTime(quote.created_at)}</span>
+          <span className="quote-event-products">{quote.product_count} SP</span>
+        </div>
+        <div className="quote-event-number">{quote.quote_number}</div>
+        <div className="quote-event-customer">{quote.customer_name || 'Khách lẻ'}</div>
+      </div>
+    )
+  }
 
   const headerStats = (
     <div className="flex items-center gap-3">
       <div className="text-right">
-        <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">Hôm nay</div>
-        <div className="font-bold tabular-nums text-sm text-foreground">{dateDisplay}</div>
+        <div className="text-[10px] uppercase tracking-wider text-muted-foreground/60">Lịch báo giá</div>
+        <div className="text-sm font-bold tabular-nums text-foreground">{visibleTitle || dateDisplay}</div>
       </div>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="quotation-page-bg min-h-screen">
       <AppHeader stats={headerStats} />
 
-      <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-6 space-y-5">
-        {/* ── Date Range Picker ── */}
-        <Card className="border-border/50 bg-card">
-          <CardContent className="pt-4 pb-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <Calendar className="h-5 w-5 text-amber-400" />
-              <Label className="text-sm font-semibold text-foreground whitespace-nowrap">Xem báo giá từ:</Label>
-              <Input
-                type="date"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-                className="w-[170px] h-9 text-sm"
-              />
-              <span className="text-muted-foreground">đến</span>
-              <Input
-                type="date"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-                className="w-[170px] h-9 text-sm"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5"
-                onClick={() => { setDateFrom(today); setDateTo(today) }}
-              >
-                <Clock className="h-4 w-4" />
-                Hôm nay
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1.5"
-                onClick={() => navigate('/')}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Về trang chính
-              </Button>
+      <main className="mx-auto max-w-[1500px] space-y-5 px-4 py-6 md:px-6">
+        <Card className="border-border/50 bg-card shadow-sm">
+          <CardContent className="flex flex-wrap items-center gap-3 p-4">
+            <CalendarDays className="h-5 w-5 text-[#ff9f43]" />
+            <div className="min-w-[190px]">
+              <p className="text-sm font-semibold text-foreground">Lịch báo giá</p>
+              <p className="text-xs text-muted-foreground">{dateDisplay}</p>
+            </div>
+            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/')}>
+              <ArrowLeft className="h-4 w-4" />
+              Về trang chính
+            </Button>
+            <div className="ml-auto flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+              {(Object.keys(STATUS_META) as Array<QuotationStatus>).map((key) => (
+                <span key={key} className="flex items-center gap-1">
+                  <span className={cn('h-2.5 w-2.5 rounded-full', STATUS_META[key].dotClass)} />
+                  {STATUS_META[key].label}
+                </span>
+              ))}
             </div>
           </CardContent>
         </Card>
 
-        {/* ── Stats Cards ── */}
         {statsLoading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Skeleton key={index} className="h-28 rounded-lg" />
+            ))}
           </div>
         ) : (
           <StatsCards stats={stats} />
         )}
 
-        {/* ── Main Table ── */}
-        <Card className="border-border/50 bg-card shadow-none">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-              <FileText className="h-5 w-5 text-amber-400" />
-              Báo giá đã gởi
-              {!isLoading && (
-                <Badge variant="secondary" className="ml-2 font-bold">{quotations.length}</Badge>
-              )}
+        <Card className="quotation-calendar-card border-border/50 bg-card shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
+              <FileText className="h-5 w-5 text-[#ff9f43]" />
+              Báo giá theo lịch
+              {!isLoading && <Badge variant="secondary" className="font-bold">{quotations.length}</Badge>}
             </CardTitle>
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" /> Đã gởi</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> Đã chốt</span>
-              <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block" /> Thua</span>
-            </div>
+            {isLoading && (
+              <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Đang tải
+              </span>
+            )}
           </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="space-y-4">
-                {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 rounded-lg" />)}
-              </div>
-            ) : isError ? (
-              <div className="text-center py-12 text-red-400">
-                <XCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
+          <CardContent className="p-0">
+            {isError ? (
+              <div className="px-6 py-16 text-center text-red-500">
+                <XCircle className="mx-auto mb-3 h-12 w-12 opacity-30" />
                 <p className="font-semibold">Không thể tải danh sách báo giá</p>
-                <p className="text-sm text-muted-foreground mt-1">Vui lòng thử lại sau.</p>
-              </div>
-            ) : quotations.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground">
-                <FileText className="h-16 w-16 mx-auto mb-4 opacity-20" />
-                <p className="font-semibold text-lg">Chưa có báo giá nào</p>
-                <p className="text-sm mt-1">Chọn ngày khác hoặc tạo báo giá mới từ trang chính.</p>
-                <Button variant="outline" className="mt-4 gap-2" onClick={() => navigate('/')}>
-                  <ArrowLeft className="h-4 w-4" /> Về trang chính
-                </Button>
+                <p className="mt-1 text-sm text-muted-foreground">Vui lòng thử lại sau.</p>
               </div>
             ) : (
-              <ScrollArea className="max-h-[calc(100vh-500px)]">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-muted/30 hover:bg-muted/30">
-                      <TableHead className="w-[50px] text-center">#</TableHead>
-                      <TableHead className="w-[90px]">Giờ</TableHead>
-                      <TableHead className="w-[170px]">Số BG</TableHead>
-                      <TableHead>Khách hàng</TableHead>
-                      <TableHead className="w-[100px]">Giá</TableHead>
-                      <TableHead className="w-[55px] text-center">SP</TableHead>
-                      <TableHead className="w-[160px] text-right">Tổng cộng</TableHead>
-                      <TableHead className="w-[110px]">Trạng thái</TableHead>
-                      <TableHead className="w-[100px]">Nhân viên</TableHead>
-                      <TableHead className="w-[110px] text-center">Thao tác</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {quotations.map((q, idx) => (
-                      <TableRow
-                        key={q.id}
-                        className={cn(
-                          'hover:bg-muted/30 transition-colors',
-                          q.status === 'DA_CHOT' && 'bg-emerald-500/5',
-                          q.status === 'THUA' && 'bg-red-500/5',
-                        )}
-                      >
-                        <TableCell className="text-center text-xs text-muted-foreground font-medium">{idx + 1}</TableCell>
-                        <TableCell className="text-xs font-mono text-muted-foreground">
-                          <div className="flex items-center gap-1"><Clock className="h-3 w-3" />{fmTime(q.created_at)}</div>
-                        </TableCell>
-                        <TableCell><span className="font-mono font-semibold text-sm text-amber-400">{q.quote_number}</span></TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium text-sm">{q.customer_name}</span>
-                            {q.customer_phone && <span className="text-xs text-muted-foreground flex items-center gap-1"><Phone className="h-3 w-3" />{q.customer_phone}</span>}
-                          </div>
-                        </TableCell>
-                        <TableCell><Badge variant="outline" className="text-[10px] border-border/50">{q.gia_ap_dung}</Badge></TableCell>
-                        <TableCell className="text-center text-sm font-semibold">{q.product_count}</TableCell>
-                        <TableCell className="text-right font-bold text-sm tabular-nums">{fmMoney(q.tong_cong)}</TableCell>
-                        <TableCell>
-                          <Badge className={cn('text-[10px] border flex items-center gap-1 w-fit', STATUS_COLOR[q.status])}>
-                            {STATUS_ICON[q.status]}{q.status_display}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {q.nhan_vien ? <span className="text-sm flex items-center gap-1"><User className="h-3 w-3 text-muted-foreground" />{q.nhan_vien}</span> : <span className="text-xs text-muted-foreground italic">—</span>}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-center gap-1">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-amber-500/10" onClick={() => setDetailEntry(q)} title="Xem chi tiết"><Eye className="h-3.5 w-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-amber-500/10" onClick={() => setEditEntry(q)} title="Cập nhật"><Edit3 className="h-3.5 w-3.5 text-amber-400" /></Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
+              <div className={cn('quotation-calendar-shell', isLoading && 'opacity-60')}>
+                <div className="quotation-calendar-scroll">
+                  <FullCalendar
+                    plugins={[dayGridPlugin, interactionPlugin]}
+                    initialView="dayGridMonth"
+                    initialDate={today}
+                    events={calendarEvents}
+                    datesSet={handleDatesSet}
+                    eventClick={handleEventClick}
+                    eventContent={renderEventContent}
+                    height="auto"
+                    fixedWeekCount={false}
+                    dayMaxEvents={3}
+                    moreLinkText={(count) => `+${count} nữa`}
+                    locale="vi"
+                    firstDay={1}
+                    nowIndicator
+                    headerToolbar={{
+                      left: 'prev,next today',
+                      center: 'title',
+                      right: '',
+                    }}
+                    buttonText={{
+                      today: 'Hôm nay',
+                    }}
+                    dayHeaderFormat={{ weekday: 'short' }}
+                  />
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
-      </div>
+      </main>
 
       <DetailDialog entry={detailEntry} open={!!detailEntry} onClose={() => setDetailEntry(null)} />
       <EditDialog entry={editEntry} open={!!editEntry} onClose={() => setEditEntry(null)} />

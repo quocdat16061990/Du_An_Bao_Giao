@@ -375,6 +375,14 @@ class QuotationExportPDFView(APIView):
 
 # ═══════════ Quotation Save & History ═══════════
 
+class QuotationExportPDFView(APIView):
+    def post(self, request):
+        return Response(
+            {'error': 'PDF export is disabled. Please use Excel export.'},
+            status=status.HTTP_410_GONE,
+        )
+
+
 class QuotationSaveView(APIView):
     """Lưu báo giá đã gởi vào database."""
 
