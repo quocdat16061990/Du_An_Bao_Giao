@@ -23,4 +23,23 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          maxSize: 450 * 1024,
+          groups: [
+            {
+              name: 'vendor',
+              test: /node_modules[\\/]/,
+              priority: 1,
+              minSize: 50 * 1024,
+              maxSize: 450 * 1024,
+              entriesAware: true,
+            },
+          ],
+        },
+      },
+    },
+  },
 })

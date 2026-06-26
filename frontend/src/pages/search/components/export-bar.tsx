@@ -53,7 +53,7 @@ export function ExportBar({ products }: ExportBarProps) {
   }
 
   const ensureCanExport = () => {
-    if (selectedCount > 0 && selectedCustomer) return true
+    if (selectedCount > 0 && selectedCustomer && selectedCustomer.id > 0) return true
     setCustomerError(true)
     return false
   }

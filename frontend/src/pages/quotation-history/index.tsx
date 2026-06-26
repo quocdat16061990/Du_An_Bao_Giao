@@ -578,11 +578,11 @@ export default function QuotationHistoryPage() {
         )}
 
         <Card className="quotation-calendar-card border-border/50 bg-card shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between gap-3 px-5 pb-2 pt-4">
-            <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-              <FileText className="h-5 w-5 text-[#ff9f43]" />
+          <CardHeader className="flex flex-row items-center justify-between gap-3 px-4 pb-1.5 pt-3">
+            <CardTitle className="flex items-center gap-2 text-base text-foreground">
+              <FileText className="h-4 w-4 text-[#ff9f43]" />
               Báo giá theo lịch
-              {!isLoading && <Badge variant="secondary" className="font-bold">{quotations.length}</Badge>}
+              {!isLoading && <Badge variant="secondary" className="h-5 px-2 text-[11px] font-bold">{quotations.length}</Badge>}
             </CardTitle>
             {isLoading && (
               <span className="flex items-center gap-2 text-xs text-muted-foreground">

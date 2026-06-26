@@ -14,6 +14,7 @@ import { useSearchStore } from '../store'
 import { useDebounce } from '@/hook/use-debounce'
 import { cn } from '@/lib/utils'
 import type { Customer } from '../helper/types'
+import { apiClient } from '@/lib/api/client'
 
 const TAG_STYLE: Record<string, 'vip' | 'uuDai' | 'daiLy' | 'outline'> = {
   VIP: 'vip', 'ƯU_ĐÃI': 'uuDai', 'ĐẠI_LÝ': 'daiLy', 'NGOẠI_LỆ': 'outline', 'CHƯA_PL': 'outline',
@@ -37,6 +38,8 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
   const [newName, setNewName] = useState('')
   const [newPhone, setNewPhone] = useState('')
   const [newAddress, setNewAddress] = useState('')
+  const [isCreating, setIsCreating] = useState(false)
+  const [createError, setCreateError] = useState('')
 
   const handleSelect = (customer: Customer) => {
     setCustomer(customer)
@@ -56,28 +59,31 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
     }
   }
 
-  const handleQuickCreate = () => {
+  const handleQuickCreate = async () => {
     const customerName = newName.trim() || query.trim()
-    if (!customerName) return
-    const newCustomer: Customer = {
-      id: 0, // temporary ID
-      ma_kh: 'KH_MOI',
-      ten_kh: customerName,
-      dien_thoai: newPhone.trim(),
-      phan_loai: 'CHƯA_PL' as const,
-      dia_chi: newAddress.trim(),
-      tinh_tp: '',
-      ghi_chu: '',
-      nha_xe: null,
-      nha_xe_name: '',
-      is_active: true,
-      created_at: new Date().toISOString(),
+    if (!customerName || isCreating) return
+
+    setIsCreating(true)
+    setCreateError('')
+
+    try {
+      const { data } = await apiClient.post<Customer>('/customers/', {
+        ten_kh: customerName,
+        dien_thoai: newPhone.trim(),
+        dia_chi: newAddress.trim(),
+      })
+
+      setCustomer(data)
+      onValidSelect?.()
+      setOpen(false)
+      setQuery('')
+      resetNewForm()
+    } catch (err) {
+      console.error('Create customer failed:', err)
+      setCreateError('Khong the tao khach hang. Vui long thu lai.')
+    } finally {
+      setIsCreating(false)
     }
-    setCustomer(newCustomer)
-    onValidSelect?.()
-    setOpen(false)
-    setQuery('')
-    resetNewForm()
   }
 
   const resetNewForm = () => {
@@ -85,6 +91,7 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
     setNewName('')
     setNewPhone('')
     setNewAddress('')
+    setCreateError('')
   }
 
   const showCreateOption = debouncedQuery.length >= 2 && !isLoading && customers.length === 0
@@ -230,11 +237,17 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
                         />
                       </div>
                     </div>
+                    {isCreating && (
+                      <p className="text-xs font-medium text-muted-foreground">Dang them khach hang...</p>
+                    )}
+                    {createError && (
+                      <p className="text-xs font-medium text-destructive">{createError}</p>
+                    )}
                     <Button
                       size="sm"
                       className="w-full h-8 gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
                       onClick={handleQuickCreate}
-                      disabled={!canCreate}
+                      disabled={!canCreate || isCreating}
                     >
                       <Check className="h-3.5 w-3.5" />
                       Thêm khách hàng

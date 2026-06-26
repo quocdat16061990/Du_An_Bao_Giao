@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import serializers
 from . import models
 
@@ -74,6 +75,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 class CustomerSerializer(serializers.ModelSerializer):
     nha_xe_name = serializers.CharField(source='nha_xe.ten_nha_xe', read_only=True, default='')
+    ma_kh = serializers.CharField(max_length=50, required=False, allow_blank=True)
 
     class Meta:
         model = models.Customer
@@ -82,6 +84,28 @@ class CustomerSerializer(serializers.ModelSerializer):
             'dia_chi', 'tinh_tp', 'ghi_chu', 'nha_xe', 'nha_xe_name',
             'is_active', 'created_at',
         ]
+        read_only_fields = ['id', 'nha_xe_name', 'is_active', 'created_at']
+
+    def validate_ten_kh(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('Ten khach hang la bat buoc')
+        return value
+
+    def create(self, validated_data):
+        if not validated_data.get('ma_kh'):
+            validated_data['ma_kh'] = self._generate_customer_code()
+        return super().create(validated_data)
+
+    @staticmethod
+    def _generate_customer_code():
+        base = timezone.now().strftime('KH%y%m%d%H%M%S%f')[:48]
+        code = base
+        counter = 1
+        while models.Customer.objects.filter(ma_kh=code).exists():
+            code = f'{base}{counter}'[:50]
+            counter += 1
+        return code
 
 
 class CustomerSearchSerializer(serializers.ModelSerializer):

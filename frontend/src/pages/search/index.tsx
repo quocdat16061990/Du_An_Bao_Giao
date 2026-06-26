@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { lazy, Suspense, useState, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Loader2, SlidersHorizontal, CheckSquare, Square } from 'lucide-react'
 import {
@@ -17,7 +17,6 @@ import { PaginationBar } from './components/pagination-bar'
 import { ExportBar } from './components/export-bar'
 import { EmptyState } from './components/empty-state'
 import { SearchSkeleton } from './components/search-skeleton'
-import { QuotationDialog } from './components/quotation-dialog'
 import { useSearch } from './helper/use-search'
 import { useSearchStore } from './store'
 import { useDebounce } from '@/hook/use-debounce'
@@ -25,6 +24,12 @@ import { SORT_OPTIONS } from './helper/constants'
 import { DEFAULT_PAGE_SIZE } from '@/services/config'
 import type { Product, SearchParams } from './helper/types'
 import { cn } from '@/lib/utils'
+
+const QuotationDialog = lazy(() =>
+  import('./components/quotation-dialog').then((module) => ({
+    default: module.QuotationDialog,
+  })),
+)
 
 export default function SearchPage() {
   // ── Search state ──
@@ -292,7 +297,11 @@ export default function SearchPage() {
       </Sheet>
 
       {/* ═════ QUOTATION DIALOG ═════ */}
-      <QuotationDialog selectedProducts={selectedProducts} />
+      {selectedProducts.length > 0 && (
+        <Suspense fallback={null}>
+          <QuotationDialog selectedProducts={selectedProducts} />
+        </Suspense>
+      )}
     </div>
   )
 }

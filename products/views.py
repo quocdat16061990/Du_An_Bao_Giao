@@ -124,7 +124,7 @@ class CategoryListView(generics.ListAPIView):
 
 
 # ═══════════ Customers ═══════════
-class CustomerListView(generics.ListAPIView):
+class CustomerListView(generics.ListCreateAPIView):
     queryset = models.Customer.objects.filter(is_active=True)
     serializer_class = serializers.CustomerSerializer
 

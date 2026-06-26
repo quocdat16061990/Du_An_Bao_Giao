@@ -23,7 +23,7 @@
   --fc-button-active-bg-color: #7367f0;
   --fc-button-active-border-color: #7367f0;
   --fc-button-active-text-color: #fff;
-  padding: 0 1rem 1rem;
+  padding: 0 0.85rem 0.8rem;
 }
 
 .quotation-calendar-scroll {
@@ -52,18 +52,18 @@
 .quotation-calendar-shell .fc {
   color: #444050;
   font-family: inherit;
-  min-width: 980px;
+  min-width: 900px;
 }
 
 .quotation-calendar-shell .fc-header-toolbar {
-  gap: 0.75rem;
-  margin-bottom: 0.75rem !important;
+  gap: 0.55rem;
+  margin-bottom: 0.55rem !important;
   padding-top: 0;
 }
 
 .quotation-calendar-shell .fc-toolbar-title {
   color: #444050;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: 0;
   text-transform: capitalize;
@@ -72,10 +72,10 @@
 .quotation-calendar-shell .fc-button {
   border-radius: 0.5rem !important;
   box-shadow: none !important;
-  font-size: 0.82rem !important;
+  font-size: 0.76rem !important;
   font-weight: 700 !important;
-  min-height: 2.25rem;
-  padding: 0.42rem 0.72rem !important;
+  min-height: 2rem;
+  padding: 0.34rem 0.62rem !important;
   text-transform: none !important;
 }
 
@@ -96,12 +96,12 @@
 
 .quotation-calendar-shell .fc-col-header-cell {
   background: #f3f2f3;
-  padding: 0.56rem 0;
+  padding: 0.42rem 0;
 }
 
 .quotation-calendar-shell .fc-col-header-cell-cushion {
   color: #6d6b77;
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 800;
   text-decoration: none;
   text-transform: uppercase;
@@ -112,12 +112,12 @@
 }
 
 .quotation-calendar-shell .fc-daygrid-day-frame {
-  min-height: 108px;
-  padding: 0.3rem;
+  min-height: 88px;
+  padding: 0.24rem;
 }
 
 .quotation-calendar-shell .fc-dayGridWeek-view .fc-daygrid-day-frame {
-  min-height: 340px;
+  min-height: 230px;
 }
 
 .quotation-calendar-shell .fc-daygrid-day-top {
@@ -130,11 +130,11 @@
   border-radius: 999px;
   color: #6d6b77;
   display: inline-flex;
-  font-size: 0.92rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  height: 1.85rem;
+  height: 1.55rem;
   justify-content: center;
-  min-width: 1.85rem;
+  min-width: 1.55rem;
   padding: 0 0.35rem;
   text-decoration: none;
 }
@@ -157,7 +157,7 @@
   border-radius: 0.42rem;
   box-shadow: none;
   cursor: pointer;
-  margin: 0.2rem 0.05rem;
+  margin: 0.15rem 0.04rem;
   overflow: hidden;
 }
 
@@ -186,7 +186,7 @@
 
 .quote-event-content {
   min-width: 0;
-  padding: 0.42rem 0.5rem;
+  padding: 0.32rem 0.42rem;
 }
 
 .quote-event-topline {
@@ -205,7 +205,7 @@
 
 .quote-event-time,
 .quote-event-products {
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 800;
   line-height: 1;
 }
@@ -224,16 +224,16 @@
 
 .quote-event-number {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  font-size: 0.7rem;
+  font-size: 0.64rem;
   font-weight: 900;
-  margin-top: 0.26rem;
+  margin-top: 0.2rem;
 }
 
 .quote-event-customer {
   color: #444050;
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   font-weight: 700;
-  margin-top: 0.16rem;
+  margin-top: 0.12rem;
   opacity: 0.82;
 }
 
