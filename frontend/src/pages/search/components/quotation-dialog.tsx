@@ -7,7 +7,6 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { QuotationPreview } from './quotation-preview'
 import { useSearchStore } from '../store'
 import { Printer, Loader2, FileDown, FileSpreadsheet } from 'lucide-react'
-import { generateQuotationPdf } from './quotation-pdf'
 import { apiClient } from '@/lib/api/client'
 import type { Product } from '../helper/types'
 
@@ -37,7 +36,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
   }
 
   const saveQuotation = () => {
-    if (!selectedCustomer) return
+    if (!selectedCustomer || selectedCustomer.id <= 0) return
     apiClient.post('/quotations/save/', {
       product_ids: selectedProducts.map((p) => p.id),
       customer_id: selectedCustomer.id,
@@ -46,7 +45,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
   }
 
   const handleDownloadExcel = async () => {
-    if (!selectedCustomer) return
+    if (!selectedCustomer || selectedCustomer.id <= 0) return
     setIsDownloadingExcel(true)
     try {
       saveQuotation()
@@ -70,7 +69,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
   }
 
   const handleDownloadPDF = async () => {
-    if (!selectedCustomer) return
+    if (!selectedCustomer || selectedCustomer.id <= 0) return
     setIsDownloadingPdf(true)
     try {
       const now = new Date()
@@ -79,6 +78,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
 
       saveQuotation()
 
+      const { generateQuotationPdf } = await import('./quotation-pdf')
       const blob = await generateQuotationPdf(selectedProducts, selectedCustomer, quoteNumber, quoteDate)
       const safeName = selectedCustomer.ten_kh.replace(/[^a-zA-Z0-9À-ỹ]/g, '_').substring(0, 30)
       downloadBlob(blob, `bao_gia_${safeName}_${now.toISOString().slice(0, 10)}.pdf`)
@@ -89,7 +89,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
     }
   }
 
-  if (!selectedCustomer || selectedProducts.length === 0) return null
+  if (!selectedCustomer || selectedCustomer.id <= 0 || selectedProducts.length === 0) return null
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) closeQuotation() }}>
