@@ -42,16 +42,6 @@ export function ExportBar({ products }: ExportBarProps) {
     URL.revokeObjectURL(url)
   }
 
-  const saveQuotation = async () => {
-    if (!selectedCustomer) return
-
-    await apiClient.post('/quotations/save/', {
-      product_ids: selectedProducts.map((p) => p.id),
-      customer_id: selectedCustomer.id,
-      nhan_vien: '',
-    })
-  }
-
   const ensureCanExport = () => {
     if (selectedCount > 0 && selectedCustomer && selectedCustomer.id > 0) return true
     setCustomerError(true)
@@ -78,7 +68,6 @@ export function ExportBar({ products }: ExportBarProps) {
       const datePart = new Date().toISOString().slice(0, 10)
 
       downloadBlob(response.data, match?.[1] ?? `bao_gia_${safeName}_${datePart}.xlsx`)
-      await saveQuotation()
       toast.success('Đã xuất Excel và lưu báo giá')
     } catch (err) {
       console.error('Excel export failed:', err)

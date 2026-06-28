@@ -48,7 +48,7 @@ class ProductListSerializer(serializers.ModelSerializer):
         model = models.Product
         fields = [
             'id', 'loai', 'ma_vt', 'ten_hang', 'model_turbo', 'ma_dong_co', 'oem_part_no',
-            'dac_diem', 'ung_dung', 'ghi_chu', 'hinh_anh',
+            'dac_diem', 'ung_dung', 'ghi_chu', 'hinh_anh', 'danh_sach_hinh_anh',
             'dvt', 'doi_th_sx', 'parno',
             'hang_may', 'hang_may_name',
             'hang_sx', 'hang_sx_name',
@@ -168,6 +168,7 @@ class QuotationListSerializer(serializers.ModelSerializer):
     """Danh sách báo giá (không include items để nhẹ)."""
     items = QuotationItemSerializer(many=True, read_only=True)
     status_display = serializers.CharField(source='get_status_display', read_only=True)
+    has_excel_file = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Quotation
@@ -176,9 +177,13 @@ class QuotationListSerializer(serializers.ModelSerializer):
             'customer_name', 'customer_phone', 'gia_ap_dung',
             'tong_cong', 'product_count', 'nhan_vien',
             'status', 'status_display', 'ghi_chu',
+            'excel_file_name', 'excel_file_size', 'excel_created_at', 'has_excel_file',
             'created_at', 'updated_at', 'items',
         ]
         read_only_fields = ['id', 'quote_number', 'created_at', 'updated_at']
+
+    def get_has_excel_file(self, obj):
+        return bool(obj.excel_file_path)
 
 
 class QuotationUpdateSerializer(serializers.ModelSerializer):

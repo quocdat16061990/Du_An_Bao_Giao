@@ -22,11 +22,22 @@ export default function ProductDetailPage() {
   const { data: product, isLoading, isError } = useProduct(productId)
   const selectedIds = useSearchStore((s) => s.selectedProductIds)
   const toggleProduct = useSearchStore((s) => s.toggleProduct)
+  const [activeImage, setActiveImage] = useState<string | null>(null)
   const [imageError, setImageError] = useState(false)
 
   useEffect(() => {
     setImageError(false)
-  }, [product?.hinh_anh])
+  }, [activeImage])
+
+  useEffect(() => {
+    if (product?.hinh_anh) {
+      setActiveImage(product.hinh_anh)
+    } else if (product?.danh_sach_hinh_anh && product.danh_sach_hinh_anh.length > 0) {
+      setActiveImage(product.danh_sach_hinh_anh[0])
+    } else {
+      setActiveImage(null)
+    }
+  }, [product])
 
   if (isNaN(productId)) {
     return (
@@ -55,7 +66,7 @@ export default function ProductDetailPage() {
   const isSelected = selectedIds.has(product.id)
   const isTurbo = product.loai === 'turbo' || product.loai === 'ruot' || product.loai === 'so_linh_kien_turbo'
   const displayName = product.ten_hang || product.model_turbo || 'Sản phẩm'
-  const imageUrl = getMediaUrl(product.hinh_anh)
+  const imageUrl = activeImage ? getMediaUrl(activeImage) : ''
   const attrs = product.attributes && Object.keys(product.attributes).length > 0 ? product.attributes : null
 
   // ── Price tiers ──
@@ -98,21 +109,50 @@ export default function ProductDetailPage() {
                   {/* Image */}
                   <div className="sm:col-span-1">
                     {imageUrl && !imageError ? (
-                      <div className="relative group rounded-xl overflow-hidden border border-border/30 bg-muted/20">
-                        <img
-                          src={imageUrl}
-                          alt={displayName}
-                          className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-105"
-                          onError={() => setImageError(true)}
-                        />
-                        <a
-                          href={imageUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <ZoomIn className="h-4 w-4" />
-                        </a>
+                      <div>
+                        <div className="relative group rounded-xl overflow-hidden border border-border/30 bg-muted/20">
+                          <img
+                            src={imageUrl}
+                            alt={displayName}
+                            className="w-full aspect-square object-cover transition-transform duration-500 group-hover:scale-105"
+                            onError={() => setImageError(true)}
+                          />
+                          <a
+                            href={imageUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <ZoomIn className="h-4 w-4" />
+                          </a>
+                        </div>
+                        {product.danh_sach_hinh_anh && product.danh_sach_hinh_anh.length > 1 && (
+                          <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
+                            {product.danh_sach_hinh_anh.map((imgUrl, idx) => {
+                              const isActive = activeImage === imgUrl
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => setActiveImage(imgUrl)}
+                                  className={cn(
+                                    "w-10 h-10 rounded-lg overflow-hidden border bg-card transition-all",
+                                    isActive ? "border-amber-500 ring-2 ring-amber-500/20 scale-105" : "border-border/60 hover:border-border"
+                                  )}
+                                >
+                                  <img
+                                    src={getMediaUrl(imgUrl)}
+                                    alt={`Thumbnail ${idx + 1}`}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none'
+                                    }}
+                                  />
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="w-full aspect-square rounded-xl border-2 border-dashed border-border/50 bg-muted/10 flex flex-col items-center justify-center gap-3">
