@@ -201,12 +201,12 @@ def _row_status(media_type: str, matches: list[dict], media_url: str) -> tuple[s
     match = matches[0]
     if match['loai_mismatch']:
         return 'LOAI_MISMATCH', False
-        
+
     danh_sach = match.get('danh_sach_hinh_anh') or []
     is_already_imported = (media_url in danh_sach) or (match.get('hinh_anh') == media_url)
     if is_already_imported:
         return 'HAS_IMAGE', False
-        
+
     if len(media_url) > 500:
         return 'URL_TOO_LONG', False
     return 'SAFE', True
