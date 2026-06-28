@@ -847,6 +847,94 @@ class QuotationSaveView(APIView):
         }, status=status.HTTP_201_CREATED)
 
 
+class QuotationUpdateItemsView(APIView):
+    """Cap nhat don gia cac dong trong bao gia va xuat lai file Excel."""
+
+    def post(self, request, pk):
+        req_serializer = serializers.QuotationUpdateItemsSerializer(data=request.data)
+        req_serializer.is_valid(raise_exception=True)
+        items_data = req_serializer.validated_data['items']
+
+        try:
+            quotation = models.Quotation.objects.get(pk=pk)
+        except models.Quotation.DoesNotExist:
+            return Response({'error': 'Khong tim thay bao gia'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Build lookup map for existing items by ma_vt
+        existing_items = list(quotation.items.all())
+        item_by_ma_vt = {item.ma_vt: item for item in existing_items}
+
+        updated_items = []
+        not_found = []
+        unchanged_items = []
+
+        for item_data in items_data:
+            ma_vt = item_data['ma_vt']
+            new_don_gia = item_data['don_gia']
+
+            if ma_vt not in item_by_ma_vt:
+                not_found.append(ma_vt)
+                continue
+
+            quotation_item = item_by_ma_vt[ma_vt]
+            old_don_gia = quotation_item.don_gia
+
+            if old_don_gia == new_don_gia:
+                unchanged_items.append({
+                    'ma_vt': ma_vt,
+                    'ten_hang': quotation_item.ten_hang,
+                    'don_gia': int(new_don_gia),
+                    'thanh_tien': int(quotation_item.thanh_tien),
+                })
+                continue
+
+            quotation_item.don_gia = new_don_gia
+            quotation_item.thanh_tien = new_don_gia * quotation_item.so_luong
+            quotation_item.save(update_fields=['don_gia', 'thanh_tien'])
+
+            updated_items.append({
+                'ma_vt': ma_vt,
+                'ten_hang': quotation_item.ten_hang,
+                'don_gia_cu': int(old_don_gia),
+                'don_gia_moi': int(new_don_gia),
+                'thanh_tien_moi': int(quotation_item.thanh_tien),
+            })
+
+        if not_found:
+            return Response(
+                {'error': f'Khong tim thay ma_vt trong bao gia: {", ".join(not_found)}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Recalculate tong_cong
+        items_after = list(quotation.items.all())
+        new_tong_cong = sum(item.thanh_tien for item in items_after)
+        quotation.tong_cong = new_tong_cong
+        quotation.save(update_fields=['tong_cong', 'updated_at'])
+
+        # Regenerate Excel
+        file_path = _save_excel_file_for_quotation(quotation)
+        if not file_path:
+            return Response(
+                {'error': 'Khong the tao file Excel'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response({
+            'success': True,
+            'quote_number': quotation.quote_number,
+            'tong_cong': int(new_tong_cong),
+            'tong_cong_display': f'{int(new_tong_cong):,} VND',
+            'excel_file_path': quotation.excel_file_path,
+            'excel_file_name': quotation.excel_file_name,
+            'excel_file_size': quotation.excel_file_size,
+            'items_updated': updated_items,
+            'items_unchanged': unchanged_items,
+            'download_url': f'/api/quotations/{quotation.id}/download-excel/',
+            'download_url_by_number': f'/api/quotations/by-number/{quotation.quote_number}/download-excel/',
+        })
+
+
 class QuotationDownloadExcelView(APIView):
     """Download the Excel file saved for a quotation."""
 

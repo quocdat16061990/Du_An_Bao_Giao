@@ -37,6 +37,7 @@ urlpatterns = [
     path('quotations/save/', views.QuotationSaveView.as_view(), name='quotation-save'),
     path('quotations/today/', views.QuotationTodayListView.as_view(), name='quotation-today'),
     path('quotations/today/stats/', views.QuotationTodayStatsView.as_view(), name='quotation-today-stats'),
+    path('quotations/<int:pk>/update-items/', views.QuotationUpdateItemsView.as_view(), name='quotation-update-items'),
     path('quotations/<int:pk>/download-excel/', views.QuotationDownloadExcelView.as_view(), name='quotation-download-excel'),
     path(
         'quotations/by-number/<str:quote_number>/download-excel/',

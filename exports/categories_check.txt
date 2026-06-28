@@ -1,9 +1,0 @@
-Traceback (most recent call last):
-  File "<string>", line 10, in <module>
-    print(f'[{c.order:02d}] {c.ten:30s} | {count:5d} sp')
-    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Users\QuocDat\AppData\Local\Programs\Python\Python313\Lib\encodings\cp1252.py", line 19, in encode
-    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
-           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-UnicodeEncodeError: 'charmap' codec can't encode character '\u1ed9' in position 7: character maps to <undefined>
-[01] Turbo                          |   597 sp
