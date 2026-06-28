@@ -11,6 +11,7 @@ export interface Product {
   ung_dung: string
   ghi_chu: string
   hinh_anh: string
+  danh_sach_hinh_anh?: Array<string>
   // Common fields
   dvt?: string
   doi_th_sx?: string

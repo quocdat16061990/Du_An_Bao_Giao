@@ -133,6 +133,7 @@ class Product(models.Model):
 
     # Chung
     hinh_anh = models.URLField("Hình ảnh", blank=True, default='', max_length=500)
+    danh_sach_hinh_anh = models.JSONField("Danh sách hình ảnh", default=list, blank=True)
     ghi_chu = models.TextField("Ghi chú", blank=True, default='')
 
     # Giá (6 mức)
@@ -181,6 +182,19 @@ class Product(models.Model):
     def display_name(self) -> str:
         """Tên hiển thị ưu tiên: ten_hang > model_turbo > ma_vt"""
         return self.ten_hang or self.model_turbo or self.ma_vt
+
+    def save(self, *args, **kwargs):
+        if not isinstance(self.danh_sach_hinh_anh, list):
+            self.danh_sach_hinh_anh = []
+        
+        # Đồng bộ ảnh chính vào danh sách ảnh
+        if self.hinh_anh and self.hinh_anh not in self.danh_sach_hinh_anh:
+            self.danh_sach_hinh_anh.insert(0, self.hinh_anh)
+        # Nếu chưa có ảnh chính nhưng có danh sách ảnh, lấy ảnh đầu tiên làm ảnh chính
+        elif not self.hinh_anh and self.danh_sach_hinh_anh:
+            self.hinh_anh = self.danh_sach_hinh_anh[0]
+            
+        super().save(*args, **kwargs)
 
     def get_price_for_type(self, phan_loai: str):
         """Lấy giá theo phân loại khách hàng."""
@@ -254,6 +268,10 @@ class Quotation(models.Model):
     nhan_vien = models.CharField("Nhân viên báo giá", max_length=100, blank=True, default='')
     status = models.CharField("Trạng thái", max_length=20, choices=Status.choices, default=Status.DA_GUI)
     ghi_chu = models.TextField("Ghi chú", blank=True, default='')
+    excel_file_name = models.CharField("Ten file Excel", max_length=255, blank=True, default='')
+    excel_file_path = models.CharField("Duong dan file Excel", max_length=500, blank=True, default='')
+    excel_file_size = models.PositiveIntegerField("Dung luong file Excel", default=0)
+    excel_created_at = models.DateTimeField("Thoi diem tao file Excel", null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

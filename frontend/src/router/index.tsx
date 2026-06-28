@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react'
-import { createBrowserRouter } from 'react-router-dom'
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 const SearchPage = lazy(() => import('@/pages/search'))
 const ProductDetailPage = lazy(() => import('@/pages/product-detail'))
@@ -47,5 +47,9 @@ export const router = createBrowserRouter([
   {
     path: '/bao-gia-hom-nay',
     element: withSuspense(<QuotationHistoryPage />),
+  },
+  {
+    path: '*',
+    element: <Navigate to="/" replace />,
   },
 ])

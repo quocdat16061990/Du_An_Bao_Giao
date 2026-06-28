@@ -1,18 +1,36 @@
 import logging
+import re
 
 from datetime import datetime
 from decimal import Decimal
+from pathlib import Path
 
 from django.conf import settings
+from django.db import transaction
 from django.db.models import Q, Count, Min, Max, Case, When, Value, IntegerField
-from django.http import HttpResponse
+from django.http import FileResponse, HttpResponse
+from django.utils import timezone
 from rest_framework import generics, status
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from . import models, serializers, filters
 from .pagination import FastPagination
 from .quotation_excel import build_quotation_excel, safe_excel_filename
+from .services.excel_import_preview import (
+    PreviewError,
+    commit_excel_import,
+    preview_excel_workbook,
+    remove_temp_file,
+    save_upload_to_temp,
+    sync_excel_missing_fields,
+)
+from .services.image_import_preview import (
+    ImageImportError,
+    commit_product_image_import,
+    preview_product_image_import,
+)
 
 logger = logging.getLogger('products')
 
@@ -123,6 +141,222 @@ class CategoryListView(generics.ListAPIView):
         ).order_by('order', 'ten')
 
 
+# ═══════════ Import Excel ═══════════
+class ExcelImportPreviewView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        uploaded_file = request.FILES.get('file')
+        if not uploaded_file:
+            return Response({'error': 'Vui long chon file Excel'}, status=status.HTTP_400_BAD_REQUEST)
+
+        temp_path = save_upload_to_temp(uploaded_file)
+        try:
+            payload = preview_excel_workbook(temp_path, uploaded_file.name)
+            return Response(payload)
+        except PreviewError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        finally:
+            remove_temp_file(temp_path)
+
+
+class ExcelImportCommitView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        uploaded_file = request.FILES.get('file')
+        if not uploaded_file:
+            return Response({'error': 'Vui long chon file Excel'}, status=status.HTTP_400_BAD_REQUEST)
+
+        temp_path = save_upload_to_temp(uploaded_file)
+        try:
+            payload = commit_excel_import(temp_path, uploaded_file.name)
+            return Response(payload, status=status.HTTP_201_CREATED)
+        except PreviewError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            logger.exception('Excel import failed')
+            return Response(
+                {'error': f'Import that bai: {exc}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        finally:
+            remove_temp_file(temp_path)
+
+
+class ExcelImportCheckDbView(APIView):
+    """Check Excel row codes against products in DB without writing anything."""
+
+    def post(self, request):
+        rows = request.data.get('rows', [])
+        if not isinstance(rows, list):
+            return Response({'error': 'rows phai la danh sach'}, status=status.HTTP_400_BAD_REQUEST)
+        if len(rows) > 1:
+            return Response({'error': 'Chi duoc check 1 dong moi lan'}, status=status.HTTP_400_BAD_REQUEST)
+
+        normalized_rows = []
+        ma_vts = []
+        seen_counts = {}
+        for item in rows:
+            if not isinstance(item, dict):
+                continue
+            row_number = item.get('row_number')
+            raw_ma_vt = item.get('ma_vt', '')
+            ma_vt = str(raw_ma_vt or '').strip()
+            normalized_rows.append({'row_number': row_number, 'ma_vt': ma_vt})
+            if ma_vt:
+                ma_vts.append(ma_vt)
+                seen_counts[ma_vt] = seen_counts.get(ma_vt, 0) + 1
+
+        products_by_code = {}
+        if ma_vts:
+            qs = (
+                models.Product.objects
+                .filter(ma_vt__in=set(ma_vts), is_active=True)
+                .select_related('category', 'hang_may', 'hang_sx', 'thuong_hieu')
+                .order_by('ma_vt', 'id')
+            )
+            for product in qs:
+                products_by_code.setdefault(product.ma_vt, []).append(product)
+
+        result_rows = []
+        summary = {
+            'total': len(normalized_rows),
+            'exists': 0,
+            'new': 0,
+            'missing_code': 0,
+            'duplicate_excel': 0,
+            'multiple_db': 0,
+        }
+
+        for item in normalized_rows:
+            ma_vt = item['ma_vt']
+            row_number = item['row_number']
+
+            if not ma_vt:
+                status_label = 'MISSING_CODE'
+                products_payload = []
+                summary['missing_code'] += 1
+            else:
+                products = products_by_code.get(ma_vt, [])
+                products_payload = [
+                    {
+                        'id': product.id,
+                        'ma_vt': product.ma_vt,
+                        'loai': product.loai,
+                        'loai_display': product.get_loai_display(),
+                        'ten_hang': product.ten_hang or product.model_turbo or '',
+                        'dvt': product.dvt,
+                        'doi_th_sx': product.doi_th_sx,
+                        'parno': product.parno,
+                        'model_turbo': product.model_turbo,
+                        'ma_dong_co': product.ma_dong_co,
+                        'oem_part_no': product.oem_part_no,
+                        'dac_diem': product.dac_diem,
+                        'ung_dung': product.ung_dung,
+                        'hinh_anh': product.hinh_anh,
+                        'ghi_chu': product.ghi_chu,
+                        'gia_von': product.gia_von,
+                        'gia_vip': product.gia_vip,
+                        'gia_uu_dai': product.gia_uu_dai,
+                        'gia_dai_ly': product.gia_dai_ly,
+                        'gia_gara': product.gia_gara,
+                        'gia_dl_10': product.gia_dl_10,
+                        'cg_duoi': product.cg_duoi,
+                        'cg_dinh': product.cg_dinh,
+                        'cg_so': product.cg_so,
+                        'cl_duoi': product.cl_duoi,
+                        'cl_dinh': product.cl_dinh,
+                        'cl_so': product.cl_so,
+                        'sheet_name': product.sheet_name,
+                        'created_at': product.created_at,
+                        'updated_at': product.updated_at,
+                        'category_name': product.category.ten if product.category else '',
+                        'hang_may_name': product.hang_may.ten if product.hang_may else '',
+                        'hang_sx_name': product.hang_sx.ten if product.hang_sx else '',
+                        'thuong_hieu_name': product.thuong_hieu.ten if product.thuong_hieu else '',
+                    }
+                    for product in products
+                ]
+
+                if seen_counts.get(ma_vt, 0) > 1:
+                    status_label = 'DUPLICATE_EXCEL'
+                    summary['duplicate_excel'] += 1
+                elif len(products) > 1:
+                    status_label = 'MULTIPLE_DB'
+                    summary['multiple_db'] += 1
+                elif products:
+                    status_label = 'EXISTS'
+                    summary['exists'] += 1
+                else:
+                    status_label = 'NEW'
+                    summary['new'] += 1
+
+            result_rows.append({
+                'row_number': row_number,
+                'ma_vt': ma_vt,
+                'status': status_label,
+                'db_count': len(products_payload),
+                'products': products_payload,
+            })
+
+        return Response({'summary': summary, 'rows': result_rows})
+
+
+class ExcelImportSyncMissingView(APIView):
+    """Fill missing DB fields from preview rows after an explicit user action."""
+
+    def post(self, request):
+        rows = request.data.get('rows', [])
+        columns = request.data.get('columns', [])
+        sheet_name = str(request.data.get('sheet_name') or '')
+
+        try:
+            payload = sync_excel_missing_fields(rows, columns, sheet_name)
+            return Response(payload)
+        except PreviewError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            logger.exception('Excel sync missing fields failed')
+            return Response(
+                {'error': f'Dong bo that bai: {exc}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+# ═══════════ Import product images ═══════════
+class ProductImageImportScanView(APIView):
+    """Preview image files in media/products before writing hinh_anh."""
+
+    def get(self, request):
+        try:
+            return Response(preview_product_image_import())
+        except Exception as exc:
+            logger.exception('Product image import scan failed')
+            return Response(
+                {'error': f'Scan kho anh that bai: {exc}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class ProductImageImportSyncView(APIView):
+    """Write selected image matches to Product.hinh_anh."""
+
+    def post(self, request):
+        items = request.data.get('items', [])
+        overwrite = bool(request.data.get('overwrite', False))
+        try:
+            return Response(commit_product_image_import(items, overwrite=overwrite))
+        except ImageImportError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            logger.exception('Product image import sync failed')
+            return Response(
+                {'error': f'Dong bo anh that bai: {exc}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
 # ═══════════ Customers ═══════════
 class CustomerListView(generics.ListCreateAPIView):
     queryset = models.Customer.objects.filter(is_active=True)
@@ -157,6 +391,153 @@ class NhaXeListView(generics.ListAPIView):
 
 
 # ═══════════ Quotation ═══════════
+QUOTATION_PRICE_LABELS = {
+    'VIP': 'GIÁ VIP',
+    'UU_DAI': 'GIÁ ƯU ĐÃI',
+    'ƯU_ĐÃI': 'GIÁ ƯU ĐÃI',
+    'DAI_LY': 'GIÁ ĐẠI LÝ',
+    'ĐẠI_LÝ': 'GIÁ ĐẠI LÝ',
+    'GARA': 'GIÁ GARA',
+    'NGOAI_LE': 'GIÁ DL+10%',
+    'NGOẠI_LỆ': 'GIÁ DL+10%',
+}
+
+
+def _generate_quote_number(now, product_count: int) -> str:
+    base = f"BG{now.strftime('%Y%m%d%H%M%S')}-{product_count:02d}"
+    if not models.Quotation.objects.filter(quote_number=base).exists():
+        return base
+    for suffix in range(2, 100):
+        candidate = f'{base}-{suffix}'
+        if not models.Quotation.objects.filter(quote_number=candidate).exists():
+            return candidate
+    return f"{base}-{now.strftime('%f')}"
+
+
+def _safe_filename_part(value: str) -> str:
+    safe = re.sub(r'[^A-Za-z0-9]+', '_', value or '').strip('_')
+    return safe[:40] or 'khach_hang'
+
+
+def _quotation_excel_filename(customer_name: str, quote_number: str) -> str:
+    return f'{quote_number}_{_safe_filename_part(customer_name)}.xlsx'
+
+
+def _quotation_excel_relative_path(now, filename: str) -> Path:
+    return Path('exports') / 'quotations' / now.strftime('%Y') / now.strftime('%m') / now.strftime('%d') / filename
+
+
+def _resolve_export_path(relative_path: Path | str) -> Path:
+    export_root = (settings.BASE_DIR / 'exports').resolve()
+    file_path = (settings.BASE_DIR / relative_path).resolve()
+    if export_root != file_path and export_root not in file_path.parents:
+        raise ValueError('Duong dan file khong hop le')
+    return file_path
+
+
+def _get_products_for_quote(product_ids):
+    return list(
+        models.Product.objects
+        .filter(id__in=product_ids, is_active=True)
+        .order_by('ma_vt')
+    )
+
+
+def _create_quotation_record(
+    *,
+    customer,
+    products,
+    quote_number: str,
+    now,
+    nhan_vien: str = '',
+    excel_file_name: str = '',
+    excel_file_path: str = '',
+    excel_file_size: int = 0,
+):
+    tong_cong = Decimal('0')
+    products = list(products)
+
+    with transaction.atomic():
+        quotation = models.Quotation.objects.create(
+            quote_number=quote_number,
+            quote_date=now.date(),
+            customer=customer,
+            customer_name=customer.ten_kh,
+            customer_phone=customer.dien_thoai or '',
+            gia_ap_dung=QUOTATION_PRICE_LABELS.get(customer.phan_loai, 'GIA DL+10%'),
+            tong_cong=Decimal('0'),
+            product_count=len(products),
+            nhan_vien=nhan_vien,
+            excel_file_name=excel_file_name,
+            excel_file_path=excel_file_path,
+            excel_file_size=excel_file_size,
+            excel_created_at=now if excel_file_path else None,
+        )
+
+        for product in products:
+            don_gia = product.get_price_for_type(customer.phan_loai) or Decimal('0')
+            thanh_tien = don_gia
+            tong_cong += thanh_tien
+            models.QuotationItem.objects.create(
+                quotation=quotation,
+                product=product,
+                ma_vt=product.ma_vt,
+                ten_hang=product.ten_hang or product.model_turbo or '',
+                don_gia=don_gia,
+                so_luong=1,
+                thanh_tien=thanh_tien,
+            )
+
+        quotation.tong_cong = tong_cong
+        quotation.save(update_fields=['tong_cong'])
+
+    return quotation
+
+
+class _QuotationItemProductSnapshot:
+    def __init__(self, item):
+        self.ma_vt = item.ma_vt
+        self.ten_hang = item.ten_hang
+        self.model_turbo = ''
+        self.dvt = item.product.dvt if item.product else 'Cai'
+        self._price = item.don_gia or Decimal('0')
+
+    def get_price_for_type(self, _phan_loai):
+        return self._price
+
+
+def _save_excel_file_for_quotation(quotation) -> Path | None:
+    items = list(quotation.items.select_related('product').all())
+    if not items:
+        return None
+
+    base_time = timezone.localtime(quotation.created_at) if quotation.created_at else timezone.localtime()
+    filename = quotation.excel_file_name or _quotation_excel_filename(quotation.customer_name, quotation.quote_number)
+    relative_path = Path(quotation.excel_file_path) if quotation.excel_file_path else _quotation_excel_relative_path(base_time, filename)
+    absolute_path = _resolve_export_path(relative_path)
+    excel_bytes = build_quotation_excel(
+        quotation.customer,
+        [_QuotationItemProductSnapshot(item) for item in items],
+        quotation.quote_number,
+    )
+
+    absolute_path.parent.mkdir(parents=True, exist_ok=True)
+    absolute_path.write_bytes(excel_bytes)
+
+    quotation.excel_file_name = filename
+    quotation.excel_file_path = relative_path.as_posix()
+    quotation.excel_file_size = len(excel_bytes)
+    quotation.excel_created_at = timezone.localtime()
+    quotation.save(update_fields=[
+        'excel_file_name',
+        'excel_file_path',
+        'excel_file_size',
+        'excel_created_at',
+        'updated_at',
+    ])
+    return absolute_path
+
+
 class QuotationPreviewView(APIView):
     def post(self, request):
         req_serializer = serializers.QuotationRequestSerializer(data=request.data)
@@ -248,26 +629,44 @@ class QuotationExportExcelView(APIView):
 
         product_ids = req_serializer.validated_data['product_ids']
         customer_id = req_serializer.validated_data['customer_id']
+        nhan_vien = str(request.data.get('nhan_vien') or '')
 
         try:
             customer = models.Customer.objects.select_related('nha_xe').get(id=customer_id, is_active=True)
         except models.Customer.DoesNotExist:
             return Response({'error': 'Khong tim thay khach hang'}, status=404)
 
-        products_qs = models.Product.objects.filter(
-            id__in=product_ids, is_active=True
-        ).order_by('ma_vt')
+        products = _get_products_for_quote(product_ids)
+        if not products:
+            return Response({'error': 'Khong tim thay san pham hop le'}, status=400)
 
-        now = datetime.now()
-        quote_number = f"BG{now.strftime('%Y%m%d%H%M%S')}-{len(product_ids):02d}"
-        excel_bytes = build_quotation_excel(customer, products_qs, quote_number)
-        filename = safe_excel_filename(customer.ten_kh)
+        now = timezone.localtime()
+        quote_number = _generate_quote_number(now, len(products))
+        excel_bytes = build_quotation_excel(customer, products, quote_number)
+        filename = _quotation_excel_filename(customer.ten_kh, quote_number)
+        relative_path = _quotation_excel_relative_path(now, filename)
+        absolute_path = _resolve_export_path(relative_path)
+        absolute_path.parent.mkdir(parents=True, exist_ok=True)
+        absolute_path.write_bytes(excel_bytes)
+
+        quotation = _create_quotation_record(
+            customer=customer,
+            products=products,
+            quote_number=quote_number,
+            now=now,
+            nhan_vien=nhan_vien,
+            excel_file_name=filename,
+            excel_file_path=relative_path.as_posix(),
+            excel_file_size=len(excel_bytes),
+        )
 
         response = HttpResponse(
             excel_bytes,
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         )
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['X-Quotation-Id'] = str(quotation.id)
+        response['X-Quote-Number'] = quotation.quote_number
         return response
 
 
@@ -446,6 +845,44 @@ class QuotationSaveView(APIView):
             'id': quotation.id,
             'quote_number': quotation.quote_number,
         }, status=status.HTTP_201_CREATED)
+
+
+class QuotationDownloadExcelView(APIView):
+    """Download the Excel file saved for a quotation."""
+
+    def get(self, request, pk=None, quote_number=None):
+        try:
+            if pk is not None:
+                quotation = models.Quotation.objects.get(pk=pk)
+            else:
+                quotation = models.Quotation.objects.get(quote_number=quote_number)
+        except models.Quotation.DoesNotExist:
+            return Response({'error': 'Khong tim thay bao gia'}, status=404)
+
+        if not quotation.excel_file_path:
+            file_path = _save_excel_file_for_quotation(quotation)
+            if not file_path:
+                return Response({'error': 'Bao gia nay khong co dong san pham de tao file Excel'}, status=404)
+        else:
+            try:
+                file_path = _resolve_export_path(quotation.excel_file_path)
+            except ValueError as exc:
+                return Response({'error': str(exc)}, status=400)
+
+        if not file_path.is_file():
+            file_path = _save_excel_file_for_quotation(quotation)
+            if not file_path or not file_path.is_file():
+                return Response({'error': 'File Excel khong con ton tai tren server'}, status=404)
+
+        filename = quotation.excel_file_name or file_path.name
+        response = FileResponse(
+            open(file_path, 'rb'),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['X-Quotation-Id'] = str(quotation.id)
+        response['X-Quote-Number'] = quotation.quote_number
+        return response
 
 
 class QuotationTodayListView(generics.ListAPIView):

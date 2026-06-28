@@ -1,4 +1,5 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/lib/auth/context'
 import { useTheme } from '@/lib/theme/context'
 import { Button } from '@/components/ui/button'
@@ -11,9 +12,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  Wrench, History, LogOut, User, ChevronDown, Menu, X, Moon, Sun,
+  ChevronDown,
+  History,
+  LogOut,
+  Menu,
+  Moon,
+  Sun,
+  User,
+  Wrench,
+  X,
 } from 'lucide-react'
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
 
 interface AppHeaderProps {
@@ -43,7 +51,6 @@ export function AppHeader({ stats, searchSlot, className }: AppHeaderProps) {
     >
       <div className="max-w-[1440px] mx-auto px-4 md:px-6 py-3">
         <div className="flex items-center justify-between gap-3">
-          {/* ── Brand ── */}
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={() => navigate('/')}
@@ -63,18 +70,15 @@ export function AppHeader({ stats, searchSlot, className }: AppHeaderProps) {
             </button>
           </div>
 
-          {/* ── Search (desktop) ── */}
           {searchSlot && (
             <div className="hidden md:flex flex-1 max-w-xl mx-auto">
               {searchSlot}
             </div>
           )}
 
-          {/* ── Stats + Nav (desktop) ── */}
           <div className="hidden lg:flex items-center gap-3">
             {stats}
 
-            {/* Báo giá button */}
             {isSearchPage && (
               <Button
                 variant="ghost"
@@ -87,7 +91,6 @@ export function AppHeader({ stats, searchSlot, className }: AppHeaderProps) {
               </Button>
             )}
 
-            {/* Theme toggle */}
             <Button
               variant="ghost"
               size="icon"
@@ -102,10 +105,8 @@ export function AppHeader({ stats, searchSlot, className }: AppHeaderProps) {
               )}
             </Button>
 
-            {/* Divider */}
             <div className="w-px h-6 bg-border" />
 
-            {/* User menu */}
             {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -152,7 +153,6 @@ export function AppHeader({ stats, searchSlot, className }: AppHeaderProps) {
               </Button>
             )}
 
-            {/* Mobile menu toggle */}
             <Button
               variant="ghost"
               size="icon"
@@ -164,7 +164,6 @@ export function AppHeader({ stats, searchSlot, className }: AppHeaderProps) {
           </div>
         </div>
 
-        {/* ── Search (mobile) ── */}
         {searchSlot && (
           <div className="mt-2 md:hidden">
             {searchSlot}
@@ -172,7 +171,6 @@ export function AppHeader({ stats, searchSlot, className }: AppHeaderProps) {
         )}
       </div>
 
-      {/* Mobile menu */}
       {mobileMenu && (
         <div className="lg:hidden border-t border-border bg-card/95 backdrop-blur p-4 space-y-3 animate-in slide-in-from-right">
           {stats}

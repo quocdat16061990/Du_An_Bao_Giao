@@ -48,7 +48,6 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
     if (!selectedCustomer || selectedCustomer.id <= 0) return
     setIsDownloadingExcel(true)
     try {
-      saveQuotation()
       const response = await apiClient.post(
         '/quotations/export-excel/',
         {

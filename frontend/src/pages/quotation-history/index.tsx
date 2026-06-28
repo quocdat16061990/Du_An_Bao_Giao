@@ -13,6 +13,7 @@ import {
   CheckCircle,
   DollarSign,
   Edit3,
+  FileSpreadsheet,
   FileText,
   Loader2,
   MessageSquare,
@@ -74,6 +75,10 @@ interface QuotationEntry {
   status: 'DA_GUI' | 'DA_CHOT' | 'THUA'
   status_display: string
   ghi_chu: string
+  excel_file_name: string
+  excel_file_size: number
+  excel_created_at: string | null
+  has_excel_file: boolean
   created_at: string
   updated_at: string
   items: Array<QuotationItem>
@@ -256,8 +261,40 @@ function DetailDialog({
   open: boolean
   onClose: () => void
 }) {
+  const [isDownloadingExcel, setIsDownloadingExcel] = useState(false)
+
   if (!entry) return null
   const statusMeta = STATUS_META[entry.status]
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  const handleDownloadExcel = async () => {
+    setIsDownloadingExcel(true)
+    try {
+      const response = await apiClient.get(`/quotations/${entry.id}/download-excel/`, {
+        responseType: 'blob',
+      })
+      const disposition = response.headers['content-disposition']
+      const match = /filename="?([^"]+)"?/i.exec(disposition ?? '')
+      const filename = match?.[1] || entry.excel_file_name || `${entry.quote_number}.xlsx`
+      downloadBlob(response.data, filename)
+      toast.success('Đã tải lại file Excel')
+    } catch (err) {
+      console.error('Excel redownload failed:', err)
+      toast.error('Không thể tải lại file Excel')
+    } finally {
+      setIsDownloadingExcel(false)
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose() }}>
@@ -288,6 +325,29 @@ function DetailDialog({
           <div>
             <span className="text-muted-foreground">Nhân viên:</span>
             <p className="font-semibold">{entry.nhan_vien || '-'}</p>
+          </div>
+          <div className="sm:col-span-2">
+            <span className="text-muted-foreground">File Excel:</span>
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <p className="font-mono text-xs font-semibold">
+                {entry.has_excel_file ? entry.excel_file_name : 'Chưa lưu file Excel'}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 gap-1.5"
+                onClick={handleDownloadExcel}
+                disabled={isDownloadingExcel}
+              >
+                {isDownloadingExcel ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <FileSpreadsheet className="h-3.5 w-3.5" />
+                )}
+                {entry.has_excel_file ? 'Tải Excel' : 'Tạo Excel'}
+              </Button>
+            </div>
           </div>
         </div>
 
