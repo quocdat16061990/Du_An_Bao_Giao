@@ -21,8 +21,6 @@ from .quotation_excel import build_quotation_excel, safe_excel_filename
 from .services.excel_import_preview import (
     PreviewError,
     commit_excel_import,
-    commit_excel_price_updates,
-    preview_excel_price_updates,
     preview_excel_workbook,
     remove_temp_file,
     save_upload_to_temp,
@@ -322,56 +320,6 @@ class ExcelImportSyncMissingView(APIView):
             logger.exception('Excel sync missing fields failed')
             return Response(
                 {'error': f'Dong bo that bai: {exc}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-
-class ExcelPriceUpdatePreviewView(APIView):
-    """Preview price differences from Excel rows without writing to DB."""
-
-    def post(self, request):
-        rows = request.data.get('rows', [])
-        columns = request.data.get('columns', [])
-        sheet_name = str(request.data.get('sheet_name') or '')
-
-        try:
-            payload = preview_excel_price_updates(rows, columns, sheet_name)
-            return Response(payload)
-        except PreviewError as exc:
-            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as exc:
-            logger.exception('Excel price update preview failed')
-            return Response(
-                {'error': f'Xem truoc cap nhat gia that bai: {exc}'},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
-
-
-class ExcelPriceUpdateCommitView(APIView):
-    """Commit selected valid price changes from Excel rows."""
-
-    def post(self, request):
-        rows = request.data.get('rows', [])
-        columns = request.data.get('columns', [])
-        sheet_name = str(request.data.get('sheet_name') or '')
-        file_name = str(request.data.get('file_name') or '')
-        selected_row_numbers = request.data.get('selected_row_numbers', [])
-
-        try:
-            payload = commit_excel_price_updates(
-                rows,
-                columns,
-                sheet_name,
-                selected_row_numbers=selected_row_numbers,
-                file_name=file_name,
-            )
-            return Response(payload)
-        except PreviewError as exc:
-            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as exc:
-            logger.exception('Excel price update commit failed')
-            return Response(
-                {'error': f'Cap nhat gia that bai: {exc}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
