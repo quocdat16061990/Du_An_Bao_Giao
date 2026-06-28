@@ -17,6 +17,8 @@ urlpatterns = [
     path('imports/excel/preview/', views.ExcelImportPreviewView.as_view(), name='excel-import-preview'),
     path('imports/excel/check-db/', views.ExcelImportCheckDbView.as_view(), name='excel-import-check-db'),
     path('imports/excel/sync-missing/', views.ExcelImportSyncMissingView.as_view(), name='excel-import-sync-missing'),
+    path('imports/excel/prices/preview/', views.ExcelPriceUpdatePreviewView.as_view(), name='excel-price-update-preview'),
+    path('imports/excel/prices/commit/', views.ExcelPriceUpdateCommitView.as_view(), name='excel-price-update-commit'),
     path('imports/excel/commit/', views.ExcelImportCommitView.as_view(), name='excel-import-commit'),
     path('imports/images/scan/', views.ProductImageImportScanView.as_view(), name='product-image-import-scan'),
     path('imports/images/sync/', views.ProductImageImportSyncView.as_view(), name='product-image-import-sync'),
@@ -37,6 +39,7 @@ urlpatterns = [
     path('quotations/save/', views.QuotationSaveView.as_view(), name='quotation-save'),
     path('quotations/today/', views.QuotationTodayListView.as_view(), name='quotation-today'),
     path('quotations/today/stats/', views.QuotationTodayStatsView.as_view(), name='quotation-today-stats'),
+    path('quotations/<int:pk>/update-items/', views.QuotationUpdateItemsView.as_view(), name='quotation-update-items'),
     path('quotations/<int:pk>/download-excel/', views.QuotationDownloadExcelView.as_view(), name='quotation-download-excel'),
     path(
         'quotations/by-number/<str:quote_number>/download-excel/',

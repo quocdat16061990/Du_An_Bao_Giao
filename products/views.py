@@ -21,6 +21,8 @@ from .quotation_excel import build_quotation_excel, safe_excel_filename
 from .services.excel_import_preview import (
     PreviewError,
     commit_excel_import,
+    commit_excel_price_updates,
+    preview_excel_price_updates,
     preview_excel_workbook,
     remove_temp_file,
     save_upload_to_temp,
@@ -320,6 +322,56 @@ class ExcelImportSyncMissingView(APIView):
             logger.exception('Excel sync missing fields failed')
             return Response(
                 {'error': f'Dong bo that bai: {exc}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class ExcelPriceUpdatePreviewView(APIView):
+    """Preview price differences from Excel rows without writing to DB."""
+
+    def post(self, request):
+        rows = request.data.get('rows', [])
+        columns = request.data.get('columns', [])
+        sheet_name = str(request.data.get('sheet_name') or '')
+
+        try:
+            payload = preview_excel_price_updates(rows, columns, sheet_name)
+            return Response(payload)
+        except PreviewError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            logger.exception('Excel price update preview failed')
+            return Response(
+                {'error': f'Xem truoc cap nhat gia that bai: {exc}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+
+class ExcelPriceUpdateCommitView(APIView):
+    """Commit selected valid price changes from Excel rows."""
+
+    def post(self, request):
+        rows = request.data.get('rows', [])
+        columns = request.data.get('columns', [])
+        sheet_name = str(request.data.get('sheet_name') or '')
+        file_name = str(request.data.get('file_name') or '')
+        selected_row_numbers = request.data.get('selected_row_numbers', [])
+
+        try:
+            payload = commit_excel_price_updates(
+                rows,
+                columns,
+                sheet_name,
+                selected_row_numbers=selected_row_numbers,
+                file_name=file_name,
+            )
+            return Response(payload)
+        except PreviewError as exc:
+            return Response({'error': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as exc:
+            logger.exception('Excel price update commit failed')
+            return Response(
+                {'error': f'Cap nhat gia that bai: {exc}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -845,6 +897,94 @@ class QuotationSaveView(APIView):
             'id': quotation.id,
             'quote_number': quotation.quote_number,
         }, status=status.HTTP_201_CREATED)
+
+
+class QuotationUpdateItemsView(APIView):
+    """Cap nhat don gia cac dong trong bao gia va xuat lai file Excel."""
+
+    def post(self, request, pk):
+        req_serializer = serializers.QuotationUpdateItemsSerializer(data=request.data)
+        req_serializer.is_valid(raise_exception=True)
+        items_data = req_serializer.validated_data['items']
+
+        try:
+            quotation = models.Quotation.objects.get(pk=pk)
+        except models.Quotation.DoesNotExist:
+            return Response({'error': 'Khong tim thay bao gia'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Build lookup map for existing items by ma_vt
+        existing_items = list(quotation.items.all())
+        item_by_ma_vt = {item.ma_vt: item for item in existing_items}
+
+        updated_items = []
+        not_found = []
+        unchanged_items = []
+
+        for item_data in items_data:
+            ma_vt = item_data['ma_vt']
+            new_don_gia = item_data['don_gia']
+
+            if ma_vt not in item_by_ma_vt:
+                not_found.append(ma_vt)
+                continue
+
+            quotation_item = item_by_ma_vt[ma_vt]
+            old_don_gia = quotation_item.don_gia
+
+            if old_don_gia == new_don_gia:
+                unchanged_items.append({
+                    'ma_vt': ma_vt,
+                    'ten_hang': quotation_item.ten_hang,
+                    'don_gia': int(new_don_gia),
+                    'thanh_tien': int(quotation_item.thanh_tien),
+                })
+                continue
+
+            quotation_item.don_gia = new_don_gia
+            quotation_item.thanh_tien = new_don_gia * quotation_item.so_luong
+            quotation_item.save(update_fields=['don_gia', 'thanh_tien'])
+
+            updated_items.append({
+                'ma_vt': ma_vt,
+                'ten_hang': quotation_item.ten_hang,
+                'don_gia_cu': int(old_don_gia),
+                'don_gia_moi': int(new_don_gia),
+                'thanh_tien_moi': int(quotation_item.thanh_tien),
+            })
+
+        if not_found:
+            return Response(
+                {'error': f'Khong tim thay ma_vt trong bao gia: {", ".join(not_found)}'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Recalculate tong_cong
+        items_after = list(quotation.items.all())
+        new_tong_cong = sum(item.thanh_tien for item in items_after)
+        quotation.tong_cong = new_tong_cong
+        quotation.save(update_fields=['tong_cong', 'updated_at'])
+
+        # Regenerate Excel
+        file_path = _save_excel_file_for_quotation(quotation)
+        if not file_path:
+            return Response(
+                {'error': 'Khong the tao file Excel'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+        return Response({
+            'success': True,
+            'quote_number': quotation.quote_number,
+            'tong_cong': int(new_tong_cong),
+            'tong_cong_display': f'{int(new_tong_cong):,} VND',
+            'excel_file_path': quotation.excel_file_path,
+            'excel_file_name': quotation.excel_file_name,
+            'excel_file_size': quotation.excel_file_size,
+            'items_updated': updated_items,
+            'items_unchanged': unchanged_items,
+            'download_url': f'/api/quotations/{quotation.id}/download-excel/',
+            'download_url_by_number': f'/api/quotations/by-number/{quotation.quote_number}/download-excel/',
+        })
 
 
 class QuotationDownloadExcelView(APIView):

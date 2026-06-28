@@ -194,6 +194,31 @@ class QuotationUpdateSerializer(serializers.ModelSerializer):
         fields = ['status', 'ghi_chu', 'nhan_vien']
 
 
+class QuotationItemUpdateSerializer(serializers.Serializer):
+    """Nhận request cập nhật đơn giá 1 dòng trong báo giá."""
+    ma_vt = serializers.CharField(max_length=100)
+    don_gia = serializers.DecimalField(max_digits=12, decimal_places=0)
+
+    def validate_don_gia(self, value):
+        if value < 0:
+            raise serializers.ValidationError('Don gia khong duoc am')
+        return value
+
+
+class QuotationUpdateItemsSerializer(serializers.Serializer):
+    """Nhận request cập nhật nhiều dòng trong báo giá."""
+    items = serializers.ListField(
+        child=QuotationItemUpdateSerializer(),
+        min_length=1,
+        max_length=100,
+    )
+
+    def validate_items(self, value):
+        if len(value) > 100:
+            raise serializers.ValidationError('Toi da 100 dong moi lan cap nhat')
+        return value
+
+
 class QuotationSaveSerializer(serializers.Serializer):
     """Nhận request lưu báo giá đã gởi."""
     product_ids = serializers.ListField(child=serializers.IntegerField(), min_length=1)
