@@ -565,9 +565,9 @@ def _validate_candidate(
     if not candidate.ten_hang:
         candidate.warnings.append('Ten hang/model dang trong')
 
-    for field, raw_value in (price_values or {}).items():
+    for field_name, raw_value in (price_values or {}).items():
         if _is_price_text_invalid(raw_value):
-            candidate.errors.append(f'{PRICE_FIELDS.get(field, field)} khong phai so hop le')
+            candidate.errors.append(f'{PRICE_FIELDS.get(field_name, field_name)} khong phai so hop le')
 
     for label, raw_value in (decimal_values or {}).items():
         if _is_decimal_text_invalid(raw_value):

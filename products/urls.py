@@ -38,7 +38,11 @@ urlpatterns = [
     path('quotations/today/', views.QuotationTodayListView.as_view(), name='quotation-today'),
     path('quotations/today/stats/', views.QuotationTodayStatsView.as_view(), name='quotation-today-stats'),
     path('quotations/<int:pk>/download-excel/', views.QuotationDownloadExcelView.as_view(), name='quotation-download-excel'),
-    path('quotations/by-number/<str:quote_number>/download-excel/', views.QuotationDownloadExcelView.as_view(), name='quotation-download-excel-by-number'),
+    path(
+        'quotations/by-number/<str:quote_number>/download-excel/',
+        views.QuotationDownloadExcelView.as_view(),
+        name='quotation-download-excel-by-number',
+    ),
     path('quotations/<int:pk>/update/', views.QuotationUpdateView.as_view(), name='quotation-update'),
     path('quotations/history/', views.QuotationHistoryListView.as_view(), name='quotation-history'),
     path('quotations/history/stats/', views.QuotationHistoryStatsView.as_view(), name='quotation-history-stats'),

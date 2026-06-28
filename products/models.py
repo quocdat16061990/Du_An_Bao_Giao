@@ -186,14 +186,14 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         if not isinstance(self.danh_sach_hinh_anh, list):
             self.danh_sach_hinh_anh = []
-        
+
         # Đồng bộ ảnh chính vào danh sách ảnh
         if self.hinh_anh and self.hinh_anh not in self.danh_sach_hinh_anh:
             self.danh_sach_hinh_anh.insert(0, self.hinh_anh)
         # Nếu chưa có ảnh chính nhưng có danh sách ảnh, lấy ảnh đầu tiên làm ảnh chính
         elif not self.hinh_anh and self.danh_sach_hinh_anh:
             self.hinh_anh = self.danh_sach_hinh_anh[0]
-            
+
         super().save(*args, **kwargs)
 
     def get_price_for_type(self, phan_loai: str):
