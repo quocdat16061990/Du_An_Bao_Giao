@@ -24,7 +24,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-import { AppHeader } from '@/components/app-header'
+
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -573,20 +573,28 @@ export default function QuotationHistoryPage() {
     )
   }
 
-  const headerStats = (
-    <div className="flex items-center gap-3">
-      <div className="text-right">
-        <div className="text-[10px] uppercase tracking-wider text-muted-foreground/60">Lịch báo giá</div>
-        <div className="text-sm font-bold tabular-nums text-foreground">{visibleTitle || dateDisplay}</div>
-      </div>
-    </div>
-  )
 
   return (
-    <div className="quotation-page-bg min-h-screen">
-      <AppHeader stats={headerStats} />
+    <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-350">
+      
+      {/* ── Page Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
+            Lịch sử & Quản lý báo giá
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">
+            Theo dõi, cập nhật trạng thái và quản lý các báo giá phụ tùng động cơ.
+          </p>
+        </div>
+        
+        <div className="bg-card border border-border px-3.5 py-1.5 rounded-xl shadow-xs self-start sm:self-auto text-right">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground/75 font-semibold">Lịch hiển thị:</div>
+          <div className="text-xs font-bold text-foreground tabular-nums">{visibleTitle || dateDisplay}</div>
+        </div>
+      </div>
 
-      <main className="mx-auto max-w-[1500px] space-y-4 px-4 py-4 md:px-5">
+      <div className="mx-auto max-w-[1500px] space-y-6">
         <Card className="border-border/50 bg-card shadow-sm">
           <CardContent className="flex flex-wrap items-center gap-3 p-3.5">
             <CalendarDays className="h-5 w-5 text-[#ff9f43]" />
@@ -698,7 +706,7 @@ export default function QuotationHistoryPage() {
             )}
           </CardContent>
         </Card>
-      </main>
+      </div>
 
       <DetailDialog entry={detailEntry} open={!!detailEntry} onClose={() => setDetailEntry(null)} />
       <EditDialog entry={editEntry} open={!!editEntry} onClose={() => setEditEntry(null)} />

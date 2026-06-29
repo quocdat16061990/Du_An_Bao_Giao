@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { AppHeader } from '@/components/app-header'
+
 import { useProduct } from '@/pages/search/helper/use-product'
 import { useSearchStore } from '@/pages/search/store'
 import { getMediaUrl } from '@/lib/media'
@@ -41,11 +41,8 @@ export default function ProductDetailPage() {
 
   if (isNaN(productId)) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <p className="text-muted-foreground">ID sản phẩm không hợp lệ</p>
-        </div>
+      <div className="p-4 md:p-6 min-h-[60vh] flex items-center justify-center">
+        <p className="text-muted-foreground">ID sản phẩm không hợp lệ</p>
       </div>
     )
   }
@@ -53,12 +50,9 @@ export default function ProductDetailPage() {
   if (isLoading) return <DetailSkeleton />
   if (isError || !product) {
     return (
-      <div className="min-h-screen bg-background">
-        <AppHeader />
-        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-          <p className="text-lg font-semibold text-destructive">Không tìm thấy sản phẩm</p>
-          <Button variant="outline" onClick={() => navigate('/')}>Về trang chủ</Button>
-        </div>
+      <div className="p-4 md:p-6 min-h-[60vh] flex flex-col items-center justify-center gap-4">
+        <p className="text-lg font-semibold text-destructive">Không tìm thấy sản phẩm</p>
+        <Button variant="outline" onClick={() => navigate('/')}>Về trang chủ</Button>
       </div>
     )
   }
@@ -91,14 +85,19 @@ export default function ProductDetailPage() {
   const hasTechSpecs = techSpecs.some((s) => s.value)
 
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-
-      <div className="max-w-[1200px] mx-auto px-4 md:px-6 py-6">
-        {/* Back button */}
-        <Button variant="ghost" size="sm" className="mb-4 gap-1.5 text-muted-foreground" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" /> Quay lại
+    <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-350">
+      
+      {/* Back button and Info section */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground self-start hover:text-foreground" onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-4 w-4" /> Quay lại danh sách
         </Button>
+        <div className="text-xs text-muted-foreground self-start sm:self-auto bg-muted px-2.5 py-1 rounded">
+          Mã ID: {product.id}
+        </div>
+      </div>
+
+      <div className="max-w-[1440px] mx-auto">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ═══════ LEFT: Main info ═══════ */}
@@ -424,17 +423,18 @@ function MetaRow({ icon: Icon, label, value, mono }: { icon: React.ComponentType
 
 function DetailSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
-      <AppHeader />
-      <div className="max-w-[1200px] mx-auto px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card><CardContent className="p-6 space-y-4"><Skeleton className="h-6 w-32" /><Skeleton className="h-8 w-64" /><Skeleton className="h-4 w-48" /><div className="grid grid-cols-2 gap-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div></CardContent></Card>
-            <Card><CardContent className="p-6 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-16 w-full" /></CardContent></Card>
-          </div>
-          <div className="space-y-6">
-            <Card><CardContent className="p-6 space-y-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</CardContent></Card>
-          </div>
+    <div className="p-4 md:p-6 space-y-6 animate-pulse">
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-8 w-24" />
+        <Skeleton className="h-6 w-16" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-[1440px] mx-auto">
+        <div className="lg:col-span-2 space-y-6">
+          <Card><CardContent className="p-6 space-y-4"><Skeleton className="h-6 w-32" /><Skeleton className="h-8 w-64" /><Skeleton className="h-4 w-48" /><div className="grid grid-cols-2 gap-3">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</div></CardContent></Card>
+          <Card><CardContent className="p-6 space-y-3"><Skeleton className="h-4 w-24" /><Skeleton className="h-16 w-full" /></CardContent></Card>
+        </div>
+        <div className="space-y-6">
+          <Card><CardContent className="p-6 space-y-2">{Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-12" />)}</CardContent></Card>
         </div>
       </div>
     </div>

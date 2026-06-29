@@ -121,9 +121,16 @@ class ImportLogSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class QuotationItemCustomSerializer(serializers.Serializer):
+    product_id = serializers.IntegerField()
+    custom_price = serializers.DecimalField(max_digits=12, decimal_places=0)
+    price_label = serializers.CharField(max_length=50)
+
+
 class QuotationRequestSerializer(serializers.Serializer):
     product_ids = serializers.ListField(child=serializers.IntegerField(), min_length=1)
     customer_id = serializers.IntegerField()
+    items_custom = QuotationItemCustomSerializer(many=True, required=False)
 
     def validate_product_ids(self, value):
         if len(value) > 200:
@@ -224,6 +231,7 @@ class QuotationSaveSerializer(serializers.Serializer):
     product_ids = serializers.ListField(child=serializers.IntegerField(), min_length=1)
     customer_id = serializers.IntegerField()
     nhan_vien = serializers.CharField(max_length=100, required=False, default='', allow_blank=True)
+    items_custom = QuotationItemCustomSerializer(many=True, required=False)
 
     def validate_product_ids(self, value):
         if len(value) > 200:

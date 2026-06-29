@@ -2,7 +2,7 @@
 cd /d "%~dp0"
 
 echo Starting Backend (Django)...
-start "Backend Django" cmd /k "cd /d "%~dp0" && venv\Scripts\activate && python manage.py runserver"
+start "Backend Django" cmd /k "cd /d "%~dp0" && venv\Scripts\activate && python manage.py runserver 8001"
 
 echo Starting Frontend (Vite)...
 start "Frontend Vite" cmd /k "cd /d "%~dp0frontend" && npm run dev"

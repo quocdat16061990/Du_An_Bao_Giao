@@ -1,5 +1,6 @@
 import logging
 import re
+import tempfile
 
 from datetime import datetime
 from decimal import Decimal
@@ -17,6 +18,7 @@ from rest_framework.views import APIView
 
 from . import models, serializers, filters
 from .pagination import FastPagination
+from .pdf_converter import LibreOfficeNotFoundError, convert_excel_to_pdf
 from .quotation_excel import build_quotation_excel, safe_excel_filename
 from .services.excel_import_preview import (
     PreviewError,
@@ -443,6 +445,34 @@ def _get_products_for_quote(product_ids):
     )
 
 
+def _custom_prices_map_from_items(items_custom):
+    if not items_custom:
+        return None
+    custom_prices_map = {}
+    for item in items_custom:
+        custom_prices_map[item['product_id']] = {
+            'price': Decimal(str(item['custom_price'])),
+            'label': item['price_label'],
+        }
+    return custom_prices_map
+
+
+def _convert_excel_bytes_to_pdf(excel_bytes: bytes, quote_number: str) -> bytes:
+    temp_root = settings.BASE_DIR / 'exports' / 'temp'
+    temp_root.mkdir(parents=True, exist_ok=True)
+
+    with tempfile.TemporaryDirectory(
+        prefix='quote_pdf_',
+        dir=temp_root,
+        ignore_cleanup_errors=True,
+    ) as work_dir:
+        work_dir_path = Path(work_dir)
+        excel_path = work_dir_path / f'{quote_number}.xlsx'
+        excel_path.write_bytes(excel_bytes)
+        pdf_path = convert_excel_to_pdf(excel_path, work_dir_path)
+        return pdf_path.read_bytes()
+
+
 def _create_quotation_record(
     *,
     customer,
@@ -453,18 +483,24 @@ def _create_quotation_record(
     excel_file_name: str = '',
     excel_file_path: str = '',
     excel_file_size: int = 0,
+    custom_prices_map=None,
 ):
     tong_cong = Decimal('0')
     products = list(products)
 
     with transaction.atomic():
+        # Determine the price label applying globally (or default if custom)
+        global_gia_ap_dung = QUOTATION_PRICE_LABELS.get(customer.phan_loai, 'GIÁ ĐL+10%')
+        if custom_prices_map:
+            global_gia_ap_dung = 'GIÁ LINH HOẠT'
+
         quotation = models.Quotation.objects.create(
             quote_number=quote_number,
             quote_date=now.date(),
             customer=customer,
             customer_name=customer.ten_kh,
             customer_phone=customer.dien_thoai or '',
-            gia_ap_dung=QUOTATION_PRICE_LABELS.get(customer.phan_loai, 'GIA DL+10%'),
+            gia_ap_dung=global_gia_ap_dung,
             tong_cong=Decimal('0'),
             product_count=len(products),
             nhan_vien=nhan_vien,
@@ -475,8 +511,11 @@ def _create_quotation_record(
         )
 
         for product in products:
-            don_gia = product.get_price_for_type(customer.phan_loai) or Decimal('0')
-            thanh_tien = don_gia
+            if custom_prices_map and product.id in custom_prices_map:
+                don_gia = Decimal(str(custom_prices_map[product.id]['price']))
+            else:
+                don_gia = product.get_price_for_type(customer.phan_loai) or Decimal('0')
+            thanh_tien = (don_gia * Decimal('1.08')).quantize(Decimal('1.'))
             tong_cong += thanh_tien
             models.QuotationItem.objects.create(
                 quotation=quotation,
@@ -630,6 +669,16 @@ class QuotationExportExcelView(APIView):
         product_ids = req_serializer.validated_data['product_ids']
         customer_id = req_serializer.validated_data['customer_id']
         nhan_vien = str(request.data.get('nhan_vien') or '')
+        items_custom = req_serializer.validated_data.get('items_custom')
+
+        custom_prices_map = None
+        if items_custom:
+            custom_prices_map = {}
+            for item in items_custom:
+                custom_prices_map[item['product_id']] = {
+                    'price': Decimal(str(item['custom_price'])),
+                    'label': item['price_label']
+                }
 
         try:
             customer = models.Customer.objects.select_related('nha_xe').get(id=customer_id, is_active=True)
@@ -642,7 +691,7 @@ class QuotationExportExcelView(APIView):
 
         now = timezone.localtime()
         quote_number = _generate_quote_number(now, len(products))
-        excel_bytes = build_quotation_excel(customer, products, quote_number)
+        excel_bytes = build_quotation_excel(customer, products, quote_number, custom_prices_map=custom_prices_map)
         filename = _quotation_excel_filename(customer.ten_kh, quote_number)
         relative_path = _quotation_excel_relative_path(now, filename)
         absolute_path = _resolve_export_path(relative_path)
@@ -658,6 +707,7 @@ class QuotationExportExcelView(APIView):
             excel_file_name=filename,
             excel_file_path=relative_path.as_posix(),
             excel_file_size=len(excel_bytes),
+            custom_prices_map=custom_prices_map,
         )
 
         response = HttpResponse(
@@ -774,12 +824,94 @@ class LegacyQuotationExportPDFView(APIView):
 
 # ═══════════ Quotation Save & History ═══════════
 
+class QuotationPreviewPDFView(APIView):
+    def post(self, request):
+        req_serializer = serializers.QuotationRequestSerializer(data=request.data)
+        req_serializer.is_valid(raise_exception=True)
+
+        product_ids = req_serializer.validated_data['product_ids']
+        customer_id = req_serializer.validated_data['customer_id']
+        custom_prices_map = _custom_prices_map_from_items(
+            req_serializer.validated_data.get('items_custom')
+        )
+
+        try:
+            customer = models.Customer.objects.select_related('nha_xe').get(id=customer_id, is_active=True)
+        except models.Customer.DoesNotExist:
+            return Response({'error': 'Khong tim thay khach hang'}, status=404)
+
+        products = _get_products_for_quote(product_ids)
+        if not products:
+            return Response({'error': 'Khong tim thay san pham hop le'}, status=400)
+
+        now = timezone.localtime()
+        quote_number = f"PREVIEW{now.strftime('%Y%m%d%H%M%S')}-{len(products):02d}"
+        excel_bytes = build_quotation_excel(customer, products, quote_number, custom_prices_map=custom_prices_map)
+
+        try:
+            pdf_bytes = _convert_excel_bytes_to_pdf(excel_bytes, quote_number)
+        except LibreOfficeNotFoundError as exc:
+            logger.warning('LibreOffice PDF preview conversion failed: %s', exc)
+            return Response({'error': str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except Exception as exc:
+            logger.exception('PDF preview failed')
+            return Response({'error': f'Khong the xem truoc PDF: {exc}'}, status=500)
+
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="quotation-preview.pdf"'
+        response['Cache-Control'] = 'no-store'
+        return response
+
+
 class QuotationExportPDFView(APIView):
     def post(self, request):
-        return Response(
-            {'error': 'PDF export is disabled. Please use Excel export.'},
-            status=status.HTTP_410_GONE,
+        req_serializer = serializers.QuotationRequestSerializer(data=request.data)
+        req_serializer.is_valid(raise_exception=True)
+
+        product_ids = req_serializer.validated_data['product_ids']
+        customer_id = req_serializer.validated_data['customer_id']
+        nhan_vien = str(request.data.get('nhan_vien') or '')
+        items_custom = req_serializer.validated_data.get('items_custom')
+
+        custom_prices_map = _custom_prices_map_from_items(items_custom)
+
+        try:
+            customer = models.Customer.objects.select_related('nha_xe').get(id=customer_id, is_active=True)
+        except models.Customer.DoesNotExist:
+            return Response({'error': 'Khong tim thay khach hang'}, status=404)
+
+        products = _get_products_for_quote(product_ids)
+        if not products:
+            return Response({'error': 'Khong tim thay san pham hop le'}, status=400)
+
+        now = timezone.localtime()
+        quote_number = _generate_quote_number(now, len(products))
+        excel_bytes = build_quotation_excel(customer, products, quote_number, custom_prices_map=custom_prices_map)
+
+        try:
+            pdf_bytes = _convert_excel_bytes_to_pdf(excel_bytes, quote_number)
+        except LibreOfficeNotFoundError as exc:
+            logger.warning('LibreOffice PDF conversion failed: %s', exc)
+            return Response({'error': str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except Exception as exc:
+            logger.exception('PDF export failed')
+            return Response({'error': f'Khong the xuat PDF: {exc}'}, status=500)
+
+        quotation = _create_quotation_record(
+            customer=customer,
+            products=products,
+            quote_number=quote_number,
+            now=now,
+            nhan_vien=nhan_vien,
+            custom_prices_map=custom_prices_map,
         )
+
+        filename = f'{quote_number}_{_safe_filename_part(customer.ten_kh)}.pdf'
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['X-Quotation-Id'] = str(quotation.id)
+        response['X-Quote-Number'] = quotation.quote_number
+        return response
 
 
 class QuotationSaveView(APIView):
@@ -792,6 +924,15 @@ class QuotationSaveView(APIView):
         product_ids = req_serializer.validated_data['product_ids']
         customer_id = req_serializer.validated_data['customer_id']
         nhan_vien = req_serializer.validated_data.get('nhan_vien', '')
+        items_custom = req_serializer.validated_data.get('items_custom')
+
+        custom_prices_map = {}
+        if items_custom:
+            for item in items_custom:
+                custom_prices_map[item['product_id']] = {
+                    'price': Decimal(str(item['custom_price'])),
+                    'label': item['price_label']
+                }
 
         try:
             customer = models.Customer.objects.get(id=customer_id, is_active=True)
@@ -811,21 +952,28 @@ class QuotationSaveView(APIView):
         tong_cong = Decimal('0')
         quote_number = f"BG{now.strftime('%Y%m%d%H%M%S')}-{len(product_ids):02d}"
 
+        global_gia_ap_dung = gia_labels.get(customer.phan_loai, 'GIÁ ĐL+10%')
+        if custom_prices_map:
+            global_gia_ap_dung = 'GIÁ LINH HOẠT'
+
         quotation = models.Quotation.objects.create(
             quote_number=quote_number,
             quote_date=now.date(),
             customer=customer,
             customer_name=customer.ten_kh,
             customer_phone=customer.dien_thoai or '',
-            gia_ap_dung=gia_labels.get(customer.phan_loai, 'GIÁ ĐL+10%'),
+            gia_ap_dung=global_gia_ap_dung,
             tong_cong=Decimal('0'),
             product_count=len(product_ids),
             nhan_vien=nhan_vien,
         )
 
         for p in products_qs:
-            don_gia = p.get_price_for_type(customer.phan_loai)
-            thanh_tien = don_gia
+            if custom_prices_map and p.id in custom_prices_map:
+                don_gia = custom_prices_map[p.id]['price']
+            else:
+                don_gia = p.get_price_for_type(customer.phan_loai) or Decimal('0')
+            thanh_tien = (don_gia * Decimal('1.08')).quantize(Decimal('1.'))
             tong_cong += thanh_tien
             models.QuotationItem.objects.create(
                 quotation=quotation,

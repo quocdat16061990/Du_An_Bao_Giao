@@ -30,6 +30,7 @@ import { apiClient } from '@/lib/api/client'
 import { getMediaUrl } from '@/lib/media'
 import { useAuth } from '@/lib/auth/context'
 import { cn } from '@/lib/utils'
+import { AxiosError } from 'axios'
 
 type ImageRowStatus =
   | 'SAFE'
@@ -323,8 +324,9 @@ export default function ImportImagesPage() {
         })
       })
     },
-    onError: (err: any) => {
-      const message = err?.response?.data?.error ?? 'Không thể đồng bộ ảnh'
+    onError: (err: unknown) => {
+      const axiosError = err as AxiosError<{ error?: string }>
+      const message = axiosError?.response?.data?.error ?? 'Không thể đồng bộ ảnh'
       toast.error(message)
     },
   })

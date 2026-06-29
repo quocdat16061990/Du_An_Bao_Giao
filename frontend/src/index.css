@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,7 +14,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 218 39% 13%;
 
-    --primary: 39 82% 43%;
+    --primary: 6 94% 46%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 24% 93%;
@@ -29,15 +31,15 @@
 
     --border: 214 25% 84%;
     --input: 214 25% 84%;
-    --ring: 39 82% 43%;
+    --ring: 6 94% 46%;
 
     --radius: 0.5rem;
 
-    --turbo-amber: 39 82% 43%;
+    --turbo-amber: 6 94% 46%;
     --turbo-blue: 205 70% 37%;
     --turbo-dark: 218 39% 13%;
 
-    --price-vip: 39 82% 43%;
+    --price-vip: 6 94% 46%;
     --price-uu-dai: 24 75% 47%;
     --price-dai-ly: 205 70% 37%;
     --price-dl10: 171 55% 32%;
@@ -52,7 +54,7 @@
     --popover: 218 30% 12%;
     --popover-foreground: 210 20% 96%;
 
-    --primary: 39 82% 50%;
+    --primary: 7 94% 52%;
     --primary-foreground: 218 39% 8%;
 
     --secondary: 218 24% 18%;
@@ -69,7 +71,7 @@
 
     --border: 218 20% 24%;
     --input: 218 20% 24%;
-    --ring: 39 82% 50%;
+    --ring: 7 94% 52%;
   }
 
   * {
@@ -80,16 +82,16 @@
     @apply bg-background text-foreground antialiased;
     margin: 0;
     background:
-      radial-gradient(circle at 18% -12%, hsl(39 82% 43% / 0.12), transparent 30rem),
+      radial-gradient(circle at 18% -12%, hsl(var(--primary) / 0.12), transparent 30rem),
       linear-gradient(180deg, hsl(210 27% 98%), hsl(var(--background)) 18rem);
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   .dark body {
     background:
-      radial-gradient(circle at 18% -12%, hsl(39 82% 50% / 0.14), transparent 30rem),
+      radial-gradient(circle at 18% -12%, hsl(var(--primary) / 0.14), transparent 30rem),
       linear-gradient(180deg, hsl(218 39% 10%), hsl(var(--background)) 18rem);
   }
 
