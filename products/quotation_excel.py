@@ -166,7 +166,7 @@ def build_quotation_excel(customer, products_qs, quote_number: str, custom_price
     for index, product in enumerate(products, start=1):
         row = PRODUCT_START_ROW + index - 1
         qty = 1
-        
+
         if custom_prices_map and product.id in custom_prices_map:
             unit_price = Decimal(str(custom_prices_map[product.id]['price']))
         else:
