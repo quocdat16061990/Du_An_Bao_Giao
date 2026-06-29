@@ -21,6 +21,8 @@ import {
   User,
   Wrench,
   X,
+  FileSpreadsheet,
+  Images,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -132,6 +134,19 @@ export function AppHeader({ stats, searchSlot, className }: AppHeaderProps) {
                     <History className="h-4 w-4 mr-2" />
                     Lịch sử báo giá
                   </DropdownMenuItem>
+                  {user.is_staff && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/import-excel')}>
+                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                        Nhập Excel
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/import-images')}>
+                        <Images className="h-4 w-4 mr-2" />
+                        Đồng bộ ảnh
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={logout}

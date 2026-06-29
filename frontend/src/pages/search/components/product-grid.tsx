@@ -61,11 +61,11 @@ export function ProductGrid({ products, selectedIds, onToggleSelect, viewMode }:
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5">
       {products.map((product, index) => (
         <div
           key={`${product.loai}-${product.id}`}
-          className="animate-in fade-in slide-in-from-bottom-4"
+          className="animate-in fade-in slide-in-from-bottom-4 h-full flex flex-col"
           style={{ animationDelay: `${index * 40}ms`, animationFillMode: 'backwards' }}
         >
           <ProductCard

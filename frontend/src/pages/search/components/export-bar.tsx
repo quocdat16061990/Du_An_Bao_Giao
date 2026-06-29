@@ -1,46 +1,17 @@
 import { useState } from 'react'
-import { FileSpreadsheet, Loader2, ShoppingCart, X } from 'lucide-react'
-import { toast } from 'sonner'
+import { FileSpreadsheet, ShoppingCart, X } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { apiClient } from '@/lib/api/client'
-import type { Product } from '../helper/types'
 import { useSearchStore } from '../store'
 import { CustomerSearch } from './customer-search'
 
-interface ExportBarProps {
-  products: Array<Product>
-}
-
-const safeFilenamePart = (name: string) =>
-  name
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-zA-Z0-9]/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '')
-    .substring(0, 30)
-
-export function ExportBar({ products }: ExportBarProps) {
+export function ExportBar() {
   const selectedIds = useSearchStore((s) => s.selectedProductIds)
   const selectedCustomer = useSearchStore((s) => s.selectedCustomer)
   const clearSelection = useSearchStore((s) => s.clearSelection)
   const selectedCount = selectedIds.size
-  const selectedProducts = products.filter((p) => selectedIds.has(p.id))
-  const [isExportingExcel, setIsExportingExcel] = useState(false)
   const [customerError, setCustomerError] = useState(false)
-
-  const downloadBlob = (blob: Blob, filename: string) => {
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
 
   const ensureCanExport = () => {
     if (selectedCount > 0 && selectedCustomer && selectedCustomer.id > 0) return true
@@ -48,40 +19,11 @@ export function ExportBar({ products }: ExportBarProps) {
     return false
   }
 
-  const handleExportExcel = async () => {
-    if (!ensureCanExport() || !selectedCustomer) return
-
-    setIsExportingExcel(true)
-    try {
-      const response = await apiClient.post(
-        '/quotations/export-excel/',
-        {
-          product_ids: selectedProducts.map((p) => p.id),
-          customer_id: selectedCustomer.id,
-        },
-        { responseType: 'blob' },
-      )
-
-      const disposition = response.headers['content-disposition']
-      const match = /filename="?([^"]+)"?/i.exec(disposition ?? '')
-      const safeName = safeFilenamePart(selectedCustomer.ten_kh)
-      const datePart = new Date().toISOString().slice(0, 10)
-
-      downloadBlob(response.data, match?.[1] ?? `bao_gia_${safeName}_${datePart}.xlsx`)
-      toast.success('Đã xuất Excel và lưu báo giá')
-    } catch (err) {
-      console.error('Excel export failed:', err)
-      toast.error('Xuất Excel hoặc lưu báo giá thất bại')
-    } finally {
-      setIsExportingExcel(false)
-    }
-  }
-
   if (selectedCount === 0) {
     return (
       <div className="flex items-center gap-2 rounded-lg border border-border/80 bg-card/95 px-4 py-2.5 text-sm text-muted-foreground shadow-sm">
         <ShoppingCart className="h-4 w-4" />
-        <span>Tick chọn sản phẩm để xuất Excel và lưu báo giá</span>
+        <span>Tick chọn sản phẩm để tạo báo giá</span>
       </div>
     )
   }
@@ -111,26 +53,26 @@ export function ExportBar({ products }: ExportBarProps) {
         />
         {customerError && !selectedCustomer && (
           <p className="mt-1 text-xs font-medium text-destructive">
-            Vui lòng chọn hoặc thêm khách hàng trước khi xuất báo giá.
+            Vui lòng chọn hoặc thêm khách hàng trước khi tạo báo giá.
           </p>
         )}
       </div>
 
       <div className="ml-auto flex items-center gap-2">
         <Button
-          variant="outline"
+          variant="default"
           size="sm"
-          className="h-9"
-          onClick={handleExportExcel}
-          disabled={isExportingExcel || !selectedCustomer}
-          title={!selectedCustomer ? 'Vui lòng chọn khách hàng trước' : 'Tải Excel và lưu báo giá'}
+          className="h-9 bg-turbo-blue hover:bg-turbo-blue/90 text-white font-bold"
+          onClick={() => {
+            if (ensureCanExport()) {
+              useSearchStore.getState().openQuotation()
+            }
+          }}
+          disabled={!selectedCustomer}
+          title={!selectedCustomer ? 'Vui lòng chọn khách hàng trước' : 'Tạo và xem trước báo giá'}
         >
-          {isExportingExcel ? (
-            <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-          ) : (
-            <FileSpreadsheet className="mr-1.5 h-4 w-4" />
-          )}
-          Excel
+          <FileSpreadsheet className="mr-1.5 h-4 w-4" />
+          Tạo Báo Giá
         </Button>
       </div>
     </div>

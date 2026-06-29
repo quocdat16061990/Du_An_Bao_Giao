@@ -7,24 +7,26 @@ import re
 
 from django.conf import settings
 from openpyxl import load_workbook
+from openpyxl.worksheet.properties import PageSetupProperties
 from openpyxl.utils import get_column_letter, range_boundaries
 
 
 TEMPLATE_PATH = Path(settings.BASE_DIR) / 'templates' / 'bao_gia_template_clean.xlsx'
-PRODUCT_START_ROW = 11
-PRODUCT_TEMPLATE_LAST_ROW = 18
-TOTAL_ROW = 19
+PRODUCT_START_ROW = 13
+PRODUCT_TEMPLATE_LAST_ROW = 17
+TOTAL_ROW = 18
+VAT_RATE = Decimal('0.08')
 
 
 PRICE_LABELS = {
-    'VIP': 'Gi\u00e1 VIP',
-    'UU_DAI': 'Gi\u00e1 \u01b0u \u0111\u00e3i',
-    '\u01afU_\u0110\u00c3I': 'Gi\u00e1 \u01b0u \u0111\u00e3i',
-    'DAI_LY': 'Gi\u00e1 \u0111\u1ea1i l\u00fd',
-    '\u0110\u1ea0I_L\u00dd': 'Gi\u00e1 \u0111\u1ea1i l\u00fd',
-    'GARA': 'Gi\u00e1 gara',
-    'NGOAI_LE': 'Gi\u00e1 DL+10%',
-    'NGO\u1ea0I_L\u1ec6': 'Gi\u00e1 DL+10%',
+    'VIP': 'Giá VIP',
+    'UU_DAI': 'Giá ưu đãi',
+    'ƯU_ĐÃI': 'Giá ưu đãi',
+    'DAI_LY': 'Giá đại lý',
+    'ĐẠI_LÝ': 'Giá đại lý',
+    'GARA': 'Giá gara',
+    'NGOAI_LE': 'Giá DL+10%',
+    'NGOẠI_LỆ': 'Giá DL+10%',
 }
 
 
@@ -57,13 +59,23 @@ def _copy_row_style(ws, source_row: int, target_row: int):
             target.protection = copy(source.protection)
 
 
+def _configure_print_area(ws):
+    ws.print_area = f'A1:G{ws.max_row}'
+    ws.sheet_properties.pageSetUpPr = ws.sheet_properties.pageSetUpPr or PageSetupProperties()
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.page_setup.orientation = 'portrait'
+    ws.page_setup.paperSize = ws.PAPERSIZE_A4
+
+
 def _digits_to_words(number: int) -> str:
     names = [
-        'kh\u00f4ng', 'm\u1ed9t', 'hai', 'ba', 'b\u1ed1n',
-        'n\u0103m', 's\u00e1u', 'b\u1ea3y', 't\u00e1m', 'ch\u00edn',
+        'không', 'một', 'hai', 'ba', 'bốn',
+        'năm', 'sáu', 'bảy', 'tám', 'chín',
     ]
     if number == 0:
-        return 'kh\u00f4ng'
+        return 'không'
 
     def read_three(value: int, full: bool) -> str:
         hundred = value // 100
@@ -72,29 +84,29 @@ def _digits_to_words(number: int) -> str:
         parts = []
         if full or hundred:
             parts.append(names[hundred])
-            parts.append('tr\u0103m')
+            parts.append('trăm')
         if ten > 1:
             parts.append(names[ten])
-            parts.append('m\u01b0\u01a1i')
+            parts.append('mươi')
             if unit == 1:
-                parts.append('m\u1ed1t')
+                parts.append('mốt')
             elif unit == 5:
-                parts.append('l\u0103m')
+                parts.append('lăm')
             elif unit:
                 parts.append(names[unit])
         elif ten == 1:
-            parts.append('m\u01b0\u1eddi')
+            parts.append('mười')
             if unit == 5:
-                parts.append('l\u0103m')
+                parts.append('lăm')
             elif unit:
                 parts.append(names[unit])
         elif unit:
             if full or hundred:
-                parts.append('l\u1ebb')
-            parts.append('n\u0103m' if unit == 5 and (full or hundred) else names[unit])
+                parts.append('lẻ')
+            parts.append('năm' if unit == 5 and (full or hundred) else names[unit])
         return ' '.join(parts)
 
-    units = ['', 'ngh\u00ecn', 'tri\u1ec7u', 't\u1ef7']
+    units = ['', 'nghìn', 'triệu', 'tỷ']
     groups = []
     while number:
         groups.append(number % 1000)
@@ -115,8 +127,8 @@ def _digits_to_words(number: int) -> str:
 def money_to_words(value: int) -> str:
     words = _digits_to_words(value).strip()
     if not words:
-        words = 'kh\u00f4ng'
-    return f'B\u1eb1ng ch\u1eef: {words[:1].upper()}{words[1:]} \u0111\u1ed3ng ch\u1eb5n./.'
+        words = 'không'
+    return f'Bằng chữ: {words[:1].upper()}{words[1:]} đồng chẵn./.'
 
 
 def safe_excel_filename(customer_name: str) -> str:
@@ -125,7 +137,7 @@ def safe_excel_filename(customer_name: str) -> str:
     return f"bao_gia_{safe_name}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
 
 
-def build_quotation_excel(customer, products_qs, quote_number: str) -> bytes:
+def build_quotation_excel(customer, products_qs, quote_number: str, custom_prices_map=None) -> bytes:
     wb = load_workbook(TEMPLATE_PATH)
     ws = wb.active
 
@@ -138,63 +150,47 @@ def build_quotation_excel(customer, products_qs, quote_number: str) -> bytes:
             _copy_row_style(ws, PRODUCT_TEMPLATE_LAST_ROW, row)
 
     total_row = TOTAL_ROW + extra_rows
-    word_row = total_row + 1
 
     now = datetime.now()
-    vat_rate = Decimal('0.08')
-    gia_label = PRICE_LABELS.get(customer.phan_loai, 'Gi\u00e1 DL+10%')
+    date_str = f"TP. Hồ Chí Minh, ngày {now.day:02d} tháng {now.month:02d} năm {now.year}"
+    gia_label = PRICE_LABELS.get(customer.phan_loai, 'Giá DL+10%')
+    if custom_prices_map:
+        gia_label = 'Giá linh hoạt'
 
-    ws['C5'] = quote_number
-    ws['H5'] = now.date()
-    ws['J5'] = float(vat_rate)
-    ws['C6'] = customer.ten_kh
-    ws['H6'] = customer.dien_thoai or ''
-    ws['C7'] = customer.dia_chi or customer.tinh_tp or ''
-    ws['H7'] = ''
-    ws['C8'] = customer.nha_xe.ten_nha_xe if customer.nha_xe else ''
-    ws['H8'] = ''
-    ws['C9'] = gia_label
-
-    total_qty = 0
-    subtotal = Decimal('0')
-    vat_total = Decimal('0')
-    grand_total = Decimal('0')
+    ws['C3'] = date_str
+    ws['A8'] = f"Khách hàng: {customer.ten_kh}"
+    ws['A9'] = f"Địa chỉ: {customer.dia_chi or customer.tinh_tp or ''}"
+    ws['A10'] = "Mã số thuế: "
+    ws['A11'] = "Email: "
 
     for index, product in enumerate(products, start=1):
         row = PRODUCT_START_ROW + index - 1
         qty = 1
-        unit_price = product.get_price_for_type(customer.phan_loai) or Decimal('0')
-        line_subtotal = unit_price * qty
-        line_vat = line_subtotal * vat_rate
-        line_total = line_subtotal + line_vat
 
-        total_qty += qty
-        subtotal += line_subtotal
-        vat_total += line_vat
-        grand_total += line_total
+        if custom_prices_map and product.id in custom_prices_map:
+            unit_price = Decimal(str(custom_prices_map[product.id]['price']))
+        else:
+            unit_price = product.get_price_for_type(customer.phan_loai) or Decimal('0')
 
-        ws.cell(row, 2).value = index
-        ws.cell(row, 3).value = product.ma_vt
-        ws.cell(row, 4).value = product.ten_hang or product.model_turbo or ''
-        ws.cell(row, 5).value = product.dvt or 'C\u00e1i'
-        ws.cell(row, 6).value = qty
-        ws.cell(row, 7).value = int(unit_price)
-        ws.cell(row, 8).value = int(line_subtotal)
-        ws.cell(row, 9).value = int(line_vat)
-        ws.cell(row, 10).value = int(line_total)
-        ws.cell(row, 11).value = gia_label
+        ws.cell(row, 1).value = index
+        ws.cell(row, 2).value = f"{product.ma_vt} - {product.ten_hang or product.model_turbo or ''}"
+        ws.cell(row, 3).value = product.dvt or 'Cái'
+        ws.cell(row, 4).value = qty
+        ws.cell(row, 5).value = int(unit_price)
+        ws.cell(row, 6).value = float(VAT_RATE)
+        ws.cell(row, 6).number_format = '0%'
+        ws.cell(row, 7).value = f"=E{row}*D{row}*(1+F{row})"
+        ws.cell(row, 7).number_format = '#,##0'
 
     for row in range(PRODUCT_START_ROW + len(products), total_row):
-        ws.cell(row, 2).value = row - PRODUCT_START_ROW + 1
-        for col in range(3, 11):
+        ws.cell(row, 1).value = row - PRODUCT_START_ROW + 1
+        for col in range(2, 8):
             ws.cell(row, col).value = None
 
-    ws.cell(total_row, 2).value = 'T\u1ed5ng c\u1ed9ng'
-    ws.cell(total_row, 6).value = total_qty
-    ws.cell(total_row, 8).value = int(subtotal)
-    ws.cell(total_row, 9).value = int(vat_total)
-    ws.cell(total_row, 10).value = int(grand_total)
-    ws.cell(word_row, 2).value = money_to_words(int(grand_total))
+    ws.cell(total_row, 1).value = 'TỔNG CỘNG'
+    ws.cell(total_row, 7).value = f"=SUM(G13:G{total_row - 1})"
+    ws.cell(total_row, 7).number_format = '#,##0'
+    _configure_print_area(ws)
 
     buf = BytesIO()
     wb.save(buf)

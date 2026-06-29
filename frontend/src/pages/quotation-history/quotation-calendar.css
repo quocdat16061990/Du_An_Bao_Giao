@@ -14,14 +14,14 @@
   --fc-border-color: #e6e6e8;
   --fc-page-bg-color: #fff;
   --fc-neutral-bg-color: #f3f2f3;
-  --fc-today-bg-color: rgba(115, 103, 240, 0.08);
+  --fc-today-bg-color: rgba(228, 31, 7, 0.08);
   --fc-button-bg-color: #fff;
   --fc-button-border-color: #e6e6e8;
   --fc-button-text-color: #444050;
   --fc-button-hover-bg-color: #f3f2f3;
-  --fc-button-hover-border-color: #c8c4f9;
-  --fc-button-active-bg-color: #7367f0;
-  --fc-button-active-border-color: #7367f0;
+  --fc-button-hover-border-color: rgba(228, 31, 7, 0.4);
+  --fc-button-active-bg-color: #E41F07;
+  --fc-button-active-border-color: #E41F07;
   --fc-button-active-text-color: #fff;
   padding: 0 0.85rem 0.8rem;
 }
@@ -86,7 +86,7 @@
 
 .quotation-calendar-shell .fc-button-primary:not(:disabled):focus,
 .quotation-calendar-shell .fc-button-primary:not(:disabled).fc-button-active:focus {
-  box-shadow: 0 0 0 2px rgba(115, 103, 240, 0.2) !important;
+  box-shadow: 0 0 0 2px rgba(228, 31, 7, 0.2) !important;
 }
 
 .quotation-calendar-shell .fc-scrollgrid {
@@ -140,8 +140,8 @@
 }
 
 .quotation-calendar-shell .fc-day-today .fc-daygrid-day-number {
-  background: rgba(115, 103, 240, 0.14);
-  color: #7367f0;
+  background: rgba(228, 31, 7, 0.14);
+  color: #E41F07;
 }
 
 .quotation-calendar-shell .fc-day-other {
@@ -238,7 +238,7 @@
 }
 
 .quotation-calendar-shell .fc-more-link {
-  color: #7367f0;
+  color: #E41F07;
   display: inline-flex;
   font-size: 0.75rem;
   font-weight: 800;

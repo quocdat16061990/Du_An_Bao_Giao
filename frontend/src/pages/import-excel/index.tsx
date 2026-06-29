@@ -32,6 +32,7 @@ import {
 import { apiClient } from '@/lib/api/client'
 import { useAuth } from '@/lib/auth/context'
 import { cn } from '@/lib/utils'
+import { AxiosError } from 'axios'
 
 interface WorkbookColumn {
   index: number
@@ -605,8 +606,9 @@ export default function ImportExcelPage() {
       setSelectedRowNumber(null)
       toast.success('Đã đọc file Excel')
     },
-    onError: (err: any) => {
-      const message = err?.response?.data?.error ?? 'Không thể đọc file Excel'
+    onError: (err: unknown) => {
+      const axiosError = err as AxiosError<{ error?: string }>
+      const message = axiosError?.response?.data?.error ?? 'Không thể đọc file Excel'
       toast.error(message)
     },
   })
@@ -618,8 +620,9 @@ export default function ImportExcelPage() {
       setDbCheck(data)
       toast.success('Đã check mã trong DB')
     },
-    onError: (err: any) => {
-      const message = err?.response?.data?.error ?? 'Không thể check DB'
+    onError: (err: unknown) => {
+      const axiosError = err as AxiosError<{ error?: string }>
+      const message = axiosError?.response?.data?.error ?? 'Không thể check DB'
       toast.error(message)
     },
   })
@@ -637,8 +640,9 @@ export default function ImportExcelPage() {
       setSyncResult(data)
       toast.success(`Đã bổ sung ${fm(data.summary.updated)} dòng còn thiếu`)
     },
-    onError: (err: any) => {
-      const message = err?.response?.data?.error ?? 'Không thể đồng bộ field thiếu'
+    onError: (err: unknown) => {
+      const axiosError = err as AxiosError<{ error?: string }>
+      const message = axiosError?.response?.data?.error ?? 'Không thể đồng bộ field thiếu'
       toast.error(message)
     },
   })
