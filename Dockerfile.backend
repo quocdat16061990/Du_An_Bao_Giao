@@ -10,7 +10,9 @@ WORKDIR /app
 
 # Cài dependencies hệ thống (psycopg2 cần libpq-dev)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev gcc && \
+    libpq-dev gcc \
+    libreoffice libreoffice-calc \
+    fonts-dejavu fonts-liberation fontconfig && \
     rm -rf /var/lib/apt/lists/*
 
 # Cài Python packages từ requirements để deploy không bị lệch dependency
