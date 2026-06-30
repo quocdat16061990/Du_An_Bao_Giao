@@ -32,3 +32,7 @@ Thumbs.db
 
 # Local UI template dump, not used by the app build
 frontend/UI/
+
+# Node
+node_modules/
+package-lock.json
