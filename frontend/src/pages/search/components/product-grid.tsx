@@ -37,6 +37,9 @@ export function ProductGrid({ products, selectedIds, onToggleSelect, viewMode }:
                 <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[100px]">
                   TH
                 </th>
+                <th className="relative h-10 text-center align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[140px]">
+                  Đơn vị & Quy cách
+                </th>
                 <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 w-[160px]">
                   Giá
                 </th>

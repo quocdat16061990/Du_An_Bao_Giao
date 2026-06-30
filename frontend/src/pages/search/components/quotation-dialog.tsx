@@ -28,13 +28,14 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
   const isOpen = useSearchStore((s) => s.isQuotationOpen)
   const closeQuotation = useSearchStore((s) => s.closeQuotation)
   const selectedCustomer = useSearchStore((s) => s.selectedCustomer)
+  const productQuantities = useSearchStore((s) => s.productQuantities)
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
   const [isDownloadingExcel, setIsDownloadingExcel] = useState(false)
   const [isPreviewLoading, setIsPreviewLoading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewError, setPreviewError] = useState<string | null>(null)
   const [customPrices, setCustomPrices] = useState<Record<number, PriceChoice>>({})
-
+  
   useEffect(() => {
     if (!isOpen) {
       setCustomPrices({})
@@ -91,14 +92,16 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
               return { price: product.gia_dl_10 ?? 0, label: 'GIÁ ĐL+10%' }
           }
         })()
+        const qty = productQuantities[product.id] ?? 1
         return {
           product_id: product.id,
           custom_price: selectedPrice.price,
           price_label: selectedPrice.label,
+          quantity: qty,
         }
       }),
     }
-  }, [selectedCustomer, selectedProducts, customPrices])
+  }, [selectedCustomer, selectedProducts, customPrices, productQuantities])
 
   const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob)
@@ -249,8 +252,15 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
                   const isCustom = selectedPrice.label === 'GIÁ ĐIỀN TAY'
                   return (
                     <div key={product.id} className="rounded-md border bg-background p-3">
-                      <div className="mb-2 text-xs font-semibold leading-snug">
-                        {product.ma_vt} {product.ten_hang || product.model_turbo ? `- ${product.ten_hang || product.model_turbo}` : ''}
+                      <div className="mb-2 text-xs font-semibold leading-snug flex items-center justify-between gap-1.5">
+                        <span className="truncate" title={`${product.ma_vt} ${product.ten_hang || product.model_turbo ? `- ${product.ten_hang || product.model_turbo}` : ''}`}>
+                          {product.ma_vt} {product.ten_hang || product.model_turbo ? `- ${product.ten_hang || product.model_turbo}` : ''}
+                        </span>
+                        {product.dvt && (
+                          <span className="text-[9px] font-bold text-muted-foreground bg-muted border px-1.5 py-0.5 rounded uppercase shrink-0 scale-90" title={`Đơn vị tính: ${product.dvt}`}>
+                            {product.dvt}
+                          </span>
+                        )}
                       </div>
                       <select
                         className="mb-2 h-8 w-full rounded-md border bg-background px-2 text-xs"

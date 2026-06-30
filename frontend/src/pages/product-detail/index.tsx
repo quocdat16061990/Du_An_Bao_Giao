@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Wrench, Cpu, Tag, Flame, Cog, Factory, Building2,
-  FileText, Hash, Sheet, Calendar, ZoomIn, DollarSign, Ruler,
+  FileText, Hash, Sheet, Calendar, ZoomIn, DollarSign, Ruler, Package,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -184,6 +184,7 @@ export default function ProductDetailPage() {
                       <InfoRow icon={Factory} label="Hãng máy" value={product.hang_may_name} />
                       <InfoRow icon={Building2} label="Hãng SX" value={product.hang_sx_name} />
                       <InfoRow icon={Cpu} label="Mã động cơ" value={product.ma_dong_co} />
+                      <InfoRow icon={Package} label="Đơn vị tính" value={product.dvt || 'Cái'} />
                       <InfoRowOem icon={Tag} label="OEM Part No" value={product.oem_part_no} />
                     </div>
                   </div>
