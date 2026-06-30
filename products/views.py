@@ -453,6 +453,7 @@ def _custom_prices_map_from_items(items_custom):
         custom_prices_map[item['product_id']] = {
             'price': Decimal(str(item['custom_price'])),
             'label': item['price_label'],
+            'quantity': item.get('quantity', 1),
         }
     return custom_prices_map
 
@@ -511,11 +512,13 @@ def _create_quotation_record(
         )
 
         for product in products:
+            qty = 1
             if custom_prices_map and product.id in custom_prices_map:
                 don_gia = Decimal(str(custom_prices_map[product.id]['price']))
+                qty = custom_prices_map[product.id].get('quantity', 1)
             else:
                 don_gia = product.get_price_for_type(customer.phan_loai) or Decimal('0')
-            thanh_tien = (don_gia * Decimal('1.08')).quantize(Decimal('1.'))
+            thanh_tien = (don_gia * qty * Decimal('1.08')).quantize(Decimal('1.'))
             tong_cong += thanh_tien
             models.QuotationItem.objects.create(
                 quotation=quotation,
@@ -523,7 +526,7 @@ def _create_quotation_record(
                 ma_vt=product.ma_vt,
                 ten_hang=product.ten_hang or product.model_turbo or '',
                 don_gia=don_gia,
-                so_luong=1,
+                so_luong=qty,
                 thanh_tien=thanh_tien,
             )
 
@@ -535,11 +538,13 @@ def _create_quotation_record(
 
 class _QuotationItemProductSnapshot:
     def __init__(self, item):
+        self.id = item.product.id if item.product else 0
         self.ma_vt = item.ma_vt
         self.ten_hang = item.ten_hang
         self.model_turbo = ''
         self.dvt = item.product.dvt if item.product else 'Cai'
         self._price = item.don_gia or Decimal('0')
+        self.quantity = item.so_luong
 
     def get_price_for_type(self, _phan_loai):
         return self._price
@@ -671,14 +676,7 @@ class QuotationExportExcelView(APIView):
         nhan_vien = str(request.data.get('nhan_vien') or '')
         items_custom = req_serializer.validated_data.get('items_custom')
 
-        custom_prices_map = None
-        if items_custom:
-            custom_prices_map = {}
-            for item in items_custom:
-                custom_prices_map[item['product_id']] = {
-                    'price': Decimal(str(item['custom_price'])),
-                    'label': item['price_label']
-                }
+        custom_prices_map = _custom_prices_map_from_items(items_custom)
 
         try:
             customer = models.Customer.objects.select_related('nha_xe').get(id=customer_id, is_active=True)
@@ -926,13 +924,7 @@ class QuotationSaveView(APIView):
         nhan_vien = req_serializer.validated_data.get('nhan_vien', '')
         items_custom = req_serializer.validated_data.get('items_custom')
 
-        custom_prices_map = {}
-        if items_custom:
-            for item in items_custom:
-                custom_prices_map[item['product_id']] = {
-                    'price': Decimal(str(item['custom_price'])),
-                    'label': item['price_label']
-                }
+        custom_prices_map = _custom_prices_map_from_items(items_custom)
 
         try:
             customer = models.Customer.objects.get(id=customer_id, is_active=True)
@@ -969,11 +961,13 @@ class QuotationSaveView(APIView):
         )
 
         for p in products_qs:
+            qty = 1
             if custom_prices_map and p.id in custom_prices_map:
                 don_gia = custom_prices_map[p.id]['price']
+                qty = custom_prices_map[p.id].get('quantity', 1)
             else:
                 don_gia = p.get_price_for_type(customer.phan_loai) or Decimal('0')
-            thanh_tien = (don_gia * Decimal('1.08')).quantize(Decimal('1.'))
+            thanh_tien = (don_gia * qty * Decimal('1.08')).quantize(Decimal('1.'))
             tong_cong += thanh_tien
             models.QuotationItem.objects.create(
                 quotation=quotation,
@@ -981,7 +975,7 @@ class QuotationSaveView(APIView):
                 ma_vt=p.ma_vt,
                 ten_hang=p.ten_hang or p.model_turbo or '',
                 don_gia=don_gia,
-                so_luong=1,
+                so_luong=qty,
                 thanh_tien=thanh_tien,
             )
 

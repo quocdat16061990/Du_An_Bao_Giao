@@ -125,6 +125,7 @@ class QuotationItemCustomSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
     custom_price = serializers.DecimalField(max_digits=12, decimal_places=0)
     price_label = serializers.CharField(max_length=50)
+    quantity = serializers.IntegerField(default=1, min_value=1)
 
 
 class QuotationRequestSerializer(serializers.Serializer):
