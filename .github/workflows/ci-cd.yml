@@ -83,6 +83,11 @@ jobs:
             fi
 
             cd "$PROJECT_DIR"
+
+            # Restart Docker daemon to clear hung zombie containers (marked for removal)
+            systemctl restart docker || service docker restart || true
+            sleep 3
+
             # Luôn đồng bộ với GitHub (force sync)
             git fetch origin main
             git reset --hard origin/main
