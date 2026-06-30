@@ -13,7 +13,7 @@ interface ProductSpec {
   chuthich: string
 }
 
-function getProductSpec(product: any): ProductSpec {
+function getProductSpec(product: Product): ProductSpec {
   const dvtRaw = (product.dvt || 'Cái').trim();
   const loai = product.loai || '';
   const catName = (product.category_name || '').toLowerCase();
@@ -108,7 +108,7 @@ function getProductSpec(product: any): ProductSpec {
 interface ProductCardProps {
   product: Product
   isSelected: boolean
-  onToggleSelect: (id: number) => void
+  onToggleSelect: (product: Product) => void
   viewMode: 'grid' | 'table'
   rowIndex?: number
 }
@@ -198,7 +198,7 @@ export const ProductCard = memo(function ProductCard({
               'w-5 h-5 rounded border border-input flex items-center justify-center cursor-pointer transition-all mx-auto',
               isSelected ? 'bg-primary border-primary text-primary-foreground' : 'hover:border-primary/50'
             )}
-            onClick={() => onToggleSelect(product.id)}
+            onClick={() => onToggleSelect(product)}
           >
             {isSelected && <Check className="h-3 w-3" />}
           </div>
@@ -243,7 +243,7 @@ export const ProductCard = memo(function ProductCard({
                   if (currentQty > 1) {
                     setProductQuantity(product.id, currentQty - 1);
                   } else {
-                    onToggleSelect(product.id);
+                    onToggleSelect(product);
                   }
                 }}
               >
@@ -333,7 +333,7 @@ export const ProductCard = memo(function ProductCard({
                 ? 'bg-primary text-primary-foreground shadow-lg'
                 : 'bg-black/50 backdrop-blur text-white/80 opacity-0 group-hover:opacity-100',
             )}
-            onClick={() => onToggleSelect(product.id)}
+            onClick={() => onToggleSelect(product)}
           >
             <Check className={cn('h-4 w-4 transition-transform', isSelected ? 'scale-100' : 'scale-75')} />
           </div>
@@ -415,7 +415,7 @@ export const ProductCard = memo(function ProductCard({
                   if (currentQty > 1) {
                     setProductQuantity(product.id, currentQty - 1);
                   } else {
-                    onToggleSelect(product.id);
+                    onToggleSelect(product);
                   }
                 }}
               >
@@ -440,7 +440,7 @@ export const ProductCard = memo(function ProductCard({
               className="w-full py-1 text-[10px] font-bold rounded-md border border-border hover:border-primary/40 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               onClick={(e) => {
                 e.stopPropagation()
-                onToggleSelect(product.id)
+                onToggleSelect(product)
               }}
             >
               Chọn

@@ -1,13 +1,14 @@
 import { create } from 'zustand'
-import type { Customer } from '../helper/types'
+import type { Customer, Product } from '../helper/types'
 
 interface SearchStore {
   // Selected product IDs
   selectedProductIds: Set<number>
+  selectedProductsMap: Record<number, Product>
   productQuantities: Record<number, number>
-  toggleProduct: (id: number) => void
+  toggleProduct: (product: Product) => void
   setProductQuantity: (id: number, quantity: number) => void
-  selectAll: (ids: Array<number>) => void
+  selectAll: (products: Array<Product>) => void
   clearSelection: () => void
 
   // Selected customer
@@ -26,19 +27,23 @@ interface SearchStore {
 
 export const useSearchStore = create<SearchStore>((set) => ({
   selectedProductIds: new Set<number>(),
+  selectedProductsMap: {},
   productQuantities: {},
-  toggleProduct: (id) =>
+  toggleProduct: (product) =>
     set((state) => {
       const next = new Set(state.selectedProductIds)
       const nextQuantities = { ...state.productQuantities }
-      if (next.has(id)) {
-        next.delete(id)
-        delete nextQuantities[id]
+      const nextProductsMap = { ...state.selectedProductsMap }
+      if (next.has(product.id)) {
+        next.delete(product.id)
+        Reflect.deleteProperty(nextQuantities, product.id)
+        Reflect.deleteProperty(nextProductsMap, product.id)
       } else {
-        next.add(id)
-        nextQuantities[id] = 1
+        next.add(product.id)
+        nextQuantities[product.id] = 1
+        nextProductsMap[product.id] = product
       }
-      return { selectedProductIds: next, productQuantities: nextQuantities }
+      return { selectedProductIds: next, productQuantities: nextQuantities, selectedProductsMap: nextProductsMap }
     }),
   setProductQuantity: (id, quantity) =>
     set((state) => ({
@@ -47,20 +52,26 @@ export const useSearchStore = create<SearchStore>((set) => ({
         [id]: Math.max(1, quantity),
       },
     })),
-  selectAll: (ids) =>
+  selectAll: (products) =>
     set(() => {
+      const nextIds = new Set<number>()
       const quantities: Record<number, number> = {}
-      ids.forEach((id) => {
-        quantities[id] = 1
+      const nextProductsMap: Record<number, Product> = {}
+      products.forEach((p) => {
+        nextIds.add(p.id)
+        quantities[p.id] = 1
+        nextProductsMap[p.id] = p
       })
       return {
-        selectedProductIds: new Set(ids),
+        selectedProductIds: nextIds,
         productQuantities: quantities,
+        selectedProductsMap: nextProductsMap,
       }
     }),
   clearSelection: () =>
     set(() => ({
       selectedProductIds: new Set(),
+      selectedProductsMap: {},
       productQuantities: {},
     })),
 

@@ -49,6 +49,7 @@ export default function SearchPage() {
 
   // ── Store ──
   const selectedIds = useSearchStore((s) => s.selectedProductIds)
+  const selectedProductsMap = useSearchStore((s) => s.selectedProductsMap)
   const toggleProduct = useSearchStore((s) => s.toggleProduct)
   const selectAll = useSearchStore((s) => s.selectAll)
   const clearSelection = useSearchStore((s) => s.clearSelection)
@@ -78,7 +79,7 @@ export default function SearchPage() {
   const rawProducts = data?.results ?? []
   const products = useMemo(() => rawProducts.filter(filterClientSide), [rawProducts, filterClientSide])
   const totalCount = data?.count ?? 0
-  const selectedProducts = products.filter((p) => selectedIds.has(p.id))
+  const selectedProducts = useMemo(() => Object.values(selectedProductsMap), [selectedProductsMap])
   const totalPages = data?.total_pages ?? Math.max(1, Math.ceil(totalCount / pageSize))
   const showSkeleton = isLoading && !data
   const showRefreshBar = isFetching && !showSkeleton
@@ -97,7 +98,7 @@ export default function SearchPage() {
     if (selectedIds.size >= products.length) {
       clearSelection()
     } else {
-      selectAll(products.map((p) => p.id))
+      selectAll(products)
     }
   }, [products, selectedIds, selectAll, clearSelection])
 

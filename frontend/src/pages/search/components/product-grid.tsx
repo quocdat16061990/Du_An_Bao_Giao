@@ -4,7 +4,7 @@ import type { Product } from '../helper/types'
 interface ProductGridProps {
   products: Array<Product>
   selectedIds: Set<number>
-  onToggleSelect: (id: number) => void
+  onToggleSelect: (product: Product) => void
   viewMode: 'grid' | 'table'
 }
 

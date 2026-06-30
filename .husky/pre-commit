@@ -5,7 +5,7 @@ echo "=== Running pre-commit hooks ==="
 # 1. Lint Python files (Backend)
 if command -v flake8 >/dev/null 2>&1; then
   echo "Linting backend Python files..."
-  flake8 . --count --statistics --max-line-length=140 --ignore=E127,E225,E226,E231,E302,E305,E401,E402,E701,E702,F401,F541,F841,W503,W504 --exclude=venv,node_modules,frontend,migrations,__pycache__,*.pyc
+  flake8 . --count --statistics --max-line-length=140 --ignore=E127,E225,E226,E231,E302,E305,E401,E402,E701,E702,F401,F541,F841,W503,W504 --exclude=venv,node_modules,frontend,migrations,__pycache__,*.pyc,sync_excel_to_supabase.py
   if [ $? -ne 0 ]; then
     echo "❌ Flake8 linting failed. Please fix Python issues before committing."
     exit 1
@@ -14,7 +14,7 @@ else
   # On Windows, try calling python's flake8 if flake8 command isn't directly in path
   if [ -f "venv/Scripts/flake8" ]; then
     echo "Linting backend Python files (using venv)..."
-    venv/Scripts/flake8 . --count --statistics --max-line-length=140 --ignore=E127,E225,E226,E231,E302,E305,E401,E402,E701,E702,F401,F541,F841,W503,W504 --exclude=venv,node_modules,frontend,migrations,__pycache__,*.pyc
+    venv/Scripts/flake8 . --count --statistics --max-line-length=140 --ignore=E127,E225,E226,E231,E302,E305,E401,E402,E701,E702,F401,F541,F841,W503,W504 --exclude=venv,node_modules,frontend,migrations,__pycache__,*.pyc,sync_excel_to_supabase.py
     if [ $? -ne 0 ]; then
       echo "❌ Flake8 linting failed. Please fix Python issues before committing."
       exit 1

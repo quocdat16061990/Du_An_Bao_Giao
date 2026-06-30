@@ -36,3 +36,7 @@ frontend/UI/
 # Node
 node_modules/
 package-lock.json
+
+# Exports and Local Scripts
+exports/
+sync_excel_to_supabase.py

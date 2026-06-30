@@ -359,7 +359,7 @@ export default function ProductDetailPage() {
             <Button
               className="w-full gap-2 h-11 font-semibold text-base"
               variant={isSelected ? 'default' : 'outline'}
-              onClick={() => toggleProduct(product.id)}
+              onClick={() => toggleProduct(product)}
             >
               {isSelected ? '✓ Bỏ chọn sản phẩm' : '+ Thêm vào danh sách báo giá'}
             </Button>
