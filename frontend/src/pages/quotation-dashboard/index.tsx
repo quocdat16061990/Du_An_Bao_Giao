@@ -9,7 +9,6 @@ import {
   Tag,
   FileText,
   CheckCircle2,
-  XCircle,
   User,
   HelpCircle,
 } from 'lucide-react'
