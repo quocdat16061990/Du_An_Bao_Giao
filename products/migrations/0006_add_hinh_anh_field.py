@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('products', '0005_alter_product_loai_enum'),
+        ('products', '0004_seed_categories'),
     ]
 
     operations = [

@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('products', '0007_fix_loai_varchar_length'),
+        ('products', '0006_add_hinh_anh_field'),
     ]
 
     operations = [
