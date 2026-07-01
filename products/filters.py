@@ -1,3 +1,4 @@
+import re
 import django_filters
 from django.db.models import Q, DecimalField
 from django.db.models.functions import Coalesce
@@ -24,17 +25,28 @@ class ProductFilter(django_filters.FilterSet):
     def filter_search(self, queryset, name, value):
         if not value:
             return queryset
-        q = value.strip()
-        return queryset.filter(
-            Q(ma_vt__icontains=q) |
-            Q(ten_hang__icontains=q) |
-            Q(model_turbo__icontains=q) |
-            Q(ma_dong_co__icontains=q) |
-            Q(oem_part_no__icontains=q) |
-            Q(dac_diem__icontains=q) |
-            Q(ung_dung__icontains=q) |
-            Q(parno__icontains=q)
-        )
+
+        # Tách từ khóa tìm kiếm cách nhau bởi khoảng trắng hoặc dấu phẩy
+        tokens = [t.strip() for t in re.split(r'[, \s]+', value) if t.strip()]
+        if not tokens:
+            return queryset
+
+        for token in tokens:
+            queryset = queryset.filter(
+                Q(ma_vt__icontains=token) |
+                Q(ten_hang__icontains=token) |
+                Q(model_turbo__icontains=token) |
+                Q(ma_dong_co__icontains=token) |
+                Q(oem_part_no__icontains=token) |
+                Q(dac_diem__icontains=token) |
+                Q(ung_dung__icontains=token) |
+                Q(parno__icontains=token) |
+                Q(category__ten__icontains=token) |
+                Q(hang_may__ten__icontains=token) |
+                Q(hang_sx__ten__icontains=token) |
+                Q(thuong_hieu__ten__icontains=token)
+            )
+        return queryset
 
     def filter_min_price(self, queryset, name, value):
         if value is None:
@@ -52,11 +64,13 @@ class ProductFilter(django_filters.FilterSet):
         ).filter(_min_price__lte=value)
 
     def filter_phan_loai_gia(self, queryset, name, value):
-        """Lọc sản phẩm có giá theo loại (VIP, ƯU ĐÃI, ĐẠI LÝ, ĐL+10)"""
+        """Lọc sản phẩm có giá theo loại (VIP, ƯU ĐÃI, ĐẠI LÝ, GARA, VỐN, ĐL+10)"""
         col_map = {
             'vip': 'gia_vip',
             'uu_dai': 'gia_uu_dai',
             'dai_ly': 'gia_dai_ly',
+            'gara': 'gia_gara',
+            'von': 'gia_von',
             'dl_10': 'gia_dl_10',
         }
         col = col_map.get(value.lower())

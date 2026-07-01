@@ -203,12 +203,13 @@ class Product(models.Model):
             'VIP': self.gia_vip,
             'ƯU_ĐÃI': self.gia_uu_dai,
             'ĐẠI_LÝ': self.gia_dai_ly,
+            'GARA': self.gia_gara,
             'NGOẠI_LỆ': self.gia_dl_10,
         }
         price = mapping.get(phan_loai.upper())
         if price is not None:
             return price
-        return self.gia_dl_10 or self.gia_vip or self.gia_uu_dai or self.gia_dai_ly or Decimal('0')
+        return self.gia_dl_10 or self.gia_vip or self.gia_uu_dai or self.gia_dai_ly or self.gia_gara or Decimal('0')
 
     def is_turbo(self) -> bool:
         """Kiểm tra sản phẩm có phải turbo không."""
@@ -221,6 +222,8 @@ class Customer(models.Model):
     class PhanLoai(models.TextChoices):
         VIP = 'VIP', 'Khách VIP'
         UU_DAI = 'ƯU_ĐÃI', 'Khách ưu đãi'
+        DAI_LY = 'ĐẠI_LÝ', 'Khách đại lý'
+        GARA = 'GARA', 'Gara sửa chữa'
         NGOAI_LE = 'NGOẠI_LỆ', 'VIP ngoại lệ'
         CHUA_PL = 'CHƯA_PL', 'Chưa phân loại'
 
