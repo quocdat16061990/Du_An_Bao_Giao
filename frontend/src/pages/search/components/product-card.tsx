@@ -360,33 +360,33 @@ export const ProductCard = memo(function ProductCard({
         </div>
       </div>
 
-      <div className="flex flex-col flex-1 p-2.5 gap-1.5">
-        <div className="flex items-center justify-between gap-1.5">
+      <div className="flex flex-col flex-1 p-2 sm:p-2.5 gap-1 sm:gap-1.5">
+        <div className="flex items-center justify-between gap-1">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="font-mono text-[9px] font-bold text-muted-foreground/80 tracking-wide bg-muted px-1.5 py-0.5 rounded shrink-0">
+            <span className="font-mono text-[8px] sm:text-[9px] font-bold text-muted-foreground/80 tracking-wide bg-muted px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded shrink-0">
               {product.ma_vt}
             </span>
             {product.dvt && (
-              <span className="text-[9px] font-bold text-turbo-blue/80 bg-turbo-blue/5 border border-turbo-blue/15 px-1 py-0.5 rounded capitalize truncate max-w-[65px]" title={product.dvt}>
+              <span className="text-[8.5px] sm:text-[9px] font-bold text-turbo-blue/80 bg-turbo-blue/5 border border-turbo-blue/15 px-1 py-0.5 rounded capitalize truncate max-w-[50px] sm:max-w-[65px]" title={product.dvt}>
                 {product.dvt}
               </span>
             )}
           </div>
           {product.loai === 'ruot' && (
-            <Badge variant="outline" className="text-[8.5px] h-4.5 px-1 border-primary/40 text-primary font-bold shrink-0">
+            <Badge variant="outline" className="text-[8px] sm:text-[8.5px] h-4 sm:h-4.5 px-0.5 sm:px-1 border-primary/40 text-primary font-bold shrink-0">
               {'Ruột'}
             </Badge>
           )}
         </div>
 
-        <h4 className="font-bold text-[11.5px] leading-snug line-clamp-2 text-foreground">
+        <h4 className="font-bold text-[10.5px] sm:text-[11.5px] leading-snug line-clamp-2 text-foreground">
           {displayName}
         </h4>
 
-        <div className="space-y-0.5 text-[9.5px] text-muted-foreground">
+        <div className="space-y-0.5 text-[8.5px] sm:text-[9.5px] text-muted-foreground">
           {product.hang_may_name && (
             <div className="flex items-center gap-1">
-              <Wrench className="h-3 w-3 shrink-0 opacity-70" />
+              <Wrench className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0 opacity-70" />
               <span className="truncate font-medium">{product.hang_may_name}</span>
               {product.thuong_hieu_name && (
                 <span className="opacity-70">- {product.thuong_hieu_name}</span>
@@ -394,17 +394,17 @@ export const ProductCard = memo(function ProductCard({
             </div>
           )}
           {product.ma_dong_co && (
-            <div className="truncate font-mono opacity-80 pl-4">Động cơ: {product.ma_dong_co}</div>
+            <div className="truncate font-mono opacity-80 pl-3.5 sm:pl-4">Động cơ: {product.ma_dong_co}</div>
           )}
           {(() => {
             const spec = getProductSpec(product);
             return (
-              <div className="mt-1.5 pt-1.5 border-t border-border/60 space-y-0.5 text-[9.5px]">
+              <div className="mt-1 sm:mt-1.5 pt-1 sm:pt-1.5 border-t border-border/60 space-y-0.5 text-[8.5px] sm:text-[9.5px]">
                 <div className="flex items-center justify-between text-foreground/85">
                   <span>Đơn vị: <span className="font-bold text-turbo-blue">{spec.dvt}</span></span>
                   <span>Quy cách: <span className="font-bold text-turbo-blue">{spec.soluong}</span></span>
                 </div>
-                <div className="text-[9px] text-muted-foreground/80 italic truncate" title={spec.chuthich}>
+                <div className="text-[8px] sm:text-[9px] text-muted-foreground/80 italic truncate" title={spec.chuthich}>
                   ({spec.chuthich})
                 </div>
               </div>
@@ -412,39 +412,39 @@ export const ProductCard = memo(function ProductCard({
           })()}
         </div>
 
-        <div className="pt-2 border-t border-border/80 mt-auto">
-          <div className="grid grid-cols-2 gap-x-1.5 gap-y-1 text-[9.5px]">
-            <div className="flex justify-between items-center bg-red-500/5 dark:bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/15">
+        <div className="pt-1.5 sm:pt-2 border-t border-border/80 mt-auto">
+          <div className="grid grid-cols-2 gap-x-1 sm:gap-x-1.5 gap-y-0.5 sm:gap-y-1 text-[8px] xs:text-[8.5px] sm:text-[9.5px]">
+            <div className="flex justify-between items-center bg-red-500/5 dark:bg-red-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-red-500/15">
               <span className="text-muted-foreground font-semibold">Vốn:</span>
               <span className="font-bold tabular-nums text-red-600 dark:text-red-400">
                 {product.gia_von ? formatVnd(product.gia_von) : 'L.Hệ'}
               </span>
             </div>
-            <div className="flex justify-between items-center bg-amber-500/5 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/15">
+            <div className="flex justify-between items-center bg-amber-500/5 dark:bg-amber-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-amber-500/15">
               <span className="text-muted-foreground font-semibold">VIP:</span>
               <span className="font-bold tabular-nums text-amber-600 dark:text-amber-400">
                 {product.gia_vip ? formatVnd(product.gia_vip) : 'L.Hệ'}
               </span>
             </div>
-            <div className="flex justify-between items-center bg-orange-500/5 dark:bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/15">
+            <div className="flex justify-between items-center bg-orange-500/5 dark:bg-orange-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-orange-500/15">
               <span className="text-muted-foreground font-semibold">U.Đãi:</span>
               <span className="font-bold tabular-nums text-orange-600 dark:text-orange-400">
                 {product.gia_uu_dai ? formatVnd(product.gia_uu_dai) : 'L.Hệ'}
               </span>
             </div>
-            <div className="flex justify-between items-center bg-blue-500/5 dark:bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/15">
+            <div className="flex justify-between items-center bg-blue-500/5 dark:bg-blue-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-blue-500/15">
               <span className="text-muted-foreground font-semibold">Đ.Lý:</span>
               <span className="font-bold tabular-nums text-blue-600 dark:text-blue-400">
                 {product.gia_dai_ly ? formatVnd(product.gia_dai_ly) : 'L.Hệ'}
               </span>
             </div>
-            <div className="flex justify-between items-center bg-purple-500/5 dark:bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/15">
+            <div className="flex justify-between items-center bg-purple-500/5 dark:bg-purple-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-purple-500/15">
               <span className="text-muted-foreground font-semibold">Gara:</span>
               <span className="font-bold tabular-nums text-purple-600 dark:text-purple-400">
                 {product.gia_gara ? formatVnd(product.gia_gara) : 'L.Hệ'}
               </span>
             </div>
-            <div className="flex justify-between items-center bg-slate-500/5 dark:bg-slate-500/10 px-1.5 py-0.5 rounded border border-slate-500/15">
+            <div className="flex justify-between items-center bg-slate-500/5 dark:bg-slate-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-slate-500/15">
               <span className="text-muted-foreground font-semibold">ĐL+10%:</span>
               <span className="font-bold tabular-nums text-slate-600 dark:text-slate-400">
                 {product.gia_dl_10 ? formatVnd(product.gia_dl_10) : 'L.Hệ'}
@@ -453,7 +453,7 @@ export const ProductCard = memo(function ProductCard({
           </div>
         </div>
 
-        <div className={cn("mt-1.5 transition-all duration-200", isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
+        <div className={cn("mt-1 sm:mt-1.5 transition-all duration-200", isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
           {isSelected ? (
             <div className="flex items-center justify-between border border-primary/30 rounded-md overflow-hidden bg-primary/5 h-7" onClick={(e) => e.stopPropagation()}>
               <button
@@ -486,7 +486,7 @@ export const ProductCard = memo(function ProductCard({
             </div>
           ) : (
             <button
-              className="w-full py-1 text-[10px] font-bold rounded-md border border-border hover:border-primary/40 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="w-full py-1 text-[9px] sm:text-[10px] font-bold rounded-md border border-border hover:border-primary/40 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               onClick={(e) => {
                 e.stopPropagation()
                 onToggleSelect(product)

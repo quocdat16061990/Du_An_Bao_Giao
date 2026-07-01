@@ -41,6 +41,15 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunSQL(
             sql=[
+                """
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'product_loai') THEN
+                        CREATE TYPE product_loai AS ENUM ('turbo', 'ruot');
+                    END IF;
+                END$$;
+                """
+            ] + [
                 f"ALTER TYPE product_loai ADD VALUE IF NOT EXISTS '{val}';"
                 for val in NEW_LOAI_VALUES
             ],
