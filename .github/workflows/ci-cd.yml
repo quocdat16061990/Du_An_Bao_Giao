@@ -84,7 +84,16 @@ jobs:
 
             # Restart Docker daemon to clear hung zombie containers (marked for removal)
             systemctl restart docker || service docker restart || true
-            sleep 3
+            sleep 8
+
+            # Detect and force remove any stuck/zombie containers immediately
+            for c in turbodiesel-backend turbodiesel-frontend; do
+              status=$(docker inspect -f '{{.State.Status}}' "$c" 2>/dev/null || true)
+              if [ "$status" = "dead" ] || [ "$status" = "removing" ]; then
+                echo "Warning: Container $c is in stuck state ($status). Force removing..."
+                docker rm -f "$c" || true
+              fi
+            done
 
             # Luôn đồng bộ với GitHub (force sync)
             git fetch origin main
@@ -103,7 +112,7 @@ jobs:
 
             docker compose config
             docker compose build --pull --no-cache backend frontend
-            docker compose rm -fs backend frontend
+            docker compose rm -fs backend frontend || (docker rm -f turbodiesel-backend turbodiesel-frontend && docker compose rm -f backend frontend)
             docker compose up -d --remove-orphans
 
             echo "Waiting for backend health..."
