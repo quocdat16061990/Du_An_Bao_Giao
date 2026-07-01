@@ -267,15 +267,35 @@ export const ProductCard = memo(function ProductCard({
             <div className="text-center text-xs text-muted-foreground opacity-40 select-none">—</div>
           )}
         </td>
-        <td className="text-right w-[160px]">
-          <div className="flex items-center justify-end gap-2">
-            <span className={cn('font-extrabold tabular-nums tracking-tight text-sm', bestPrice.colorClass)}>
-              {bestPrice.value ? formatVnd(bestPrice.value) : 'Liên hệ'}
-            </span>
-            <Badge className={cn('h-5 px-1.5 text-[9px] font-extrabold border shrink-0', bestPrice.badgeClass)}>
-              {bestPrice.label}
-            </Badge>
-          </div>
+        <td className="border-e border-border text-right w-[110px]">
+          <span className="font-bold tabular-nums tracking-tight text-xs text-red-600 dark:text-red-400">
+            {product.gia_von ? formatVnd(product.gia_von) : 'Liên hệ'}
+          </span>
+        </td>
+        <td className="border-e border-border text-right w-[110px]">
+          <span className="font-bold tabular-nums tracking-tight text-xs text-amber-600 dark:text-amber-400">
+            {product.gia_vip ? formatVnd(product.gia_vip) : 'Liên hệ'}
+          </span>
+        </td>
+        <td className="border-e border-border text-right w-[110px]">
+          <span className="font-bold tabular-nums tracking-tight text-xs text-orange-600 dark:text-orange-400">
+            {product.gia_uu_dai ? formatVnd(product.gia_uu_dai) : 'Liên hệ'}
+          </span>
+        </td>
+        <td className="border-e border-border text-right w-[110px]">
+          <span className="font-bold tabular-nums tracking-tight text-xs text-blue-600 dark:text-blue-400">
+            {product.gia_dai_ly ? formatVnd(product.gia_dai_ly) : 'Liên hệ'}
+          </span>
+        </td>
+        <td className="border-e border-border text-right w-[110px]">
+          <span className="font-bold tabular-nums tracking-tight text-xs text-purple-600 dark:text-purple-400">
+            {product.gia_gara ? formatVnd(product.gia_gara) : 'Liên hệ'}
+          </span>
+        </td>
+        <td className="text-right w-[120px]">
+          <span className="font-bold tabular-nums tracking-tight text-xs text-slate-600 dark:text-slate-400">
+            {product.gia_dl_10 ? formatVnd(product.gia_dl_10) : 'Liên hệ'}
+          </span>
         </td>
       </tr>
     )
@@ -392,16 +412,45 @@ export const ProductCard = memo(function ProductCard({
           })()}
         </div>
 
-        <div className="flex items-end justify-between pt-2 border-t border-border/80 mt-auto">
-          <div className="flex flex-col">
-            <span className="text-[8.5px] font-bold text-muted-foreground/70 uppercase tracking-wider">{'Đơn Giá'}</span>
-            <span className={cn('text-xs font-extrabold tabular-nums tracking-tight', bestPrice.colorClass)}>
-              {bestPrice.value ? formatVnd(bestPrice.value) : 'Liên hệ'}
-            </span>
+        <div className="pt-2 border-t border-border/80 mt-auto">
+          <div className="grid grid-cols-2 gap-x-1.5 gap-y-1 text-[9.5px]">
+            <div className="flex justify-between items-center bg-red-500/5 dark:bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/15">
+              <span className="text-muted-foreground font-semibold">Vốn:</span>
+              <span className="font-bold tabular-nums text-red-600 dark:text-red-400">
+                {product.gia_von ? formatVnd(product.gia_von) : 'L.Hệ'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center bg-amber-500/5 dark:bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/15">
+              <span className="text-muted-foreground font-semibold">VIP:</span>
+              <span className="font-bold tabular-nums text-amber-600 dark:text-amber-400">
+                {product.gia_vip ? formatVnd(product.gia_vip) : 'L.Hệ'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center bg-orange-500/5 dark:bg-orange-500/10 px-1.5 py-0.5 rounded border border-orange-500/15">
+              <span className="text-muted-foreground font-semibold">U.Đãi:</span>
+              <span className="font-bold tabular-nums text-orange-600 dark:text-orange-400">
+                {product.gia_uu_dai ? formatVnd(product.gia_uu_dai) : 'L.Hệ'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center bg-blue-500/5 dark:bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/15">
+              <span className="text-muted-foreground font-semibold">Đ.Lý:</span>
+              <span className="font-bold tabular-nums text-blue-600 dark:text-blue-400">
+                {product.gia_dai_ly ? formatVnd(product.gia_dai_ly) : 'L.Hệ'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center bg-purple-500/5 dark:bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/15">
+              <span className="text-muted-foreground font-semibold">Gara:</span>
+              <span className="font-bold tabular-nums text-purple-600 dark:text-purple-400">
+                {product.gia_gara ? formatVnd(product.gia_gara) : 'L.Hệ'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center bg-slate-500/5 dark:bg-slate-500/10 px-1.5 py-0.5 rounded border border-slate-500/15">
+              <span className="text-muted-foreground font-semibold">ĐL+10%:</span>
+              <span className="font-bold tabular-nums text-slate-600 dark:text-slate-400">
+                {product.gia_dl_10 ? formatVnd(product.gia_dl_10) : 'L.Hệ'}
+              </span>
+            </div>
           </div>
-          <Badge className={cn('h-4.5 px-1.5 text-[8.5px] font-extrabold border shrink-0', bestPrice.badgeClass)}>
-            {bestPrice.label}
-          </Badge>
         </div>
 
         <div className={cn("mt-1.5 transition-all duration-200", isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>
