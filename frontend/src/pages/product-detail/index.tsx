@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Wrench, Cpu, Tag, Flame, Cog, Factory, Building2,
-  FileText, Hash, Sheet, Calendar, ZoomIn, DollarSign, Ruler, Package,
+  FileText, Hash, Sheet, Calendar, ZoomIn, DollarSign, Ruler, Package, Edit, Trash2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,11 +14,34 @@ import { useProduct } from '@/pages/search/helper/use-product'
 import { useSearchStore } from '@/pages/search/store'
 import { getMediaUrl } from '@/lib/media'
 import { cn, formatVnd } from '@/lib/utils'
+import { useAuth } from '@/lib/auth/context'
+import { useProductCrud } from '@/pages/search/helper/use-product-crud'
+import { ProductFormDialog } from '@/pages/search/components/product-form-dialog'
+import { toast } from 'sonner'
+
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { deleteProduct } = useProductCrud()
+  const [isFormOpen, setIsFormOpen] = useState(false)
+
   const productId = Number(id)
+
+  const handleDelete = async () => {
+    const ok = window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')
+    if (!ok) return
+    try {
+      await deleteProduct(productId)
+      toast.success('Xóa sản phẩm thành công!')
+      navigate(-1)
+    } catch (err: unknown) {
+      console.error(err)
+      toast.error('Xóa sản phẩm thất bại.')
+    }
+  }
+
   const { data: product, isLoading, isError } = useProduct(productId)
   const selectedIds = useSearchStore((s) => s.selectedProductIds)
   const toggleProduct = useSearchStore((s) => s.toggleProduct)
@@ -92,12 +115,34 @@ export default function ProductDetailPage() {
         <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground self-start hover:text-foreground" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4" /> Quay lại danh sách
         </Button>
-        <div className="text-xs text-muted-foreground self-start sm:self-auto bg-muted px-2.5 py-1 rounded">
-          Mã ID: {product.id}
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          {user?.is_staff && (
+            <div className="flex items-center gap-2 mr-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsFormOpen(true)}
+                className="h-8 text-xs font-bold text-amber-500 border-amber-200/50 hover:bg-amber-50 gap-1.5"
+              >
+                <Edit className="h-3.5 w-3.5" /> Sửa sản phẩm
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDelete}
+                className="h-8 text-xs font-bold text-red-500 border-red-200/50 hover:bg-red-50 gap-1.5"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Xóa sản phẩm
+              </Button>
+            </div>
+          )}
+          <div className="text-xs text-muted-foreground bg-muted px-2.5 py-1 rounded">
+            Mã ID: {product.id}
+          </div>
         </div>
       </div>
 
-      <div className="max-w-[1440px] mx-auto">
+      <div className="max-w-[144rem] mx-auto">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ═══════ LEFT: Main info ═══════ */}
@@ -270,7 +315,7 @@ export default function ProductDetailPage() {
           {/* ═══════ RIGHT: Pricing ═══════ */}
           <div className="space-y-6">
             {/* ── PRICE CARD lung linh ── */}
-            <Card className="sticky top-[80px] overflow-hidden border-0 shadow-2xl shadow-amber-500/10">
+            <Card className="sticky top-[8rem] overflow-hidden border-0 shadow-2xl shadow-amber-500/10">
               {/* Gradient border glow */}
               <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-amber-500/20 via-transparent to-transparent pointer-events-none" />
 
@@ -366,6 +411,13 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* ═════ PRODUCT FORM DIALOG ═════ */}
+      <ProductFormDialog
+        isOpen={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        product={product}
+      />
     </div>
   )
 }

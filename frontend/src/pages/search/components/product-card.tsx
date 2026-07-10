@@ -4,8 +4,10 @@ import { Badge } from '@/components/ui/badge'
 import { getMediaUrl } from '@/lib/media'
 import { cn, formatVnd } from '@/lib/utils'
 import type { Product } from '../helper/types'
-import { Check, Wrench } from 'lucide-react'
+import { Check, Wrench, Edit, Trash2 } from 'lucide-react'
 import { useSearchStore } from '../store'
+import { useAuth } from '@/lib/auth/context'
+import { Button } from '@/components/ui/button'
 
 interface ProductSpec {
   dvt: string
@@ -111,6 +113,8 @@ interface ProductCardProps {
   onToggleSelect: (product: Product) => void
   viewMode: 'grid' | 'table'
   rowIndex?: number
+  onEditProduct?: (product: Product) => void
+  onDeleteProduct?: (id: number) => void
 }
 
 type PriceMeta = {
@@ -126,8 +130,12 @@ export const ProductCard = memo(function ProductCard({
   isSelected,
   onToggleSelect,
   viewMode,
+  onEditProduct,
+  onDeleteProduct,
 }: ProductCardProps) {
   const navigate = useNavigate()
+  const { user } = useAuth()
+
   const [imgError, setImgError] = useState(false)
   const productQuantities = useSearchStore((s) => s.productQuantities)
   const setProductQuantity = useSearchStore((s) => s.setProductQuantity)
@@ -192,7 +200,7 @@ export const ProductCard = memo(function ProductCard({
         )}
         onClick={handleClick}
       >
-        <td className="border-e border-border w-[51px] text-center" onClick={(e) => e.stopPropagation()}>
+        <td className="border-e border-border w-[5.1rem] text-center" onClick={(e) => e.stopPropagation()}>
           <div
             className={cn(
               'w-5 h-5 rounded border border-input flex items-center justify-center cursor-pointer transition-all mx-auto',
@@ -203,38 +211,38 @@ export const ProductCard = memo(function ProductCard({
             {isSelected && <Check className="h-3 w-3" />}
           </div>
         </td>
-        <td className="border-e border-border w-[110px]">
+        <td className="border-e border-border w-[11rem]">
           <Badge variant="outline" className={cn('text-[10px] h-5.5 font-bold uppercase shrink-0', isTurbo ? 'border-amber-500/40 text-amber-500 bg-amber-500/5' : 'border-blue-500/40 text-blue-500 bg-blue-500/5')}>
             {product.category_name || product.loai}
           </Badge>
         </td>
-        <td className="border-e border-border w-[130px] font-mono font-bold text-xs text-foreground">
+        <td className="border-e border-border w-[13rem] font-mono font-bold text-xs text-foreground">
           {product.ma_vt}
         </td>
         <td className="border-e border-border font-bold text-sm text-foreground">
           {displayName}
         </td>
-        <td className="border-e border-border w-[140px] text-xs text-muted-foreground hidden xl:table-cell truncate">
+        <td className="border-e border-border w-[14rem] text-xs text-muted-foreground hidden xl:table-cell truncate">
           {product.oem_part_no || '—'}
         </td>
-        <td className="border-e border-border w-[110px] text-xs text-muted-foreground font-medium truncate">
+        <td className="border-e border-border w-[11rem] text-xs text-muted-foreground font-medium truncate">
           {product.hang_may_name || '—'}
         </td>
-        <td className="border-e border-border w-[100px] text-xs text-muted-foreground truncate">
+        <td className="border-e border-border w-[10rem] text-xs text-muted-foreground truncate">
           {product.thuong_hieu_name || '—'}
         </td>
         {(() => {
           const spec = getProductSpec(product);
           return (
-            <td className="border-e border-border w-[140px] text-xs text-muted-foreground text-center" title={spec.chuthich}>
+            <td className="border-e border-border w-[14rem] text-xs text-muted-foreground text-center" title={spec.chuthich}>
               <div className="font-bold text-foreground">{spec.dvt}</div>
               <div className="text-[10px] text-muted-foreground/80">({spec.soluong})</div>
             </td>
           );
         })()}
-        <td className="border-e border-border w-[110px]" onClick={(e) => e.stopPropagation()}>
+        <td className="border-e border-border w-[11rem]" onClick={(e) => e.stopPropagation()}>
           {isSelected ? (
-            <div className="flex items-center justify-between border border-input rounded-md overflow-hidden bg-background h-7 max-w-[90px] mx-auto">
+            <div className="flex items-center justify-between border border-input rounded-md overflow-hidden bg-background h-7 max-w-[9rem] mx-auto">
               <button
                 type="button"
                 className="w-6 h-full flex items-center justify-center hover:bg-muted text-foreground font-bold text-xs"
@@ -267,37 +275,62 @@ export const ProductCard = memo(function ProductCard({
             <div className="text-center text-xs text-muted-foreground opacity-40 select-none">—</div>
           )}
         </td>
-        <td className="border-e border-border text-right w-[110px]">
+        <td className="border-e border-border text-right w-[11rem]">
           <span className="font-bold tabular-nums tracking-tight text-xs text-red-600 dark:text-red-400">
             {product.gia_von ? formatVnd(product.gia_von) : 'Liên hệ'}
           </span>
         </td>
-        <td className="border-e border-border text-right w-[110px]">
+        <td className="border-e border-border text-right w-[11rem]">
           <span className="font-bold tabular-nums tracking-tight text-xs text-amber-600 dark:text-amber-400">
             {product.gia_vip ? formatVnd(product.gia_vip) : 'Liên hệ'}
           </span>
         </td>
-        <td className="border-e border-border text-right w-[110px]">
+        <td className="border-e border-border text-right w-[11rem]">
           <span className="font-bold tabular-nums tracking-tight text-xs text-orange-600 dark:text-orange-400">
             {product.gia_uu_dai ? formatVnd(product.gia_uu_dai) : 'Liên hệ'}
           </span>
         </td>
-        <td className="border-e border-border text-right w-[110px]">
+        <td className="border-e border-border text-right w-[11rem]">
           <span className="font-bold tabular-nums tracking-tight text-xs text-blue-600 dark:text-blue-400">
             {product.gia_dai_ly ? formatVnd(product.gia_dai_ly) : 'Liên hệ'}
           </span>
         </td>
-        <td className="border-e border-border text-right w-[110px]">
+        <td className="border-e border-border text-right w-[11rem]">
           <span className="font-bold tabular-nums tracking-tight text-xs text-purple-600 dark:text-purple-400">
             {product.gia_gara ? formatVnd(product.gia_gara) : 'Liên hệ'}
           </span>
         </td>
-        <td className="text-right w-[120px]">
+        <td className={user?.is_staff ? "border-e border-border text-right w-[12rem]" : "text-right w-[12rem]"}>
           <span className="font-bold tabular-nums tracking-tight text-xs text-slate-600 dark:text-slate-400">
             {product.gia_dl_10 ? formatVnd(product.gia_dl_10) : 'Liên hệ'}
           </span>
         </td>
+        {user?.is_staff && (
+          <td className="w-[11rem] text-center" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-center gap-1.5">
+              <Button
+                variant="outline"
+                size="icon"
+                className="w-7 h-7 text-amber-500 hover:text-amber-600 border-amber-200/50 hover:bg-amber-50"
+                onClick={() => onEditProduct?.(product)}
+                title="Sửa"
+              >
+                <Edit className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="w-7 h-7 text-red-500 hover:text-red-600 border-red-200/50 hover:bg-red-50"
+                onClick={() => onDeleteProduct?.(product.id)}
+                title="Xóa"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </td>
+        )}
       </tr>
+
     )
   }
 
@@ -340,6 +373,26 @@ export const ProductCard = memo(function ProductCard({
           <Badge className={cn('h-6 px-3 text-[11px] font-extrabold border', bestPrice.badgeClass)}>
             {bestPrice.label}
           </Badge>
+          {user?.is_staff && (
+            <div className="flex items-center gap-1.5 z-20">
+              <button
+                type="button"
+                className="p-1 rounded bg-amber-500 hover:bg-amber-600 text-slate-955 transition-colors"
+                onClick={() => onEditProduct?.(product)}
+                title="Sửa sản phẩm"
+              >
+                <Edit className="h-3 w-3" />
+              </button>
+              <button
+                type="button"
+                className="p-1 rounded bg-red-600 hover:bg-red-700 text-white transition-colors"
+                onClick={() => onDeleteProduct?.(product.id)}
+                title="Xóa sản phẩm"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          )}
         </div>
 
         <div
