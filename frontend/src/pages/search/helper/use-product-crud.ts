@@ -65,9 +65,10 @@ export function useProductCrud() {
     },
   })
 
-  const deleteMutation = useMutation<void, Error, number>({
+  const deleteMutation = useMutation<null, Error, number>({
     mutationFn: async (id) => {
       await apiClient.delete(`/products/${id}/`)
+      return null
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] })

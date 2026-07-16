@@ -142,7 +142,7 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      <div className="max-w-[144rem] mx-auto">
+      <div className="max-w-[1440px] mx-auto">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ═══════ LEFT: Main info ═══════ */}
@@ -315,7 +315,7 @@ export default function ProductDetailPage() {
           {/* ═══════ RIGHT: Pricing ═══════ */}
           <div className="space-y-6">
             {/* ── PRICE CARD lung linh ── */}
-            <Card className="sticky top-[8rem] overflow-hidden border-0 shadow-2xl shadow-amber-500/10">
+            <Card className="sticky top-[80px] overflow-hidden border-0 shadow-2xl shadow-amber-500/10">
               {/* Gradient border glow */}
               <div className="absolute inset-0 rounded-xl bg-gradient-to-b from-amber-500/20 via-transparent to-transparent pointer-events-none" />
 

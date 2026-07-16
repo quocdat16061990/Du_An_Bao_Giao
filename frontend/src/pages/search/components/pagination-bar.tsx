@@ -92,12 +92,12 @@ export function PaginationBar({
 
         {/* Page size selector */}
         <div className="hidden sm:flex items-center gap-1.5">
-          <span className="text-xs">/ trang</span>
+          <span className="text-[13px]">/ trang</span>
           <Select
             value={String(pageSize)}
             onValueChange={(v) => onPageSizeChange(Number(v))}
           >
-            <SelectTrigger className="h-7 w-[70px] text-xs">
+            <SelectTrigger className="h-7 w-[70px] text-[13px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -207,12 +207,12 @@ export function PaginationBar({
               onChange={(e) => setJumpInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleJump()}
               placeholder={`1–${totalPages}`}
-              className="h-7 w-[60px] text-xs text-center px-1"
+              className="h-7 w-[60px] text-[13px] text-center px-1"
             />
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 text-xs px-2"
+              className="h-7 text-[13px] px-2"
               onClick={handleJump}
               disabled={!jumpInput}
             >

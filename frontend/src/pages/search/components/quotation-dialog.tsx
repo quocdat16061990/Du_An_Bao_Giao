@@ -252,18 +252,18 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
                   const isCustom = selectedPrice.label === 'GIÁ ĐIỀN TAY'
                   return (
                     <div key={product.id} className="rounded-md border bg-background p-3">
-                      <div className="mb-2 text-xs font-semibold leading-snug flex items-center justify-between gap-1.5">
+                      <div className="mb-2 text-[13px] font-semibold leading-snug flex items-center justify-between gap-1.5">
                         <span className="truncate" title={`${product.ma_vt} ${product.ten_hang || product.model_turbo ? `- ${product.ten_hang || product.model_turbo}` : ''}`}>
                           {product.ma_vt} {product.ten_hang || product.model_turbo ? `- ${product.ten_hang || product.model_turbo}` : ''}
                         </span>
                         {product.dvt && (
-                          <span className="text-[9px] font-bold text-muted-foreground bg-muted border px-1.5 py-0.5 rounded uppercase shrink-0 scale-90" title={`Đơn vị tính: ${product.dvt}`}>
+                          <span className="text-[12px] font-bold text-muted-foreground bg-muted border px-1.5 py-0.5 rounded uppercase shrink-0 scale-90" title={`Đơn vị tính: ${product.dvt}`}>
                             {product.dvt}
                           </span>
                         )}
                       </div>
                       <select
-                        className="mb-2 h-8 w-full rounded-md border bg-background px-2 text-xs"
+                        className="mb-2 h-8 w-full rounded-md border bg-background px-2 text-[13px]"
                         value={isCustom ? 'CUSTOM' : selectedPrice.label}
                         onChange={(event) => {
                           const value = event.target.value
@@ -291,7 +291,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
                       </select>
                       <input
                         type="number"
-                        className="h-8 w-full rounded-md border bg-background px-2 text-right text-xs font-semibold"
+                        className="h-8 w-full rounded-md border bg-background px-2 text-right text-[13px] font-semibold"
                         value={selectedPrice.price || ''}
                         onChange={(event) => {
                           const value = Number(event.target.value) || 0

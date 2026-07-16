@@ -115,9 +115,9 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
               <span className="truncate text-sm">
                 {selectedCustomer.ten_kh}
                 {selectedCustomer.dien_thoai && (
-                  <span className="text-muted-foreground ml-1.5 text-xs">· {selectedCustomer.dien_thoai}</span>
+                  <span className="text-muted-foreground ml-1.5 text-[13px]">· {selectedCustomer.dien_thoai}</span>
                 )}
-                <Badge variant={TAG_STYLE[selectedCustomer.phan_loai] ?? 'outline'} className="ml-2 text-[10px]">
+                <Badge variant={TAG_STYLE[selectedCustomer.phan_loai] ?? 'outline'} className="ml-2 text-[12px]">
                   {selectedCustomer.id === 0 ? 'Mới' : selectedCustomer.phan_loai}
                 </Badge>
               </span>
@@ -132,7 +132,7 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
           <Button
             type="button"
             variant="outline"
-            className="h-9 gap-1.5 border-emerald-200 bg-emerald-50 px-3 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
+            className="h-9 gap-1.5 border-emerald-200 bg-emerald-50 px-3 text-[13px] font-semibold text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800"
             onClick={openCreateForm}
           >
             <UserPlus className="h-3.5 w-3.5" />
@@ -170,11 +170,11 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
                     >
                       <div className="flex items-center gap-2 w-full">
                         <span className="font-medium text-sm">{customer.ten_kh}</span>
-                        <Badge variant={TAG_STYLE[customer.phan_loai] ?? 'outline'} className="text-[10px]">
+                        <Badge variant={TAG_STYLE[customer.phan_loai] ?? 'outline'} className="text-[12px]">
                           {customer.phan_loai}
                         </Badge>
                       </div>
-                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-xs text-muted-foreground">
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-[13px] text-muted-foreground">
                         {customer.dien_thoai && <span className="flex items-center gap-1"><Phone className="h-3 w-3"/>{customer.dien_thoai}</span>}
                         {customer.tinh_tp && <span className="flex items-center gap-1"><MapPin className="h-3 w-3"/>{customer.tinh_tp}</span>}
                         {customer.ma_kh && <span className="flex items-center gap-1"><Building2 className="h-3 w-3"/>{customer.ma_kh}</span>}
@@ -209,7 +209,7 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
                     </div>
                     <div className="space-y-2">
                       <div className="space-y-1">
-                        <Label className="text-xs">Tên khách hàng *</Label>
+                        <Label className="text-[13px]">Tên khách hàng *</Label>
                         <Input
                           value={newName}
                           onChange={(e) => setNewName(e.target.value)}
@@ -219,7 +219,7 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Số điện thoại</Label>
+                        <Label className="text-[13px]">Số điện thoại</Label>
                         <Input
                           value={newPhone}
                           onChange={(e) => setNewPhone(e.target.value)}
@@ -228,7 +228,7 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
                         />
                       </div>
                       <div className="space-y-1">
-                        <Label className="text-xs">Địa chỉ</Label>
+                        <Label className="text-[13px]">Địa chỉ</Label>
                         <Input
                           value={newAddress}
                           onChange={(e) => setNewAddress(e.target.value)}
@@ -238,10 +238,10 @@ export function CustomerSearch({ hasError = false, onValidSelect }: CustomerSear
                       </div>
                     </div>
                     {isCreating && (
-                      <p className="text-xs font-medium text-muted-foreground">Dang them khach hang...</p>
+                      <p className="text-[13px] font-medium text-muted-foreground">Dang them khach hang...</p>
                     )}
                     {createError && (
-                      <p className="text-xs font-medium text-destructive">{createError}</p>
+                      <p className="text-[13px] font-medium text-destructive">{createError}</p>
                     )}
                     <Button
                       size="sm"

@@ -77,7 +77,7 @@ export function FilterSidebar({
           <h3 className="font-semibold text-sm">Bộ lọc</h3>
         </div>
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-destructive" onClick={onClearAll}>
+          <Button variant="ghost" size="sm" className="h-7 text-[13px] text-muted-foreground hover:text-destructive" onClick={onClearAll}>
             <RotateCcw className="h-3 w-3 mr-1" />Xóa
           </Button>
         )}
@@ -163,11 +163,11 @@ function FilterSection({
       >
         <div className="flex items-center gap-1.5">
           {isOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</span>
+          <span className="text-[13px] font-semibold text-muted-foreground uppercase tracking-wider">{title}</span>
         </div>
         <div className="flex items-center gap-1.5">
           {isLoading && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
-          <Badge variant="secondary" className="text-[10px] h-4 px-1.5">{count}</Badge>
+          <Badge variant="secondary" className="text-[12px] h-4 px-1.5">{count}</Badge>
         </div>
       </button>
       {isOpen && <div className="ml-5 mt-1 space-y-0.5">{children}</div>}
@@ -187,8 +187,8 @@ function FilterItem({
       checked && 'bg-primary/10 text-primary',
     )}>
       <Checkbox checked={checked} onCheckedChange={onChange} className="h-3.5 w-3.5" />
-      <span className="text-xs text-foreground truncate flex-1">{label}</span>
-      {count !== undefined && <span className="text-[10px] text-muted-foreground">{count}</span>}
+      <span className="text-[13px] text-foreground truncate flex-1">{label}</span>
+      {count !== undefined && <span className="text-[12px] text-muted-foreground">{count}</span>}
     </label>
   )
 }

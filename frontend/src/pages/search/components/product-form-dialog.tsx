@@ -301,7 +301,7 @@ export function ProductFormDialog({
           <DialogTitle className="text-lg font-bold">
             {isEdit ? 'Cập Nhật Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
           </DialogTitle>
-          <DialogDescription className="text-slate-400 text-xs">
+          <DialogDescription className="text-slate-400 text-[13px]">
             {isEdit
               ? 'Chỉnh sửa thông tin chi tiết và lưu thay đổi vào cơ sở dữ liệu.'
               : 'Điền đầy đủ thông tin để tạo mới một sản phẩm phụ tùng động cơ.'}
@@ -313,22 +313,22 @@ export function ProductFormDialog({
             <div className="space-y-6">
               {/* 1. THÔNG TIN PHÂN LOẠI CHUNG */}
               <div className="bg-muted/10 border border-border/40 rounded-xl p-4 space-y-4">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-muted-foreground">
                   Phân loại chung & Định danh
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="loai" className="text-xs font-semibold">Loại sản phẩm *</Label>
+                    <Label htmlFor="loai" className="text-[13px] font-semibold">Loại sản phẩm *</Label>
                     <Select
                       value={watch('loai') || 'turbo'}
                       onValueChange={(val) => setValue('loai', val)}
                     >
-                      <SelectTrigger id="loai" className="h-9 text-xs">
+                      <SelectTrigger id="loai" className="h-9 text-[13px]">
                         <SelectValue placeholder="Chọn loại sản phẩm" />
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
                         {PRODUCT_LOAI_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                          <SelectItem key={opt.value} value={opt.value} className="text-[13px]">
                             {opt.label}
                           </SelectItem>
                         ))}
@@ -337,54 +337,54 @@ export function ProductFormDialog({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="ma_vt" className="text-xs font-semibold">Mã Vật Tư (Mã VT) *</Label>
+                    <Label htmlFor="ma_vt" className="text-[13px] font-semibold">Mã Vật Tư (Mã VT) *</Label>
                     <Input
                       id="ma_vt"
                       {...register('ma_vt')}
                       placeholder="VD: HH90123"
-                      className="h-9 text-xs"
+                      className="h-9 text-[13px]"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="ten_hang" className="text-xs font-semibold">Tên hàng / Mô tả ngắn</Label>
+                    <Label htmlFor="ten_hang" className="text-[13px] font-semibold">Tên hàng / Mô tả ngắn</Label>
                     <Input
                       id="ten_hang"
                       {...register('ten_hang')}
                       placeholder="VD: Cánh Quạt CUMMINS"
-                      className="h-9 text-xs"
+                      className="h-9 text-[13px]"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="dvt" className="text-xs font-semibold">Đơn vị tính (ĐVT)</Label>
+                    <Label htmlFor="dvt" className="text-[13px] font-semibold">Đơn vị tính (ĐVT)</Label>
                     <Input
                       id="dvt"
                       {...register('dvt')}
                       placeholder="VD: Cái, Bộ, Cặp"
-                      className="h-9 text-xs"
+                      className="h-9 text-[13px]"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="doi_th_sx" className="text-xs font-semibold">Đời / Thế hệ SX</Label>
+                    <Label htmlFor="doi_th_sx" className="text-[13px] font-semibold">Đời / Thế hệ SX</Label>
                     <Input
                       id="doi_th_sx"
                       {...register('doi_th_sx')}
                       placeholder="VD: D6AC, PC200-8"
-                      className="h-9 text-xs"
+                      className="h-9 text-[13px]"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="parno" className="text-xs font-semibold">Part Number gốc</Label>
+                    <Label htmlFor="parno" className="text-[13px] font-semibold">Part Number gốc</Label>
                     <Input
                       id="parno"
                       {...register('parno')}
                       placeholder="VD: 3590022"
-                      className="h-9 text-xs"
+                      className="h-9 text-[13px]"
                     />
                   </div>
                 </div>
@@ -392,22 +392,22 @@ export function ProductFormDialog({
 
               {/* 2. LIÊN KẾT ĐỐI TƯỢNG */}
               <div className="bg-muted/10 border border-border/40 rounded-xl p-4 space-y-4">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-muted-foreground">
                   Hãng máy & Hãng sản xuất
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="hang_may" className="text-xs font-semibold">Hãng máy *</Label>
+                    <Label htmlFor="hang_may" className="text-[13px] font-semibold">Hãng máy *</Label>
                     <Select
                       value={watch('hang_may') ? String(watch('hang_may')) : undefined}
                       onValueChange={(val) => setValue('hang_may', Number(val))}
                     >
-                      <SelectTrigger id="hang_may" className="h-9 text-xs">
+                      <SelectTrigger id="hang_may" className="h-9 text-[13px]">
                         <SelectValue placeholder="Chọn hãng máy" />
                       </SelectTrigger>
                       <SelectContent>
                         {hangMayList.map((hm) => (
-                          <SelectItem key={hm.id} value={String(hm.id)} className="text-xs">
+                          <SelectItem key={hm.id} value={String(hm.id)} className="text-[13px]">
                             {hm.ten}
                           </SelectItem>
                         ))}
@@ -416,18 +416,18 @@ export function ProductFormDialog({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="hang_sx" className="text-xs font-semibold">Hãng sản xuất</Label>
+                    <Label htmlFor="hang_sx" className="text-[13px] font-semibold">Hãng sản xuất</Label>
                     <Select
                       value={watch('hang_sx') ? String(watch('hang_sx')) : 'null'}
                       onValueChange={(val) => setValue('hang_sx', val === 'null' ? null : Number(val))}
                     >
-                      <SelectTrigger id="hang_sx" className="h-9 text-xs">
+                      <SelectTrigger id="hang_sx" className="h-9 text-[13px]">
                         <SelectValue placeholder="Chọn hãng sản xuất" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="null" className="text-xs text-muted-foreground">Không có</SelectItem>
+                        <SelectItem value="null" className="text-[13px] text-muted-foreground">Không có</SelectItem>
                         {hangSxList.map((hs) => (
-                          <SelectItem key={hs.id} value={String(hs.id)} className="text-xs">
+                          <SelectItem key={hs.id} value={String(hs.id)} className="text-[13px]">
                             {hs.ten}
                           </SelectItem>
                         ))}
@@ -436,18 +436,18 @@ export function ProductFormDialog({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="thuong_hieu" className="text-xs font-semibold">Thương hiệu</Label>
+                    <Label htmlFor="thuong_hieu" className="text-[13px] font-semibold">Thương hiệu</Label>
                     <Select
                       value={watch('thuong_hieu') ? String(watch('thuong_hieu')) : 'null'}
                       onValueChange={(val) => setValue('thuong_hieu', val === 'null' ? null : Number(val))}
                     >
-                      <SelectTrigger id="thuong_hieu" className="h-9 text-xs">
+                      <SelectTrigger id="thuong_hieu" className="h-9 text-[13px]">
                         <SelectValue placeholder="Chọn thương hiệu" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="null" className="text-xs text-muted-foreground">Không có</SelectItem>
+                        <SelectItem value="null" className="text-[13px] text-muted-foreground">Không có</SelectItem>
                         {thuongHieuList.map((th) => (
-                          <SelectItem key={th.id} value={String(th.id)} className="text-xs">
+                          <SelectItem key={th.id} value={String(th.id)} className="text-[13px]">
                             {th.ten}
                           </SelectItem>
                         ))}
@@ -456,18 +456,18 @@ export function ProductFormDialog({
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="category" className="text-xs font-semibold">Danh mục</Label>
+                    <Label htmlFor="category" className="text-[13px] font-semibold">Danh mục</Label>
                     <Select
                       value={watch('category') ? String(watch('category')) : 'null'}
                       onValueChange={(val) => setValue('category', val === 'null' ? null : Number(val))}
                     >
-                      <SelectTrigger id="category" className="h-9 text-xs">
+                      <SelectTrigger id="category" className="h-9 text-[13px]">
                         <SelectValue placeholder="Chọn danh mục" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="null" className="text-xs text-muted-foreground">Không có</SelectItem>
+                        <SelectItem value="null" className="text-[13px] text-muted-foreground">Không có</SelectItem>
                         {categories.map((cat) => (
-                          <SelectItem key={cat.id} value={String(cat.id)} className="text-xs">
+                          <SelectItem key={cat.id} value={String(cat.id)} className="text-[13px]">
                             {cat.ten}
                           </SelectItem>
                         ))}
@@ -479,73 +479,73 @@ export function ProductFormDialog({
 
               {/* 3. BẢNG GIÁ (6 MỨC) */}
               <div className="bg-muted/10 border border-border/40 rounded-xl p-4 space-y-4">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-muted-foreground">
                   Giá bán (VND)
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="gia_von" className="text-xs font-semibold">Giá vốn</Label>
+                    <Label htmlFor="gia_von" className="text-[13px] font-semibold">Giá vốn</Label>
                     <Input
                       id="gia_von"
                       type="number"
                       {...register('gia_von')}
                       placeholder="Liên hệ"
-                      className="h-9 text-xs font-mono"
+                      className="h-9 text-[13px] font-mono"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="gia_vip" className="text-xs font-semibold text-amber-500">Giá VIP</Label>
+                    <Label htmlFor="gia_vip" className="text-[13px] font-semibold text-amber-500">Giá VIP</Label>
                     <Input
                       id="gia_vip"
                       type="number"
                       {...register('gia_vip')}
                       placeholder="Liên hệ"
-                      className="h-9 text-xs font-mono text-amber-600 dark:text-amber-400 font-bold"
+                      className="h-9 text-[13px] font-mono text-amber-600 dark:text-amber-400 font-bold"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="gia_uu_dai" className="text-xs font-semibold text-orange-500">Giá ưu đãi</Label>
+                    <Label htmlFor="gia_uu_dai" className="text-[13px] font-semibold text-orange-500">Giá ưu đãi</Label>
                     <Input
                       id="gia_uu_dai"
                       type="number"
                       {...register('gia_uu_dai')}
                       placeholder="Liên hệ"
-                      className="h-9 text-xs font-mono text-orange-600 dark:text-orange-400 font-bold"
+                      className="h-9 text-[13px] font-mono text-orange-600 dark:text-orange-400 font-bold"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="gia_dai_ly" className="text-xs font-semibold text-blue-500">Giá đại lý</Label>
+                    <Label htmlFor="gia_dai_ly" className="text-[13px] font-semibold text-blue-500">Giá đại lý</Label>
                     <Input
                       id="gia_dai_ly"
                       type="number"
                       {...register('gia_dai_ly')}
                       placeholder="Liên hệ"
-                      className="h-9 text-xs font-mono text-blue-600 dark:text-blue-400 font-bold"
+                      className="h-9 text-[13px] font-mono text-blue-600 dark:text-blue-400 font-bold"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="gia_gara" className="text-xs font-semibold text-purple-500">Giá Gara</Label>
+                    <Label htmlFor="gia_gara" className="text-[13px] font-semibold text-purple-500">Giá Gara</Label>
                     <Input
                       id="gia_gara"
                       type="number"
                       {...register('gia_gara')}
                       placeholder="Liên hệ"
-                      className="h-9 text-xs font-mono text-purple-600 dark:text-purple-400 font-bold"
+                      className="h-9 text-[13px] font-mono text-purple-600 dark:text-purple-400 font-bold"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="gia_dl_10" className="text-xs font-semibold text-slate-500">Giá ĐL+10%</Label>
+                    <Label htmlFor="gia_dl_10" className="text-[13px] font-semibold text-slate-500">Giá ĐL+10%</Label>
                     <Input
                       id="gia_dl_10"
                       type="number"
                       {...register('gia_dl_10')}
                       placeholder="Liên hệ"
-                      className="h-9 text-xs font-mono text-slate-600 dark:text-slate-400 font-bold"
+                      className="h-9 text-[13px] font-mono text-slate-600 dark:text-slate-400 font-bold"
                     />
                   </div>
                 </div>
@@ -554,11 +554,11 @@ export function ProductFormDialog({
               {/* 4. HÌNH ẢNH */}
               <div className="bg-muted/10 border border-border/40 rounded-xl p-4 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                  <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-muted-foreground">
                     Hình ảnh sản phẩm
                   </h3>
                   {isUploading && (
-                    <div className="flex items-center gap-1.5 text-xs text-amber-500 font-medium">
+                    <div className="flex items-center gap-1.5 text-[13px] text-amber-500 font-medium">
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                       Đang tải ảnh lên...
                     </div>
@@ -579,8 +579,8 @@ export function ProductFormDialog({
                     <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
                       <Upload className="h-5 w-5" />
                     </div>
-                    <div className="text-xs font-bold text-foreground">Kéo thả hoặc bấm để tải ảnh lên</div>
-                    <div className="text-[10px] text-muted-foreground">Định dạng hỗ trợ: JPG, JPEG, PNG, WEBP, GIF</div>
+                    <div className="text-[13px] font-bold text-foreground">Kéo thả hoặc bấm để tải ảnh lên</div>
+                    <div className="text-[12px] text-muted-foreground">Định dạng hỗ trợ: JPG, JPEG, PNG, WEBP, GIF</div>
                   </div>
                 </div>
 
@@ -624,7 +624,7 @@ export function ProductFormDialog({
                             </button>
                           </div>
                           {isMain && (
-                            <div className="absolute top-1 left-1 bg-amber-500 text-white font-extrabold text-[8px] px-1 rounded shadow-sm uppercase">
+                            <div className="absolute top-1 left-1 bg-amber-500 text-white font-extrabold text-[12px] px-1 rounded shadow-sm uppercase">
                               Ảnh chính
                             </div>
                           )}
@@ -633,7 +633,7 @@ export function ProductFormDialog({
                     })}
                   </div>
                 ) : (
-                  <div className="h-20 rounded-lg border border-dashed border-border/60 bg-muted/5 flex flex-col items-center justify-center text-muted-foreground/50 text-[11px] gap-1.5">
+                  <div className="h-20 rounded-lg border border-dashed border-border/60 bg-muted/5 flex flex-col items-center justify-center text-muted-foreground/50 text-[12px] gap-1.5">
                     <ImageIcon className="h-6 w-6 opacity-40" />
                     <span>Sản phẩm chưa có hình ảnh. Hãy tải lên ảnh của bạn.</span>
                   </div>
@@ -643,37 +643,37 @@ export function ProductFormDialog({
               {/* 5. TURBO-SPECIFIC DETAILS (HIỂN THỊ KHI LOẠI LÀ TURBO/RUOT/SO_LINH_KIEN) */}
               {(loaiValue === 'turbo' || loaiValue === 'ruot' || loaiValue === 'so_linh_kien_turbo') && (
                 <div className="bg-muted/10 border border-border/40 rounded-xl p-4 space-y-4">
-                  <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                  <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-muted-foreground">
                     Thông số Turbo đặc thù
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-1.5">
-                      <Label htmlFor="model_turbo" className="text-xs font-semibold">Model Turbo</Label>
+                      <Label htmlFor="model_turbo" className="text-[13px] font-semibold">Model Turbo</Label>
                       <Input
                         id="model_turbo"
                         {...register('model_turbo')}
                         placeholder="VD: GT35, S200G"
-                        className="h-9 text-xs"
+                        className="h-9 text-[13px]"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="ma_dong_co" className="text-xs font-semibold">Mã động cơ</Label>
+                      <Label htmlFor="ma_dong_co" className="text-[13px] font-semibold">Mã động cơ</Label>
                       <Input
                         id="ma_dong_co"
                         {...register('ma_dong_co')}
                         placeholder="VD: 6D24, S6KT"
-                        className="h-9 text-xs"
+                        className="h-9 text-[13px]"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="oem_part_no" className="text-xs font-semibold">OEM Part No</Label>
+                      <Label htmlFor="oem_part_no" className="text-[13px] font-semibold">OEM Part No</Label>
                       <Input
                         id="oem_part_no"
                         {...register('oem_part_no')}
                         placeholder="VD: ME123456"
-                        className="h-9 text-xs"
+                        className="h-9 text-[13px]"
                       />
                     </div>
                   </div>
@@ -681,66 +681,66 @@ export function ProductFormDialog({
                   {/* Kĩ thuật CG CL */}
                   <div className="grid grid-cols-2 md:grid-cols-6 gap-3 pt-2">
                     <div className="space-y-1.5">
-                      <Label htmlFor="cg_duoi" className="text-xs font-semibold">CG Ø Dưới</Label>
+                      <Label htmlFor="cg_duoi" className="text-[13px] font-semibold">CG Ø Dưới</Label>
                       <Input
                         id="cg_duoi"
                         type="text"
                         {...register('cg_duoi')}
                         placeholder="mm"
-                        className="h-9 text-xs font-mono"
+                        className="h-9 text-[13px] font-mono"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="cg_dinh" className="text-xs font-semibold">CG Ø Đỉnh</Label>
+                      <Label htmlFor="cg_dinh" className="text-[13px] font-semibold">CG Ø Đỉnh</Label>
                       <Input
                         id="cg_dinh"
                         type="text"
                         {...register('cg_dinh')}
                         placeholder="mm"
-                        className="h-9 text-xs font-mono"
+                        className="h-9 text-[13px] font-mono"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="cg_so" className="text-xs font-semibold">CG Số</Label>
+                      <Label htmlFor="cg_so" className="text-[13px] font-semibold">CG Số</Label>
                       <Input
                         id="cg_so"
                         {...register('cg_so')}
                         placeholder="Số"
-                        className="h-9 text-xs font-mono"
+                        className="h-9 text-[13px] font-mono"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="cl_duoi" className="text-xs font-semibold">CL Ø Dưới</Label>
+                      <Label htmlFor="cl_duoi" className="text-[13px] font-semibold">CL Ø Dưới</Label>
                       <Input
                         id="cl_duoi"
                         type="text"
                         {...register('cl_duoi')}
                         placeholder="mm"
-                        className="h-9 text-xs font-mono"
+                        className="h-9 text-[13px] font-mono"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="cl_dinh" className="text-xs font-semibold">CL Ø Đỉnh</Label>
+                      <Label htmlFor="cl_dinh" className="text-[13px] font-semibold">CL Ø Đỉnh</Label>
                       <Input
                         id="cl_dinh"
                         type="text"
                         {...register('cl_dinh')}
                         placeholder="mm"
-                        className="h-9 text-xs font-mono"
+                        className="h-9 text-[13px] font-mono"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="cl_so" className="text-xs font-semibold">CL Số</Label>
+                      <Label htmlFor="cl_so" className="text-[13px] font-semibold">CL Số</Label>
                       <Input
                         id="cl_so"
                         {...register('cl_so')}
                         placeholder="Số"
-                        className="h-9 text-xs font-mono"
+                        className="h-9 text-[13px] font-mono"
                       />
                     </div>
                   </div>
@@ -749,37 +749,37 @@ export function ProductFormDialog({
 
               {/* 6. ĐẶC ĐIỂM, ỨNG DỤNG, GHI CHÚ */}
               <div className="bg-muted/10 border border-border/40 rounded-xl p-4 space-y-4">
-                <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground">
+                <h3 className="text-[13px] font-extrabold uppercase tracking-wider text-muted-foreground">
                   Chi tiết nội dung & Ghi chú
                 </h3>
                 <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="dac_diem" className="text-xs font-semibold">Đặc điểm sản phẩm</Label>
+                    <Label htmlFor="dac_diem" className="text-[13px] font-semibold">Đặc điểm sản phẩm</Label>
                     <Textarea
                       id="dac_diem"
                       {...register('dac_diem')}
                       placeholder="Mô tả các đặc điểm nhận dạng, kích thước, cấu tạo..."
-                      className="min-h-16 text-xs resize-none"
+                      className="min-h-16 text-[13px] resize-none"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="ung_dung" className="text-xs font-semibold">Ứng dụng thực tế</Label>
+                    <Label htmlFor="ung_dung" className="text-[13px] font-semibold">Ứng dụng thực tế</Label>
                     <Textarea
                       id="ung_dung"
                       {...register('ung_dung')}
                       placeholder="Các đời xe, động cơ, thiết bị sử dụng..."
-                      className="min-h-16 text-xs resize-none"
+                      className="min-h-16 text-[13px] resize-none"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="ghi_chu" className="text-xs font-semibold">Ghi chú nội bộ</Label>
+                    <Label htmlFor="ghi_chu" className="text-[13px] font-semibold">Ghi chú nội bộ</Label>
                     <Textarea
                       id="ghi_chu"
                       {...register('ghi_chu')}
                       placeholder="Ghi chú thêm về giá cả, nhà cung cấp hoặc lưu ý khác..."
-                      className="min-h-16 text-xs resize-none"
+                      className="min-h-16 text-[13px] resize-none"
                     />
                   </div>
                 </div>
@@ -788,8 +788,8 @@ export function ProductFormDialog({
               {/* 7. METADATA / IS ACTIVE */}
               <div className="flex items-center space-x-2 py-1 bg-muted/5 border border-border/30 rounded-xl px-4 h-11 justify-between">
                 <div className="flex flex-col">
-                  <Label htmlFor="is_active" className="text-xs font-bold">Hiển thị sản phẩm</Label>
-                  <span className="text-[10px] text-muted-foreground">Sản phẩm ẩn sẽ không hiển thị trên trang tìm kiếm.</span>
+                  <Label htmlFor="is_active" className="text-[13px] font-bold">Hiển thị sản phẩm</Label>
+                  <span className="text-[12px] text-muted-foreground">Sản phẩm ẩn sẽ không hiển thị trên trang tìm kiếm.</span>
                 </div>
                 <Checkbox
                   id="is_active"
@@ -805,14 +805,14 @@ export function ProductFormDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              className="h-9 px-4 text-xs font-bold"
+              className="h-9 px-4 text-[13px] font-bold"
             >
               Hủy
             </Button>
             <Button
               type="submit"
               disabled={isCreating || isUpdating}
-              className="h-9 px-5 text-xs font-bold bg-amber-500 text-slate-955 hover:bg-amber-600 transition-colors"
+              className="h-9 px-5 text-[13px] font-bold bg-amber-500 text-slate-955 hover:bg-amber-600 transition-colors"
             >
               {(isCreating || isUpdating) ? (
                 <>

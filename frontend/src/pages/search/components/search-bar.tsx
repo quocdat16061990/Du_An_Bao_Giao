@@ -56,7 +56,7 @@ export function SearchBar({
           value={localValue}
           onChange={(event) => handleChange(event.target.value)}
           className={cn(
-            'h-9 rounded-md border border-input pl-9 pr-9 text-[13px]',
+            'h-9 rounded-md border border-input pl-9 pr-9 text-[14px]',
             'shadow-xs shadow-black/5',
             'text-foreground placeholder:text-muted-foreground/80',
             'focus-visible:border-ring focus-visible:ring-0 focus-visible:ring-offset-0',
@@ -81,7 +81,7 @@ export function SearchBar({
       {value && !isLoading && (
         <div
           className={cn(
-            'mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs shadow-sm',
+            'mt-2 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[13px] shadow-sm',
             resultCount > 0
               ? 'border-primary/20 bg-primary/10 text-primary'
               : 'border-border bg-muted text-muted-foreground',

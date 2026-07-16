@@ -200,7 +200,7 @@ export const ProductCard = memo(function ProductCard({
         )}
         onClick={handleClick}
       >
-        <td className="border-e border-border w-[5.1rem] text-center" onClick={(e) => e.stopPropagation()}>
+        <td className="border-e border-border w-[82px] text-center" onClick={(e) => e.stopPropagation()}>
           <div
             className={cn(
               'w-5 h-5 rounded border border-input flex items-center justify-center cursor-pointer transition-all mx-auto',
@@ -211,41 +211,41 @@ export const ProductCard = memo(function ProductCard({
             {isSelected && <Check className="h-3 w-3" />}
           </div>
         </td>
-        <td className="border-e border-border w-[11rem]">
-          <Badge variant="outline" className={cn('text-[10px] h-5.5 font-bold uppercase shrink-0', isTurbo ? 'border-amber-500/40 text-amber-500 bg-amber-500/5' : 'border-blue-500/40 text-blue-500 bg-blue-500/5')}>
+        <td className="border-e border-border w-[176px]">
+          <Badge variant="outline" className={cn('text-[12px] h-5.5 font-bold uppercase shrink-0', isTurbo ? 'border-amber-500/40 text-amber-500 bg-amber-500/5' : 'border-blue-500/40 text-blue-500 bg-blue-500/5')}>
             {product.category_name || product.loai}
           </Badge>
         </td>
-        <td className="border-e border-border w-[13rem] font-mono font-bold text-xs text-foreground">
+        <td className="border-e border-border w-[208px] font-mono font-bold text-[13px] text-foreground">
           {product.ma_vt}
         </td>
         <td className="border-e border-border font-bold text-sm text-foreground">
           {displayName}
         </td>
-        <td className="border-e border-border w-[14rem] text-xs text-muted-foreground hidden xl:table-cell truncate">
+        <td className="border-e border-border w-[224px] text-[13px] text-muted-foreground hidden xl:table-cell truncate">
           {product.oem_part_no || '—'}
         </td>
-        <td className="border-e border-border w-[11rem] text-xs text-muted-foreground font-medium truncate">
+        <td className="border-e border-border w-[176px] text-[13px] text-muted-foreground font-medium truncate">
           {product.hang_may_name || '—'}
         </td>
-        <td className="border-e border-border w-[10rem] text-xs text-muted-foreground truncate">
+        <td className="border-e border-border w-[160px] text-[13px] text-muted-foreground truncate">
           {product.thuong_hieu_name || '—'}
         </td>
         {(() => {
           const spec = getProductSpec(product);
           return (
-            <td className="border-e border-border w-[14rem] text-xs text-muted-foreground text-center" title={spec.chuthich}>
+            <td className="border-e border-border w-[224px] text-[13px] text-muted-foreground text-center" title={spec.chuthich}>
               <div className="font-bold text-foreground">{spec.dvt}</div>
-              <div className="text-[10px] text-muted-foreground/80">({spec.soluong})</div>
+              <div className="text-[12px] text-muted-foreground/80">({spec.soluong})</div>
             </td>
           );
         })()}
-        <td className="border-e border-border w-[11rem]" onClick={(e) => e.stopPropagation()}>
+        <td className="border-e border-border w-[176px]" onClick={(e) => e.stopPropagation()}>
           {isSelected ? (
-            <div className="flex items-center justify-between border border-input rounded-md overflow-hidden bg-background h-7 max-w-[9rem] mx-auto">
+            <div className="flex items-center justify-between border border-input rounded-md overflow-hidden bg-background h-7 max-w-[144px] mx-auto">
               <button
                 type="button"
-                className="w-6 h-full flex items-center justify-center hover:bg-muted text-foreground font-bold text-xs"
+                className="w-6 h-full flex items-center justify-center hover:bg-muted text-foreground font-bold text-[13px]"
                 onClick={() => {
                   const currentQty = productQuantities[product.id] ?? 1;
                   if (currentQty > 1) {
@@ -257,12 +257,12 @@ export const ProductCard = memo(function ProductCard({
               >
                 -
               </button>
-              <div className="flex-1 text-center font-bold text-xs font-mono select-none">
+              <div className="flex-1 text-center font-bold text-[13px] font-mono select-none">
                 {productQuantities[product.id] ?? 1}
               </div>
               <button
                 type="button"
-                className="w-6 h-full flex items-center justify-center hover:bg-muted text-foreground font-bold text-xs"
+                className="w-6 h-full flex items-center justify-center hover:bg-muted text-foreground font-bold text-[13px]"
                 onClick={() => {
                   const currentQty = productQuantities[product.id] ?? 1;
                   setProductQuantity(product.id, currentQty + 1);
@@ -272,41 +272,41 @@ export const ProductCard = memo(function ProductCard({
               </button>
             </div>
           ) : (
-            <div className="text-center text-xs text-muted-foreground opacity-40 select-none">—</div>
+            <div className="text-center text-[13px] text-muted-foreground opacity-40 select-none">—</div>
           )}
         </td>
-        <td className="border-e border-border text-right w-[11rem]">
-          <span className="font-bold tabular-nums tracking-tight text-xs text-red-600 dark:text-red-400">
+        <td className="border-e border-border text-right w-[176px]">
+          <span className="font-bold tabular-nums tracking-tight text-[13px] text-red-600 dark:text-red-400">
             {product.gia_von ? formatVnd(product.gia_von) : 'Liên hệ'}
           </span>
         </td>
-        <td className="border-e border-border text-right w-[11rem]">
-          <span className="font-bold tabular-nums tracking-tight text-xs text-amber-600 dark:text-amber-400">
+        <td className="border-e border-border text-right w-[176px]">
+          <span className="font-bold tabular-nums tracking-tight text-[13px] text-amber-600 dark:text-amber-400">
             {product.gia_vip ? formatVnd(product.gia_vip) : 'Liên hệ'}
           </span>
         </td>
-        <td className="border-e border-border text-right w-[11rem]">
-          <span className="font-bold tabular-nums tracking-tight text-xs text-orange-600 dark:text-orange-400">
+        <td className="border-e border-border text-right w-[176px]">
+          <span className="font-bold tabular-nums tracking-tight text-[13px] text-orange-600 dark:text-orange-400">
             {product.gia_uu_dai ? formatVnd(product.gia_uu_dai) : 'Liên hệ'}
           </span>
         </td>
-        <td className="border-e border-border text-right w-[11rem]">
-          <span className="font-bold tabular-nums tracking-tight text-xs text-blue-600 dark:text-blue-400">
+        <td className="border-e border-border text-right w-[176px]">
+          <span className="font-bold tabular-nums tracking-tight text-[13px] text-blue-600 dark:text-blue-400">
             {product.gia_dai_ly ? formatVnd(product.gia_dai_ly) : 'Liên hệ'}
           </span>
         </td>
-        <td className="border-e border-border text-right w-[11rem]">
-          <span className="font-bold tabular-nums tracking-tight text-xs text-purple-600 dark:text-purple-400">
+        <td className="border-e border-border text-right w-[176px]">
+          <span className="font-bold tabular-nums tracking-tight text-[13px] text-purple-600 dark:text-purple-400">
             {product.gia_gara ? formatVnd(product.gia_gara) : 'Liên hệ'}
           </span>
         </td>
-        <td className={user?.is_staff ? "border-e border-border text-right w-[12rem]" : "text-right w-[12rem]"}>
-          <span className="font-bold tabular-nums tracking-tight text-xs text-slate-600 dark:text-slate-400">
+        <td className={user?.is_staff ? "border-e border-border text-right w-[192px]" : "text-right w-[192px]"}>
+          <span className="font-bold tabular-nums tracking-tight text-[13px] text-slate-600 dark:text-slate-400">
             {product.gia_dl_10 ? formatVnd(product.gia_dl_10) : 'Liên hệ'}
           </span>
         </td>
         {user?.is_staff && (
-          <td className="w-[11rem] text-center" onClick={(e) => e.stopPropagation()}>
+          <td className="w-[176px] text-center" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-center gap-1.5">
               <Button
                 variant="outline"
@@ -358,7 +358,7 @@ export const ProductCard = memo(function ProductCard({
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/60 gap-1.5">
             <Wrench className="h-10 w-10 opacity-70" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Không có ảnh</span>
+            <span className="text-[12px] font-bold uppercase tracking-wider">Không có ảnh</span>
           </div>
         )}
 
@@ -370,7 +370,7 @@ export const ProductCard = memo(function ProductCard({
           )}
           onClick={(e) => e.stopPropagation()}
         >
-          <Badge className={cn('h-6 px-3 text-[11px] font-extrabold border', bestPrice.badgeClass)}>
+          <Badge className={cn('h-6 px-3 text-[12px] font-extrabold border', bestPrice.badgeClass)}>
             {bestPrice.label}
           </Badge>
           {user?.is_staff && (
@@ -416,27 +416,27 @@ export const ProductCard = memo(function ProductCard({
       <div className="flex flex-col flex-1 p-2 sm:p-2.5 gap-1 sm:gap-1.5">
         <div className="flex items-center justify-between gap-1">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="font-mono text-[8px] sm:text-[9px] font-bold text-muted-foreground/80 tracking-wide bg-muted px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded shrink-0">
+            <span className="font-mono text-[12px] sm:text-[12px] font-bold text-muted-foreground/80 tracking-wide bg-muted px-1 py-0.5 sm:px-1.5 sm:py-0.5 rounded shrink-0">
               {product.ma_vt}
             </span>
             {product.dvt && (
-              <span className="text-[8.5px] sm:text-[9px] font-bold text-turbo-blue/80 bg-turbo-blue/5 border border-turbo-blue/15 px-1 py-0.5 rounded capitalize truncate max-w-[50px] sm:max-w-[65px]" title={product.dvt}>
+              <span className="text-[12px] sm:text-[12px] font-bold text-turbo-blue/80 bg-turbo-blue/5 border border-turbo-blue/15 px-1 py-0.5 rounded capitalize truncate max-w-[50px] sm:max-w-[65px]" title={product.dvt}>
                 {product.dvt}
               </span>
             )}
           </div>
           {product.loai === 'ruot' && (
-            <Badge variant="outline" className="text-[8px] sm:text-[8.5px] h-4 sm:h-4.5 px-0.5 sm:px-1 border-primary/40 text-primary font-bold shrink-0">
+            <Badge variant="outline" className="text-[12px] sm:text-[12px] h-4 sm:h-4.5 px-0.5 sm:px-1 border-primary/40 text-primary font-bold shrink-0">
               {'Ruột'}
             </Badge>
           )}
         </div>
 
-        <h4 className="font-bold text-[10.5px] sm:text-[11.5px] leading-snug line-clamp-2 text-foreground">
+        <h4 className="font-bold text-[13px] sm:text-[14px] leading-snug line-clamp-2 text-foreground">
           {displayName}
         </h4>
 
-        <div className="space-y-0.5 text-[8.5px] sm:text-[9.5px] text-muted-foreground">
+        <div className="space-y-0.5 text-[12px] sm:text-[13px] text-muted-foreground">
           {product.hang_may_name && (
             <div className="flex items-center gap-1">
               <Wrench className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0 opacity-70" />
@@ -452,12 +452,12 @@ export const ProductCard = memo(function ProductCard({
           {(() => {
             const spec = getProductSpec(product);
             return (
-              <div className="mt-1 sm:mt-1.5 pt-1 sm:pt-1.5 border-t border-border/60 space-y-0.5 text-[8.5px] sm:text-[9.5px]">
+              <div className="mt-1 sm:mt-1.5 pt-1 sm:pt-1.5 border-t border-border/60 space-y-0.5 text-[12px] sm:text-[13px]">
                 <div className="flex items-center justify-between text-foreground/85">
                   <span>Đơn vị: <span className="font-bold text-turbo-blue">{spec.dvt}</span></span>
                   <span>Quy cách: <span className="font-bold text-turbo-blue">{spec.soluong}</span></span>
                 </div>
-                <div className="text-[8px] sm:text-[9px] text-muted-foreground/80 italic truncate" title={spec.chuthich}>
+                <div className="text-[12px] sm:text-[12px] text-muted-foreground/80 italic truncate" title={spec.chuthich}>
                   ({spec.chuthich})
                 </div>
               </div>
@@ -466,7 +466,7 @@ export const ProductCard = memo(function ProductCard({
         </div>
 
         <div className="pt-1.5 sm:pt-2 border-t border-border/80 mt-auto">
-          <div className="grid grid-cols-2 gap-x-1 sm:gap-x-1.5 gap-y-0.5 sm:gap-y-1 text-[8px] xs:text-[8.5px] sm:text-[9.5px]">
+          <div className="grid grid-cols-2 gap-x-1 sm:gap-x-1.5 gap-y-0.5 sm:gap-y-1 text-[12px] xs:text-[12px] sm:text-[13px]">
             <div className="flex justify-between items-center bg-red-500/5 dark:bg-red-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-red-500/15">
               <span className="text-muted-foreground font-semibold">Vốn:</span>
               <span className="font-bold tabular-nums text-red-600 dark:text-red-400">
@@ -511,7 +511,7 @@ export const ProductCard = memo(function ProductCard({
             <div className="flex items-center justify-between border border-primary/30 rounded-md overflow-hidden bg-primary/5 h-7" onClick={(e) => e.stopPropagation()}>
               <button
                 type="button"
-                className="w-8 h-full flex items-center justify-center hover:bg-primary/10 text-primary font-bold transition-colors text-xs"
+                className="w-8 h-full flex items-center justify-center hover:bg-primary/10 text-primary font-bold transition-colors text-[13px]"
                 onClick={() => {
                   const currentQty = productQuantities[product.id] ?? 1;
                   if (currentQty > 1) {
@@ -523,12 +523,12 @@ export const ProductCard = memo(function ProductCard({
               >
                 -
               </button>
-              <div className="flex-1 text-center font-bold text-xs text-primary font-mono select-none">
+              <div className="flex-1 text-center font-bold text-[13px] text-primary font-mono select-none">
                 SL: {productQuantities[product.id] ?? 1}
               </div>
               <button
                 type="button"
-                className="w-8 h-full flex items-center justify-center hover:bg-primary/10 text-primary font-bold transition-colors text-xs"
+                className="w-8 h-full flex items-center justify-center hover:bg-primary/10 text-primary font-bold transition-colors text-[13px]"
                 onClick={() => {
                   const currentQty = productQuantities[product.id] ?? 1;
                   setProductQuantity(product.id, currentQty + 1);
@@ -539,7 +539,7 @@ export const ProductCard = memo(function ProductCard({
             </div>
           ) : (
             <button
-              className="w-full py-1 text-[9px] sm:text-[10px] font-bold rounded-md border border-border hover:border-primary/40 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="w-full py-1 text-[12px] sm:text-[13px] font-bold rounded-md border border-border hover:border-primary/40 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               onClick={(e) => {
                 e.stopPropagation()
                 onToggleSelect(product)

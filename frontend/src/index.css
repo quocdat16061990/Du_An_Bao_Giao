@@ -5,9 +5,6 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    font-size: 62.5%; /* 1rem = 10px */
-  }
   :root {
     --background: 210 27% 96%;
     --foreground: 218 39% 13%;
@@ -36,7 +33,7 @@
     --input: 214 25% 84%;
     --ring: 6 94% 46%;
 
-    --radius: 0.5rem;
+    --radius: 8px;
 
     --turbo-amber: 6 94% 46%;
     --turbo-blue: 205 70% 37%;
@@ -85,8 +82,8 @@
     @apply bg-background text-foreground antialiased;
     margin: 0;
     background:
-      radial-gradient(circle at 18% -12%, hsl(var(--primary) / 0.12), transparent 30rem),
-      linear-gradient(180deg, hsl(210 27% 98%), hsl(var(--background)) 18rem);
+      radial-gradient(circle at 18% -12%, hsl(var(--primary) / 0.12), transparent 480px),
+      linear-gradient(180deg, hsl(210 27% 98%), hsl(var(--background)) 288px);
     font-family: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -94,8 +91,8 @@
 
   .dark body {
     background:
-      radial-gradient(circle at 18% -12%, hsl(var(--primary) / 0.14), transparent 30rem),
-      linear-gradient(180deg, hsl(218 39% 10%), hsl(var(--background)) 18rem);
+      radial-gradient(circle at 18% -12%, hsl(var(--primary) / 0.14), transparent 480px),
+      linear-gradient(180deg, hsl(218 39% 10%), hsl(var(--background)) 288px);
   }
 
   ::-webkit-scrollbar {

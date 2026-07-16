@@ -45,7 +45,7 @@ export function FilterPanel({
             variant="ghost"
             size="sm"
             onClick={onClearAll}
-            className="h-8 text-xs text-muted-foreground hover:text-destructive"
+            className="h-8 text-[13px] text-muted-foreground hover:text-destructive"
           >
             <RotateCcw className="h-3 w-3 mr-1" />
             Xóa lọc
@@ -59,7 +59,7 @@ export function FilterPanel({
         <div className="space-y-6 pr-3">
           {/* Quick search */}
           <div className="space-y-3">
-            <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+            <Label className="text-[13px] font-semibold uppercase text-muted-foreground tracking-wider">
               🔎 Tìm nhanh
             </Label>
             <input
@@ -73,7 +73,7 @@ export function FilterPanel({
 
           {/* Loại giá */}
           <div className="space-y-3">
-            <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+            <Label className="text-[13px] font-semibold uppercase text-muted-foreground tracking-wider">
               📊 Loại giá
             </Label>
             <div className="space-y-2">
@@ -95,7 +95,7 @@ export function FilterPanel({
                   <span className="text-sm font-medium">{opt.label}</span>
                   <span
                     className={cn(
-                      'ml-auto text-xs px-2 py-0.5 rounded-full font-medium',
+                      'ml-auto text-[13px] px-2 py-0.5 rounded-full font-medium',
                       opt.tag === 'VIP' && 'bg-yellow-100 text-yellow-800',
                       opt.tag === 'ƯU_ĐÃI' && 'bg-blue-100 text-blue-800',
                       opt.tag === 'ĐẠI_LÝ' && 'bg-green-100 text-green-800',
@@ -111,7 +111,7 @@ export function FilterPanel({
 
           {/* Price range */}
           <div className="space-y-3">
-            <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+            <Label className="text-[13px] font-semibold uppercase text-muted-foreground tracking-wider">
               💰 Khoảng giá
             </Label>
             <div className="px-1">
@@ -125,7 +125,7 @@ export function FilterPanel({
                 }
               />
             </div>
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="flex items-center justify-between text-[13px] text-muted-foreground">
               <span className="font-medium text-foreground">{formatVnd(priceRange[0])}</span>
               <span className="font-medium text-foreground">{formatVnd(priceRange[1])}</span>
             </div>

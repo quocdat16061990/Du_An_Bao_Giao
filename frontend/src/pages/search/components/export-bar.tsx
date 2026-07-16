@@ -39,7 +39,7 @@ export function ExportBar() {
           variant="ghost"
           size="sm"
           onClick={clearSelection}
-          className="text-xs text-muted-foreground hover:text-destructive"
+          className="text-[13px] text-muted-foreground hover:text-destructive"
         >
           <X className="mr-1 h-3 w-3" />
           Bỏ chọn
@@ -52,7 +52,7 @@ export function ExportBar() {
           onValidSelect={() => setCustomerError(false)}
         />
         {customerError && !selectedCustomer && (
-          <p className="mt-1 text-xs font-medium text-destructive">
+          <p className="mt-1 text-[13px] font-medium text-destructive">
             Vui lòng chọn hoặc thêm khách hàng trước khi tạo báo giá.
           </p>
         )}

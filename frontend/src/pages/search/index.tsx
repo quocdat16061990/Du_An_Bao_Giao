@@ -176,7 +176,7 @@ export default function SearchPage() {
           <h1 className="text-xl font-extrabold tracking-tight text-foreground sm:text-2xl">
             Tra cứu phụ tùng
           </h1>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-[13px] text-muted-foreground mt-1">
             Tra cứu danh sách sản phẩm động cơ Turbo Diesel và tích chọn sản phẩm để tạo báo giá.
           </p>
         </div>
@@ -188,7 +188,7 @@ export default function SearchPage() {
                 setEditingProduct(null)
                 setIsFormOpen(true)
               }}
-              className="h-9 px-4 text-xs font-bold bg-amber-500 text-slate-955 hover:bg-amber-600 gap-1.5 shadow-md"
+              className="h-9 px-4 text-[13px] font-bold bg-amber-500 text-slate-955 hover:bg-amber-600 gap-1.5 shadow-md"
             >
               <Plus className="h-4 w-4" /> Thêm sản phẩm
             </Button>
@@ -196,8 +196,8 @@ export default function SearchPage() {
 
           <div className="flex items-center gap-2 bg-card border border-border px-3.5 py-1.5 rounded-xl shadow-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs text-muted-foreground font-medium">Kho dữ liệu:</span>
-            <span className="text-xs font-bold text-foreground tabular-nums">
+            <span className="text-[13px] text-muted-foreground font-medium">Kho dữ liệu:</span>
+            <span className="text-[13px] font-bold text-foreground tabular-nums">
               {totalCount.toLocaleString('vi-VN')} SP
             </span>
           </div>
@@ -236,7 +236,7 @@ export default function SearchPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="h-9 text-xs gap-1.5 text-muted-foreground hover:text-foreground bg-background"
+                className="h-9 text-[13px] gap-1.5 text-muted-foreground hover:text-foreground bg-background"
                 onClick={handleSelectAll}
               >
                 {selectedIds.size >= products.length ? (
@@ -272,7 +272,7 @@ export default function SearchPage() {
 
             {/* Sort options */}
             <Select value={sorting} onValueChange={(v) => { setSorting(v); setPage(1) }}>
-              <SelectTrigger className="h-9 w-[16rem] text-xs border-border/50 bg-background">
+              <SelectTrigger className="h-9 w-[256px] text-[13px] border-border/50 bg-background">
                 <SelectValue placeholder="Sắp xếp" />
               </SelectTrigger>
               <SelectContent>
@@ -293,7 +293,7 @@ export default function SearchPage() {
         {/* Desktop Left Sidebar (Filters) */}
         <aside className="hidden lg:block w-60 shrink-0 self-start">
           <div className="bg-card border border-border rounded-xl p-4 shadow-xs max-h-[calc(100vh-160px)] overflow-y-auto sticky top-20">
-            <span className="text-xs font-bold text-foreground/80 block mb-3 uppercase tracking-wider">
+            <span className="text-[13px] font-bold text-foreground/80 block mb-3 uppercase tracking-wider">
               Bộ lọc sản phẩm
             </span>
             {filterSidebar}
@@ -352,7 +352,7 @@ export default function SearchPage() {
 
       {/* ═════ MOBILE FILTER SHEET ═════ */}
       <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
-        <SheetContent side="left" className="w-[30rem] sm:w-[35rem] p-0 bg-card border-r border-border">
+        <SheetContent side="left" className="w-[480px] sm:w-[560px] p-0 bg-card border-r border-border">
           <SheetHeader className="px-6 pt-6">
             <SheetTitle className="text-foreground">Bộ lọc</SheetTitle>
           </SheetHeader>
