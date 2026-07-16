@@ -71,11 +71,47 @@ class ProductListCreateView(generics.ListCreateAPIView):
         return queryset.order_by('image_priority', *active_ordering)
 
 
-class ProductDetailView(generics.RetrieveAPIView):
+class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.Product.objects.filter(is_active=True).select_related(
         'hang_may', 'hang_sx', 'thuong_hieu', 'category'
     )
-    serializer_class = serializers.ProductDetailSerializer
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return serializers.ProductListSerializer
+        return serializers.ProductDetailSerializer
+
+    def perform_destroy(self, instance):
+        instance.is_active = False
+        instance.save()
+
+
+class ProductImageUploadView(APIView):
+    """API upload hình ảnh cho sản phẩm."""
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+            return Response({'error': 'Không tìm thấy file tải lên'}, status=status.HTTP_400_BAD_REQUEST)
+
+        import os
+        ext = os.path.splitext(file_obj.name)[1].lower()
+        if ext not in ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp']:
+            return Response({'error': 'Định dạng file không hợp lệ. Chỉ chấp nhận ảnh.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        import uuid
+        from django.core.files.storage import default_storage
+        from django.core.files.base import ContentFile
+
+        unique_name = f"products/{uuid.uuid4().hex}{ext}"
+        saved_path = default_storage.save(unique_name, ContentFile(file_obj.read()))
+        url = f"{settings.MEDIA_URL}{saved_path}"
+
+        return Response({
+            'url': url,
+            'name': file_obj.name
+        }, status=status.HTTP_201_CREATED)
 
 
 class ProductStatsView(APIView):

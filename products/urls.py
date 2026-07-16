@@ -6,6 +6,7 @@ urlpatterns = [
     path('products/', views.ProductListCreateView.as_view(), name='product-list'),
     path('products/stats/', views.ProductStatsView.as_view(), name='product-stats'),
     path('products/<int:pk>/', views.ProductDetailView.as_view(), name='product-detail'),
+    path('products/upload-image/', views.ProductImageUploadView.as_view(), name='product-upload-image'),
 
     # Danh mục
     path('hang-may/', views.HangMayListView.as_view(), name='hang-may-list'),

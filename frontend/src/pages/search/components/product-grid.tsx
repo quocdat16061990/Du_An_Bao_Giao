@@ -1,14 +1,26 @@
 import { ProductCard } from './product-card'
 import type { Product } from '../helper/types'
+import { useAuth } from '@/lib/auth/context'
 
 interface ProductGridProps {
   products: Array<Product>
   selectedIds: Set<number>
   onToggleSelect: (product: Product) => void
   viewMode: 'grid' | 'table'
+  onEditProduct?: (product: Product) => void
+  onDeleteProduct?: (id: number) => void
 }
 
-export function ProductGrid({ products, selectedIds, onToggleSelect, viewMode }: ProductGridProps) {
+export function ProductGrid({
+  products,
+  selectedIds,
+  onToggleSelect,
+  viewMode,
+  onEditProduct,
+  onDeleteProduct,
+}: ProductGridProps) {
+  const { user } = useAuth()
+
   if (viewMode === 'table') {
     return (
       <div className="rounded-xl border border-border bg-card shadow-xs overflow-hidden">
@@ -61,6 +73,11 @@ export function ProductGrid({ products, selectedIds, onToggleSelect, viewMode }:
                 <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[13px] px-4 w-[120px]">
                   Giá ĐL+10%
                 </th>
+                {user?.is_staff && (
+                  <th className="relative h-10 text-center align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 w-[11rem]">
+                    Thao tác
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -72,6 +89,8 @@ export function ProductGrid({ products, selectedIds, onToggleSelect, viewMode }:
                   onToggleSelect={onToggleSelect}
                   viewMode="table"
                   rowIndex={idx}
+                  onEditProduct={onEditProduct}
+                  onDeleteProduct={onDeleteProduct}
                 />
               ))}
             </tbody>
@@ -94,6 +113,8 @@ export function ProductGrid({ products, selectedIds, onToggleSelect, viewMode }:
             isSelected={selectedIds.has(product.id)}
             onToggleSelect={onToggleSelect}
             viewMode="grid"
+            onEditProduct={onEditProduct}
+            onDeleteProduct={onDeleteProduct}
           />
         </div>
       ))}

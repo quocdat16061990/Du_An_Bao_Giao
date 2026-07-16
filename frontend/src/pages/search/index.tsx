@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
-import { Loader2, SlidersHorizontal, CheckSquare, Square, LayoutGrid, List } from 'lucide-react'
+import { Loader2, SlidersHorizontal, CheckSquare, Square, LayoutGrid, List, Plus } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -23,6 +23,11 @@ import { SORT_OPTIONS } from './helper/constants'
 import { DEFAULT_PAGE_SIZE } from '@/services/config'
 import type { Product, SearchParams } from './helper/types'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/lib/auth/context'
+import { ProductFormDialog } from './components/product-form-dialog'
+import { useProductCrud } from './helper/use-product-crud'
+import { toast } from 'sonner'
+
 
 const QuotationDialog = lazy(() =>
   import('./components/quotation-dialog').then((module) => ({
@@ -31,8 +36,16 @@ const QuotationDialog = lazy(() =>
 )
 
 export default function SearchPage() {
+  const { user } = useAuth()
+  const { deleteProduct } = useProductCrud()
+
+  // ── Form Dialog state ──
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+
   // ── Search state ──
   const [keyword, setKeyword] = useState('')
+
   const debouncedKeyword = useDebounce(keyword, 300)
 
   // ── Sort & Pagination ──
@@ -102,6 +115,23 @@ export default function SearchPage() {
     }
   }, [products, selectedIds, selectAll, clearSelection])
 
+  const handleEditProduct = useCallback((product: Product) => {
+    setEditingProduct(product)
+    setIsFormOpen(true)
+  }, [])
+
+  const handleDeleteProduct = useCallback(async (id: number) => {
+    const ok = window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')
+    if (!ok) return
+    try {
+      await deleteProduct(id)
+      toast.success('Xóa sản phẩm thành công!')
+    } catch (err: unknown) {
+      console.error(err)
+      toast.error('Xóa sản phẩm thất bại.')
+    }
+  }, [deleteProduct])
+
   const hasActiveFilters = selectedCategories.length > 0 || selectedHangMay.length > 0 || selectedThuongHieu.length > 0
 
   // ── Filter sidebar ──
@@ -151,12 +181,26 @@ export default function SearchPage() {
           </p>
         </div>
         
-        <div className="flex items-center gap-2 self-start sm:self-center bg-card border border-border px-3.5 py-1.5 rounded-xl shadow-xs">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-xs text-muted-foreground font-medium">Kho dữ liệu:</span>
-          <span className="text-xs font-bold text-foreground tabular-nums">
-            {totalCount.toLocaleString('vi-VN')} SP
-          </span>
+        <div className="flex items-center gap-3 self-start sm:self-center">
+          {user?.is_staff && (
+            <Button
+              onClick={() => {
+                setEditingProduct(null)
+                setIsFormOpen(true)
+              }}
+              className="h-9 px-4 text-xs font-bold bg-amber-500 text-slate-955 hover:bg-amber-600 gap-1.5 shadow-md"
+            >
+              <Plus className="h-4 w-4" /> Thêm sản phẩm
+            </Button>
+          )}
+
+          <div className="flex items-center gap-2 bg-card border border-border px-3.5 py-1.5 rounded-xl shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs text-muted-foreground font-medium">Kho dữ liệu:</span>
+            <span className="text-xs font-bold text-foreground tabular-nums">
+              {totalCount.toLocaleString('vi-VN')} SP
+            </span>
+          </div>
         </div>
       </div>
 
@@ -228,7 +272,7 @@ export default function SearchPage() {
 
             {/* Sort options */}
             <Select value={sorting} onValueChange={(v) => { setSorting(v); setPage(1) }}>
-              <SelectTrigger className="h-9 w-[160px] text-xs border-border/50 bg-background">
+              <SelectTrigger className="h-9 w-[16rem] text-xs border-border/50 bg-background">
                 <SelectValue placeholder="Sắp xếp" />
               </SelectTrigger>
               <SelectContent>
@@ -283,6 +327,8 @@ export default function SearchPage() {
                   selectedIds={selectedIds}
                   onToggleSelect={toggleProduct}
                   viewMode={viewMode}
+                  onEditProduct={handleEditProduct}
+                  onDeleteProduct={handleDeleteProduct}
                 />
               </div>
 
@@ -306,7 +352,7 @@ export default function SearchPage() {
 
       {/* ═════ MOBILE FILTER SHEET ═════ */}
       <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
-        <SheetContent side="left" className="w-[300px] sm:w-[350px] p-0 bg-card border-r border-border">
+        <SheetContent side="left" className="w-[30rem] sm:w-[35rem] p-0 bg-card border-r border-border">
           <SheetHeader className="px-6 pt-6">
             <SheetTitle className="text-foreground">Bộ lọc</SheetTitle>
           </SheetHeader>
@@ -320,6 +366,13 @@ export default function SearchPage() {
           <QuotationDialog selectedProducts={selectedProducts} />
         </Suspense>
       )}
+
+      {/* ═════ PRODUCT FORM DIALOG ═════ */}
+      <ProductFormDialog
+        isOpen={isFormOpen}
+        onOpenChange={setIsFormOpen}
+        product={editingProduct}
+      />
     </div>
   )
 }

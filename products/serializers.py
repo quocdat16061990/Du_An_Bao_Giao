@@ -43,6 +43,7 @@ class ProductListSerializer(serializers.ModelSerializer):
     hang_sx_name = serializers.CharField(source='hang_sx.ten', read_only=True, default='')
     thuong_hieu_name = serializers.CharField(source='thuong_hieu.ten', read_only=True, default='')
     category_name = serializers.CharField(source='category.ten', read_only=True, default='')
+    hinh_anh = serializers.CharField(max_length=500, required=False, allow_blank=True, default='')
 
     class Meta:
         model = models.Product
