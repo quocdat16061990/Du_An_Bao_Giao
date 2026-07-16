@@ -466,40 +466,40 @@ export const ProductCard = memo(function ProductCard({
         </div>
 
         <div className="pt-1.5 sm:pt-2 border-t border-border/80 mt-auto">
-          <div className="grid grid-cols-2 gap-x-1 sm:gap-x-1.5 gap-y-0.5 sm:gap-y-1 text-[12px] xs:text-[12px] sm:text-[13px]">
-            <div className="flex justify-between items-center bg-red-500/5 dark:bg-red-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-red-500/15">
-              <span className="text-muted-foreground font-semibold">Vốn:</span>
-              <span className="font-bold tabular-nums text-red-600 dark:text-red-400">
+          <div className="grid grid-cols-2 gap-1 text-[11px] sm:text-[12px]">
+            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-1 rounded border border-red-500/15 bg-red-500/5 px-1.5 py-1 dark:bg-red-500/10">
+              <span className="shrink-0 text-muted-foreground font-semibold leading-none">Vốn:</span>
+              <span className="min-w-0 text-right font-bold tabular-nums tracking-tight leading-none whitespace-nowrap text-red-600 dark:text-red-400">
                 {product.gia_von ? formatVnd(product.gia_von) : 'L.Hệ'}
               </span>
             </div>
-            <div className="flex justify-between items-center bg-amber-500/5 dark:bg-amber-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-amber-500/15">
-              <span className="text-muted-foreground font-semibold">VIP:</span>
-              <span className="font-bold tabular-nums text-amber-600 dark:text-amber-400">
+            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-1 rounded border border-amber-500/15 bg-amber-500/5 px-1.5 py-1 dark:bg-amber-500/10">
+              <span className="shrink-0 text-muted-foreground font-semibold leading-none">VIP:</span>
+              <span className="min-w-0 text-right font-bold tabular-nums tracking-tight leading-none whitespace-nowrap text-amber-600 dark:text-amber-400">
                 {product.gia_vip ? formatVnd(product.gia_vip) : 'L.Hệ'}
               </span>
             </div>
-            <div className="flex justify-between items-center bg-orange-500/5 dark:bg-orange-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-orange-500/15">
-              <span className="text-muted-foreground font-semibold">U.Đãi:</span>
-              <span className="font-bold tabular-nums text-orange-600 dark:text-orange-400">
+            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-1 rounded border border-orange-500/15 bg-orange-500/5 px-1.5 py-1 dark:bg-orange-500/10">
+              <span className="shrink-0 text-muted-foreground font-semibold leading-none">U.Đãi:</span>
+              <span className="min-w-0 text-right font-bold tabular-nums tracking-tight leading-none whitespace-nowrap text-orange-600 dark:text-orange-400">
                 {product.gia_uu_dai ? formatVnd(product.gia_uu_dai) : 'L.Hệ'}
               </span>
             </div>
-            <div className="flex justify-between items-center bg-blue-500/5 dark:bg-blue-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-blue-500/15">
-              <span className="text-muted-foreground font-semibold">Đ.Lý:</span>
-              <span className="font-bold tabular-nums text-blue-600 dark:text-blue-400">
+            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-1 rounded border border-blue-500/15 bg-blue-500/5 px-1.5 py-1 dark:bg-blue-500/10">
+              <span className="shrink-0 text-muted-foreground font-semibold leading-none">Đ.Lý:</span>
+              <span className="min-w-0 text-right font-bold tabular-nums tracking-tight leading-none whitespace-nowrap text-blue-600 dark:text-blue-400">
                 {product.gia_dai_ly ? formatVnd(product.gia_dai_ly) : 'L.Hệ'}
               </span>
             </div>
-            <div className="flex justify-between items-center bg-purple-500/5 dark:bg-purple-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-purple-500/15">
-              <span className="text-muted-foreground font-semibold">Gara:</span>
-              <span className="font-bold tabular-nums text-purple-600 dark:text-purple-400">
+            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-1 rounded border border-purple-500/15 bg-purple-500/5 px-1.5 py-1 dark:bg-purple-500/10">
+              <span className="shrink-0 text-muted-foreground font-semibold leading-none">Gara:</span>
+              <span className="min-w-0 text-right font-bold tabular-nums tracking-tight leading-none whitespace-nowrap text-purple-600 dark:text-purple-400">
                 {product.gia_gara ? formatVnd(product.gia_gara) : 'L.Hệ'}
               </span>
             </div>
-            <div className="flex justify-between items-center bg-slate-500/5 dark:bg-slate-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-slate-500/15">
-              <span className="text-muted-foreground font-semibold">ĐL+10%:</span>
-              <span className="font-bold tabular-nums text-slate-600 dark:text-slate-400">
+            <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-1 rounded border border-slate-500/15 bg-slate-500/5 px-1.5 py-1 dark:bg-slate-500/10">
+              <span className="shrink-0 text-muted-foreground font-semibold leading-none">ĐL+10%:</span>
+              <span className="min-w-0 text-right font-bold tabular-nums tracking-tight leading-none whitespace-nowrap text-slate-600 dark:text-slate-400">
                 {product.gia_dl_10 ? formatVnd(product.gia_dl_10) : 'L.Hệ'}
               </span>
             </div>
