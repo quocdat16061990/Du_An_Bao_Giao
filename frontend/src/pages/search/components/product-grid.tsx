@@ -28,49 +28,49 @@ export function ProductGrid({
           <table className="w-full align-middle caption-bottom text-left text-foreground text-sm border-separate border-spacing-0">
             <thead>
               <tr className="bg-muted/40 [&>th]:border-b [&>th]:border-border">
-                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[5.1rem]">
+                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[51px]">
                   <span className="sr-only">Chọn</span>
                 </th>
-                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[11rem]">
+                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[110px]">
                   Loại
                 </th>
-                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[13rem]">
+                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[130px]">
                   Mã VT
                 </th>
-                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border min-w-[18rem]">
+                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border min-w-[180px]">
                   Tên hàng / Model
                 </th>
-                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[14rem] hidden xl:table-cell">
+                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[140px] hidden xl:table-cell">
                   OEM Part No
                 </th>
-                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[11rem]">
+                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[110px]">
                   Hãng máy
                 </th>
-                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[10rem]">
+                <th className="relative h-10 text-left align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[100px]">
                   TH
                 </th>
-                <th className="relative h-10 text-center align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[14rem]">
+                <th className="relative h-10 text-center align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[140px]">
                   Đơn vị & Quy cách
                 </th>
-                <th className="relative h-10 text-center align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[11rem]">
+                <th className="relative h-10 text-center align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[110px]">
                   Số lượng
                 </th>
-                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[11rem]">
+                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[110px]">
                   Giá vốn
                 </th>
-                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[11rem]">
+                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[110px]">
                   Giá VIP
                 </th>
-                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[11rem]">
+                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[110px]">
                   Giá ưu đãi
                 </th>
-                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[11rem]">
+                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[110px]">
                   Giá đại lý
                 </th>
-                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[11rem]">
+                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[13px] px-4 border-e border-border w-[110px]">
                   Giá Gara
                 </th>
-                <th className={user?.is_staff ? "relative h-10 text-right align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 border-e border-border w-[12rem]" : "relative h-10 text-right align-middle font-medium text-secondary-foreground text-[0.8125rem] px-4 w-[12rem]"}>
+                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[13px] px-4 w-[120px]">
                   Giá ĐL+10%
                 </th>
                 {user?.is_staff && (

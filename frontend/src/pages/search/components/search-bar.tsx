@@ -56,7 +56,7 @@ export function SearchBar({
           value={localValue}
           onChange={(event) => handleChange(event.target.value)}
           className={cn(
-            'h-9 rounded-md border border-input pl-9 pr-9 text-[0.8125rem]',
+            'h-9 rounded-md border border-input pl-9 pr-9 text-[13px]',
             'shadow-xs shadow-black/5',
             'text-foreground placeholder:text-muted-foreground/80',
             'focus-visible:border-ring focus-visible:ring-0 focus-visible:ring-offset-0',

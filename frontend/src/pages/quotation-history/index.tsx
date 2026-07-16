@@ -238,7 +238,7 @@ function StatsCards({ stats }: { stats: HistoryStats | undefined }) {
             </div>
             <div
               className={cn(
-                'text-[1.65rem] font-extrabold leading-tight tabular-nums text-foreground',
+                'text-[26.4px] font-extrabold leading-tight tabular-nums text-foreground',
                 card.highlight && 'text-[#28c76f]',
               )}
             >
