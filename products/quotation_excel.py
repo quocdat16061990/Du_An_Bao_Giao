@@ -12,9 +12,12 @@ from openpyxl.utils import get_column_letter, range_boundaries
 
 
 TEMPLATE_PATH = Path(settings.BASE_DIR) / 'templates' / 'bao_gia_template_clean.xlsx'
-PRODUCT_START_ROW = 13
-PRODUCT_TEMPLATE_LAST_ROW = 17
-TOTAL_ROW = 18
+PRODUCT_START_ROW = 15
+PRODUCT_TEMPLATE_LAST_ROW = 19
+TOTAL_BEFORE_VAT_ROW = 20
+VAT_ROW = 21
+TOTAL_ROW = 22
+AMOUNT_IN_WORDS_ROW = 23
 VAT_RATE = Decimal('0.08')
 
 
@@ -142,26 +145,36 @@ def build_quotation_excel(customer, products_qs, quote_number: str, custom_price
     ws = wb.active
 
     products = list(products_qs)
-    extra_rows = max(0, len(products) - (PRODUCT_TEMPLATE_LAST_ROW - PRODUCT_START_ROW + 1))
-    if extra_rows:
-        _shift_merged_ranges(ws, TOTAL_ROW, extra_rows)
-        ws.insert_rows(TOTAL_ROW, extra_rows)
-        for row in range(TOTAL_ROW, TOTAL_ROW + extra_rows):
+    template_rows_count = PRODUCT_TEMPLATE_LAST_ROW - PRODUCT_START_ROW + 1
+    extra_rows = max(0, len(products) - template_rows_count)
+
+    if extra_rows > 0:
+        _shift_merged_ranges(ws, TOTAL_BEFORE_VAT_ROW, extra_rows)
+        ws.insert_rows(TOTAL_BEFORE_VAT_ROW, extra_rows)
+        for row in range(TOTAL_BEFORE_VAT_ROW, TOTAL_BEFORE_VAT_ROW + extra_rows):
             _copy_row_style(ws, PRODUCT_TEMPLATE_LAST_ROW, row)
 
+    total_before_vat_row = TOTAL_BEFORE_VAT_ROW + extra_rows
+    vat_row = VAT_ROW + extra_rows
     total_row = TOTAL_ROW + extra_rows
+    amount_in_words_row = AMOUNT_IN_WORDS_ROW + extra_rows
+    last_product_row = (
+        PRODUCT_START_ROW + max(len(products), template_rows_count) - 1
+        if len(products) < template_rows_count
+        else PRODUCT_START_ROW + len(products) - 1
+    )
 
     now = datetime.now()
     date_str = f"TP. Hồ Chí Minh, ngày {now.day:02d} tháng {now.month:02d} năm {now.year}"
-    gia_label = PRICE_LABELS.get(customer.phan_loai, 'Giá DL+10%')
-    if custom_prices_map:
-        gia_label = 'Giá linh hoạt'
+    phone_part = f" – {customer.dien_thoai}" if getattr(customer, 'dien_thoai', '') else ""
 
-    ws['C3'] = date_str
-    ws['A8'] = f"Khách hàng: {customer.ten_kh}"
-    ws['A9'] = f"Địa chỉ: {customer.dia_chi or customer.tinh_tp or ''}"
-    ws['A10'] = "Mã số thuế: "
-    ws['A11'] = "Email: "
+    ws['A7'] = date_str
+    ws['A9'] = f"Khách hàng:  {customer.ten_kh}{phone_part}"
+    ws['A10'] = f"Địa chỉ:  {customer.dia_chi or customer.tinh_tp or ''}"
+    ws['A11'] = f"Mã số thuế: {getattr(customer, 'ma_so_thue', '') or ''}"
+    ws['A12'] = f"Email: {getattr(customer, 'email', '') or ''}"
+
+    total_amount = 0
 
     for index, product in enumerate(products, start=1):
         row = PRODUCT_START_ROW + index - 1
@@ -173,24 +186,42 @@ def build_quotation_excel(customer, products_qs, quote_number: str, custom_price
         else:
             unit_price = product.get_price_for_type(customer.phan_loai) or Decimal('0')
 
+        line_total = int(unit_price * qty)
+        total_amount += line_total
+
         ws.cell(row, 1).value = index
-        ws.cell(row, 2).value = f"{product.ma_vt} - {product.ten_hang or product.model_turbo or ''}"
-        ws.cell(row, 3).value = product.dvt or 'Cái'
-        ws.cell(row, 4).value = qty
-        ws.cell(row, 5).value = int(unit_price)
-        ws.cell(row, 6).value = float(VAT_RATE)
-        ws.cell(row, 6).number_format = '0%'
-        ws.cell(row, 7).value = f"=E{row}*D{row}*(1+F{row})"
+        ws.cell(row, 2).value = product.ten_hang or product.model_turbo or ''
+        ws.cell(row, 3).value = product.ma_vt or ''
+        ws.cell(row, 4).value = product.dvt or 'Cái'
+        ws.cell(row, 5).value = qty
+        ws.cell(row, 6).value = int(unit_price)
+        ws.cell(row, 6).number_format = '#,##0'
+        ws.cell(row, 7).value = f"=F{row}*E{row}"
         ws.cell(row, 7).number_format = '#,##0'
 
-    for row in range(PRODUCT_START_ROW + len(products), total_row):
+    for row in range(PRODUCT_START_ROW + len(products), PRODUCT_START_ROW + template_rows_count):
         ws.cell(row, 1).value = row - PRODUCT_START_ROW + 1
-        for col in range(2, 8):
-            ws.cell(row, col).value = None
+        ws.cell(row, 2).value = None
+        ws.cell(row, 3).value = None
+        ws.cell(row, 4).value = None
+        ws.cell(row, 5).value = None
+        ws.cell(row, 6).value = None
+        ws.cell(row, 7).value = None
 
-    ws.cell(total_row, 1).value = 'TỔNG CỘNG'
-    ws.cell(total_row, 7).value = f"=SUM(G13:G{total_row - 1})"
+    ws.cell(total_before_vat_row, 1).value = 'Cộng tiền hàng (chưa VAT)'
+    ws.cell(total_before_vat_row, 7).value = f"=ROUND(G{total_row}/1.08,0)"
+    ws.cell(total_before_vat_row, 7).number_format = '#,##0'
+
+    ws.cell(vat_row, 1).value = 'Thuế GTGT 8%'
+    ws.cell(vat_row, 7).value = f"=G{total_row}-G{total_before_vat_row}"
+    ws.cell(vat_row, 7).number_format = '#,##0'
+
+    ws.cell(total_row, 1).value = 'TỔNG CỘNG (đã có VAT)'
+    ws.cell(total_row, 7).value = f"=SUM(G15:G{last_product_row})"
     ws.cell(total_row, 7).number_format = '#,##0'
+
+    ws.cell(amount_in_words_row, 1).value = money_to_words(total_amount)
+
     _configure_print_area(ws)
 
     buf = BytesIO()

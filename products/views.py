@@ -20,6 +20,7 @@ from . import models, serializers, filters
 from .pagination import FastPagination
 from .pdf_converter import LibreOfficeNotFoundError, convert_excel_to_pdf
 from .quotation_excel import build_quotation_excel, safe_excel_filename
+from .order_excel import build_order_excel
 from .services.excel_import_preview import (
     PreviewError,
     commit_excel_import,
@@ -943,6 +944,239 @@ class QuotationExportPDFView(APIView):
         filename = f'{quote_number}_{_safe_filename_part(customer.ten_kh)}.pdf'
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['X-Quotation-Id'] = str(quotation.id)
+        response['X-Quote-Number'] = quotation.quote_number
+        return response
+
+
+def _generate_order_number(now, product_count: int) -> str:
+    base = f"DH{now.strftime('%Y%m%d%H%M%S')}-{product_count:02d}"
+    if not models.Quotation.objects.filter(quote_number=base).exists():
+        return base
+    for suffix in range(2, 100):
+        candidate = f'{base}-{suffix}'
+        if not models.Quotation.objects.filter(quote_number=candidate).exists():
+            return candidate
+    return f"{base}-{now.strftime('%f')}"
+
+
+def _create_quotation_record_for_order(
+    *,
+    customer,
+    products,
+    quote_number: str,
+    now,
+    nhan_vien: str = '',
+    excel_file_name: str = '',
+    excel_file_path: str = '',
+    excel_file_size: int = 0,
+    custom_prices_map=None,
+):
+    tong_cong = Decimal('0')
+    products = list(products)
+
+    with transaction.atomic():
+        quotation = models.Quotation.objects.create(
+            quote_number=quote_number,
+            quote_date=now.date(),
+            customer=customer,
+            customer_name=customer.ten_kh,
+            customer_phone=customer.dien_thoai or '',
+            gia_ap_dung='ĐƠN ĐẶT HÀNG',
+            tong_cong=Decimal('0'),
+            product_count=len(products),
+            nhan_vien=nhan_vien,
+            status=models.Quotation.Status.DA_CHOT,  # Tự động chốt đơn
+            excel_file_name=excel_file_name,
+            excel_file_path=excel_file_path,
+            excel_file_size=excel_file_size,
+            excel_created_at=now if excel_file_path else None,
+        )
+
+        for product in products:
+            qty = 1
+            if custom_prices_map and product.id in custom_prices_map:
+                don_gia = Decimal(str(custom_prices_map[product.id]['price']))
+                qty = custom_prices_map[product.id].get('quantity', 1)
+            else:
+                don_gia = product.get_price_for_type(customer.phan_loai) or Decimal('0')
+            thanh_tien = (don_gia * qty * Decimal('1.08')).quantize(Decimal('1.'))
+            tong_cong += thanh_tien
+            models.QuotationItem.objects.create(
+                quotation=quotation,
+                product=product,
+                ma_vt=product.ma_vt,
+                ten_hang=product.ten_hang or product.model_turbo or '',
+                don_gia=don_gia,
+                so_luong=qty,
+                thanh_tien=thanh_tien,
+            )
+
+        quotation.tong_cong = tong_cong
+        quotation.save(update_fields=['tong_cong'])
+
+    return quotation
+
+
+class OrderPreviewPDFView(APIView):
+    def post(self, request):
+        req_serializer = serializers.QuotationRequestSerializer(data=request.data)
+        req_serializer.is_valid(raise_exception=True)
+
+        product_ids = req_serializer.validated_data['product_ids']
+        customer_id = req_serializer.validated_data['customer_id']
+        custom_prices_map = _custom_prices_map_from_items(
+            req_serializer.validated_data.get('items_custom')
+        )
+        nhan_vien = str(request.data.get('nhan_vien') or '')
+
+        try:
+            customer = models.Customer.objects.select_related('nha_xe').get(id=customer_id, is_active=True)
+        except models.Customer.DoesNotExist:
+            return Response({'error': 'Khong tim thay khach hang'}, status=404)
+
+        products = _get_products_for_quote(product_ids)
+        if not products:
+            return Response({'error': 'Khong tim thay san pham hop le'}, status=400)
+
+        now = timezone.localtime()
+        quote_number = f"PREVIEW_DH{now.strftime('%Y%m%d%H%M%S')}-{len(products):02d}"
+
+        creator_name = nhan_vien or (request.user.get_full_name() if request.user.is_authenticated else '') or 'Nguyễn Văn Luân'
+        excel_bytes = build_order_excel(customer, products, quote_number, custom_prices_map=custom_prices_map, creator_name=creator_name)
+
+        try:
+            pdf_bytes = _convert_excel_bytes_to_pdf(excel_bytes, quote_number)
+        except LibreOfficeNotFoundError as exc:
+            logger.warning('LibreOffice PDF preview conversion failed: %s', exc)
+            return Response({'error': str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except Exception as exc:
+            logger.exception('PDF preview failed')
+            return Response({'error': f'Khong the xem truoc PDF: {exc}'}, status=500)
+
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="order-preview.pdf"'
+        response['Cache-Control'] = 'no-store'
+        return response
+
+
+class OrderExportExcelView(APIView):
+    def post(self, request):
+        req_serializer = serializers.QuotationRequestSerializer(data=request.data)
+        req_serializer.is_valid(raise_exception=True)
+
+        product_ids = req_serializer.validated_data['product_ids']
+        customer_id = req_serializer.validated_data['customer_id']
+        nhan_vien = str(request.data.get('nhan_vien') or '')
+        items_custom = req_serializer.validated_data.get('items_custom')
+
+        custom_prices_map = _custom_prices_map_from_items(items_custom)
+
+        try:
+            customer = models.Customer.objects.select_related('nha_xe').get(id=customer_id, is_active=True)
+        except models.Customer.DoesNotExist:
+            return Response({'error': 'Khong tim thay khach hang'}, status=404)
+
+        products = _get_products_for_quote(product_ids)
+        if not products:
+            return Response({'error': 'Khong tim thay san pham hop le'}, status=400)
+
+        now = timezone.localtime()
+        quote_number = _generate_order_number(now, len(products))
+
+        creator_name = nhan_vien or (request.user.get_full_name() if request.user.is_authenticated else '') or 'Nguyễn Văn Luân'
+        excel_bytes = build_order_excel(customer, products, quote_number, custom_prices_map=custom_prices_map, creator_name=creator_name)
+
+        filename = f"{quote_number}_{_safe_filename_part(customer.ten_kh)}.xlsx"
+        relative_path = Path('exports') / 'orders' / now.strftime('%Y') / now.strftime('%m') / now.strftime('%d') / filename
+        absolute_path = _resolve_export_path(relative_path)
+        absolute_path.parent.mkdir(parents=True, exist_ok=True)
+        absolute_path.write_bytes(excel_bytes)
+
+        quotation = _create_quotation_record_for_order(
+            customer=customer,
+            products=products,
+            quote_number=quote_number,
+            now=now,
+            nhan_vien=nhan_vien,
+            excel_file_name=filename,
+            excel_file_path=relative_path.as_posix(),
+            excel_file_size=len(excel_bytes),
+            custom_prices_map=custom_prices_map,
+        )
+
+        response = HttpResponse(
+            excel_bytes,
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        response['X-Quotation-Id'] = str(quotation.id)
+        response['X-Quote-Number'] = quotation.quote_number
+        return response
+
+
+class OrderExportPDFView(APIView):
+    def post(self, request):
+        req_serializer = serializers.QuotationRequestSerializer(data=request.data)
+        req_serializer.is_valid(raise_exception=True)
+
+        product_ids = req_serializer.validated_data['product_ids']
+        customer_id = req_serializer.validated_data['customer_id']
+        nhan_vien = str(request.data.get('nhan_vien') or '')
+        items_custom = req_serializer.validated_data.get('items_custom')
+
+        custom_prices_map = _custom_prices_map_from_items(items_custom)
+
+        try:
+            customer = models.Customer.objects.select_related('nha_xe').get(id=customer_id, is_active=True)
+        except models.Customer.DoesNotExist:
+            return Response({'error': 'Khong tim thay khach hang'}, status=404)
+
+        products = _get_products_for_quote(product_ids)
+        if not products:
+            return Response({'error': 'Khong tim thay san pham hop le'}, status=400)
+
+        now = timezone.localtime()
+        quote_number = _generate_order_number(now, len(products))
+
+        creator_name = nhan_vien or (request.user.get_full_name() if request.user.is_authenticated else '') or 'Nguyễn Văn Luân'
+        excel_bytes = build_order_excel(customer, products, quote_number, custom_prices_map=custom_prices_map, creator_name=creator_name)
+
+        excel_filename = f"{quote_number}_{_safe_filename_part(customer.ten_kh)}.xlsx"
+        excel_relative_path = Path('exports') / 'orders' / now.strftime('%Y') / now.strftime('%m') / now.strftime('%d') / excel_filename
+        excel_absolute_path = _resolve_export_path(excel_relative_path)
+        excel_absolute_path.parent.mkdir(parents=True, exist_ok=True)
+        excel_absolute_path.write_bytes(excel_bytes)
+
+        try:
+            pdf_bytes = _convert_excel_bytes_to_pdf(excel_bytes, quote_number)
+        except LibreOfficeNotFoundError as exc:
+            logger.warning('LibreOffice PDF conversion failed: %s', exc)
+            return Response({'error': str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+        except Exception as exc:
+            logger.exception('PDF generation failed')
+            return Response({'error': f'Khong the tao file PDF: {exc}'}, status=500)
+
+        pdf_filename = f"{quote_number}_{_safe_filename_part(customer.ten_kh)}.pdf"
+        pdf_relative_path = Path('exports') / 'orders' / now.strftime('%Y') / now.strftime('%m') / now.strftime('%d') / pdf_filename
+        pdf_absolute_path = _resolve_export_path(pdf_relative_path)
+        pdf_absolute_path.parent.mkdir(parents=True, exist_ok=True)
+        pdf_absolute_path.write_bytes(pdf_bytes)
+
+        quotation = _create_quotation_record_for_order(
+            customer=customer,
+            products=products,
+            quote_number=quote_number,
+            now=now,
+            nhan_vien=nhan_vien,
+            excel_file_name=pdf_filename,
+            excel_file_path=pdf_relative_path.as_posix(),
+            excel_file_size=len(pdf_bytes),
+            custom_prices_map=custom_prices_map,
+        )
+
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{pdf_filename}"'
         response['X-Quotation-Id'] = str(quotation.id)
         response['X-Quote-Number'] = quotation.quote_number
         return response

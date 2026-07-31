@@ -37,6 +37,11 @@ urlpatterns = [
     path('quotations/preview-pdf/', views.QuotationPreviewPDFView.as_view(), name='quotation-preview-pdf'),
     path('quotations/export-pdf/', views.QuotationExportPDFView.as_view(), name='quotation-export-pdf'),
     path('quotations/save/', views.QuotationSaveView.as_view(), name='quotation-save'),
+
+    # Customer Orders
+    path('orders/preview-pdf/', views.OrderPreviewPDFView.as_view(), name='order-preview-pdf'),
+    path('orders/export-excel/', views.OrderExportExcelView.as_view(), name='order-export-excel'),
+    path('orders/export-pdf/', views.OrderExportPDFView.as_view(), name='order-export-pdf'),
     path('quotations/today/', views.QuotationTodayListView.as_view(), name='quotation-today'),
     path('quotations/today/stats/', views.QuotationTodayStatsView.as_view(), name='quotation-today-stats'),
     path('quotations/<int:pk>/update-items/', views.QuotationUpdateItemsView.as_view(), name='quotation-update-items'),

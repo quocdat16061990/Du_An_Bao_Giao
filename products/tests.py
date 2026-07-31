@@ -166,3 +166,171 @@ class CustomerPriceTestCase(TestCase):
         # Đơn giá phải là 5,200,000 đ
         product_quote = response.data['products'][0]
         self.assertEqual(int(float(product_quote['don_gia'])), 5200000)
+
+
+class QuotationExportExcelTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(username='quote_admin', password='password123')
+        self.client.force_authenticate(user=self.user)
+
+        self.customer = Customer.objects.create(
+            ma_kh="KH_QT_01",
+            ten_kh="Công Ty Anh Nguyên",
+            dien_thoai="0961046767",
+            dia_chi="Sài Gòn",
+            phan_loai="ĐẠI_LÝ",
+        )
+
+        self.p1 = Product.objects.create(
+            ma_vt="HH070412",
+            ten_hang="Piston 6BD1 nổ vuông dài 104",
+            dvt="BỘ 6",
+            gia_dai_ly=Decimal("5000000"),
+        )
+        self.p2 = Product.objects.create(
+            ma_vt="HH083107",
+            ten_hang="Séc măng 6BD1 3-2.5-5",
+            dvt="BỘ 6",
+            gia_dai_ly=Decimal("700000"),
+        )
+
+    def test_build_quotation_excel_structure(self):
+        from io import BytesIO
+        from openpyxl import load_workbook
+        from .quotation_excel import build_quotation_excel
+
+        excel_bytes = build_quotation_excel(self.customer, [self.p1, self.p2], "BG20260731-01")
+        self.assertTrue(len(excel_bytes) > 0)
+
+        wb = load_workbook(BytesIO(excel_bytes), data_only=False)
+        ws = wb.active
+
+        # Check headers
+        self.assertIn("CÔNG TY TNHH MÁY CÔNG TRÌNH MIỀN NAM", str(ws['A1'].value))
+        self.assertIn("Anh Nguyên", str(ws['A9'].value))
+
+        # Check column headers (Row 14)
+        self.assertEqual(ws['A14'].value, "STT")
+        self.assertEqual(ws['B14'].value, "TÊN HÀNG HÓA")
+        self.assertEqual(ws['C14'].value, "MÃ HH")
+        self.assertEqual(ws['D14'].value, "ĐVT")
+        self.assertEqual(ws['E14'].value, "SL")
+        self.assertEqual(ws['F14'].value, "ĐƠN GIÁ")
+        self.assertEqual(ws['G14'].value, "THÀNH TIỀN")
+
+        # Check product rows
+        self.assertEqual(ws['A15'].value, 1)
+        self.assertEqual(ws['B15'].value, "Piston 6BD1 nổ vuông dài 104")
+        self.assertEqual(ws['C15'].value, "HH070412")
+        self.assertEqual(ws['F15'].value, 5000000)
+        self.assertEqual(ws['G15'].value, "=F15*E15")
+
+        self.assertEqual(ws['A16'].value, 2)
+        self.assertEqual(ws['B16'].value, "Séc măng 6BD1 3-2.5-5")
+        self.assertEqual(ws['C16'].value, "HH083107")
+
+        # Check summary rows
+        self.assertEqual(ws['A20'].value, "Cộng tiền hàng (chưa VAT)")
+        self.assertEqual(ws['G20'].value, "=ROUND(G22/1.08,0)")
+
+        self.assertEqual(ws['A21'].value, "Thuế GTGT 8%")
+        self.assertEqual(ws['G21'].value, "=G22-G20")
+
+        self.assertEqual(ws['A22'].value, "TỔNG CỘNG (đã có VAT)")
+        self.assertEqual(ws['G22'].value, "=SUM(G15:G19)")
+
+        self.assertIn("Bằng chữ:", str(ws['A23'].value))
+
+    def test_quotation_export_excel_api(self):
+        response = self.client.post(reverse('quotation-export-excel'), {
+            "customer_id": self.customer.id,
+            "product_ids": [self.p1.id, self.p2.id],
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response['Content-Type'],
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        self.assertTrue(len(response.content) > 0)
+
+
+class OrderExportExcelTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(username='order_admin', password='password123')
+        self.client.force_authenticate(user=self.user)
+
+        self.customer = Customer.objects.create(
+            ma_kh="KH_OD_01",
+            ten_kh="Gara Hoàng Long",
+            dien_thoai="0912345678",
+            dia_chi="Hà Nội",
+            phan_loai="GARA",
+        )
+
+        self.p1 = Product.objects.create(
+            ma_vt="HH001",
+            ten_hang="Bộ Ron Isuzu 6BD1",
+            dvt="Bộ",
+            gia_gara=Decimal("1030000"),
+        )
+        self.p2 = Product.objects.create(
+            ma_vt="HH002",
+            ten_hang="Xy lanh 6BD1 kiếng",
+            dvt="BỘ 6",
+            gia_gara=Decimal("2800000"),
+        )
+
+    def test_build_order_excel_structure(self):
+        from io import BytesIO
+        from openpyxl import load_workbook
+        from .order_excel import build_order_excel
+
+        excel_bytes = build_order_excel(self.customer, [self.p1, self.p2], "DH20260731-01")
+        self.assertTrue(len(excel_bytes) > 0)
+
+        wb = load_workbook(BytesIO(excel_bytes), data_only=False)
+        ws = wb.active
+
+        # Check customer info
+        self.assertEqual(ws['C3'].value, "Gara Hoàng Long")
+        self.assertEqual(ws['C4'].value, "0912345678")
+
+        # Check table headers (Row 8)
+        self.assertEqual(ws['A8'].value, "STT")
+        self.assertEqual(ws['B8'].value, "NGÀY ĐẶT")
+        self.assertEqual(ws['C8'].value, "MÃ HH")
+        self.assertEqual(ws['D8'].value, "TÊN SẢN PHẨM")
+        self.assertEqual(ws['E8'].value, "ĐVT")
+        self.assertEqual(ws['F8'].value, "SỐ LƯỢNG")
+        self.assertEqual(ws['G8'].value, "ĐƠN GIÁ")
+        self.assertEqual(ws['H8'].value, "THÀNH TIỀN")
+
+        # Check line items
+        self.assertEqual(ws['A9'].value, 1)
+        self.assertEqual(ws['C9'].value, "HH001")
+        self.assertEqual(ws['D9'].value, "Bộ Ron Isuzu 6BD1")
+        self.assertEqual(ws['G9'].value, 1030000)
+
+        # Check summary totals
+        self.assertEqual(ws['A24'].value, "TỔNG TIỀN HÀNG")
+        self.assertEqual(ws['H24'].value, "=SUM(H9:H23)")
+
+        self.assertEqual(ws['A25'].value, "VAT 8%")
+        self.assertEqual(ws['H25'].value, "=H24*8%")
+
+        self.assertEqual(ws['A26'].value, "TỔNG THANH TOÁN")
+        self.assertEqual(ws['H26'].value, "=H24+H25")
+
+    def test_order_export_excel_api(self):
+        response = self.client.post(reverse('order-export-excel'), {
+            "customer_id": self.customer.id,
+            "product_ids": [self.p1.id, self.p2.id],
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response['Content-Type'],
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+        self.assertTrue(len(response.content) > 0)
