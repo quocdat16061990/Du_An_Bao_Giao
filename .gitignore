@@ -33,9 +33,9 @@ Thumbs.db
 # Local UI template dump, not used by the app build
 frontend/UI/
 
-# Local-only Supabase migration fixes already applied manually
-products/migrations/0005_alter_product_loai_enum.py
-products/migrations/0007_fix_loai_varchar_length.py
+# Ignore Django Migration Files (DB schema managed directly on Supabase)
+products/migrations/*.py
+!products/migrations/__init__.py
 
 # Node
 node_modules/
