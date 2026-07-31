@@ -1,0 +1,88 @@
+--- Analyzing: BAO_GIA_PT_LE 26-07.xlsx ---
+Sheets: ['SUPAP', 'TRỤC CƠ', 'BƠM NƯỚC', 'NẮP QUY LÁT', 'BƠM NHỚT', 'TRỤC CAM', 'NẮP SINH HÀN', 'RUỘT SINH HÀN', 'TAY BIÊN', 'THUN RON', 'THUN XY LANH', 'LỐC MÁY', 'SAM BÉC', 'VAN HẰNG NHIỆT', 'VÀNH RĂNG BÁNH ĐÀ', 'ỐNG DẪN NHIÊN LIỆU', 'SÊN CAM_CỔ BÔ LỬA', 'NẮP NƯỚC -NẮP CAM_SÁO', 'MÁY PHÁT _DINAMO']
+  Sheet 'SUPAP':
+    Columns: ['SUPAP — TNC (giá ECOUNT, cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10']
+  Sheet 'TRỤC CƠ':
+    Columns: ['TRỤC CƠ — TNC (giá ECOUNT, cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8']
+  Sheet 'BƠM NƯỚC':
+    Columns: ['BƠM NƯỚC — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'NẮP QUY LÁT':
+    Columns: ['NẮP QUY LÁT — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'BƠM NHỚT':
+    Columns: ['BƠM NHỚT — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'TRỤC CAM':
+    Columns: ['TRỤC CAM — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'NẮP SINH HÀN':
+    Columns: ['NẮP SINH HÀN — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'RUỘT SINH HÀN':
+    Columns: ['RUỘT SINH HÀN — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'TAY BIÊN':
+    Columns: ['NHẬP TAY BIÊN — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'THUN RON':
+    Columns: ['THUN RON — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'THUN XY LANH':
+    Columns: ['THUN XY LANH — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'LỐC MÁY':
+    Columns: ['LỐC MÁY — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'SAM BÉC':
+    Columns: ['SAM BÉC — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'VAN HẰNG NHIỆT':
+    Columns: ['VAN HẰNG NHIỆT — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'VÀNH RĂNG BÁNH ĐÀ':
+    Columns: ['VÀNH RĂNG BÁNH ĐÀ — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'ỐNG DẪN NHIÊN LIỆU':
+    Columns: ['ỐNG DẪN NHIÊN LIỆU — TNC (cập nhật 10/06/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9']
+  Sheet 'SÊN CAM_CỔ BÔ LỬA':
+    Columns: ['SÊN CAM — TNC (cập nhật 16/07/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10']
+  Sheet 'NẮP NƯỚC -NẮP CAM_SÁO':
+    Columns: ['NẮP NƯỚC (THERMOSTAT HOUSING) — TNC (giá ECOUNT, cập nhật 16/07/2026)', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10']
+  Sheet 'MÁY PHÁT _DINAMO':
+    Columns: ['MÁY PHÁT & DINAMO', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5']
+
+--- Analyzing: BAO_GIA_TURBO_VPS 27-07.xlsx ---
+Sheets: ['🚗 BÁO GIÁ TURBO ', '🔧 RUỘT TURBO (CHRA) ', '🔩 SÒ & LINH KIỆN']
+  Sheet '🚗 BÁO GIÁ TURBO ':
+    Columns: ['🚗 BÁO GIÁ TURBO — TRA CỨU THEO HÃNG MÁY', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13', 'Unnamed: 14', 'Unnamed: 15', 'Unnamed: 16', 'Unnamed: 17', 'Unnamed: 18', 'Unnamed: 19']
+  Sheet '🔧 RUỘT TURBO (CHRA) ':
+    Columns: ['🔧 RUỘT TURBO (CHRA) — TRA CỨU THEO HÃNG MÁY', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13', 'Unnamed: 14', 'Unnamed: 15', 'Unnamed: 16', 'Unnamed: 17', 'Unnamed: 18', 'Unnamed: 19']
+  Sheet '🔩 SÒ & LINH KIỆN':
+    Columns: ['🔩 SÒ LỬA / SÒ GIÓ & LINH KIỆN TURBO', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13', 'Unnamed: 14', 'Unnamed: 15', 'Unnamed: 16', 'Unnamed: 17', 'Unnamed: 18', 'Unnamed: 19']
+
+--- Analyzing: TRA CỨU MIỂNG _CĂN _THAU.xlsx ---
+Sheets: ['MIỂNG', 'CĂN DỌC', 'BẠC CAM', 'BẠC THAU', 'TAIHO', 'NDC', 'DAIDO', 'TNC']
+  Sheet 'MIỂNG':
+    Columns: ['🔍  MIỂNG (Baze + Dên) — Danh mục miểng tra cứu', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10']
+  Sheet 'CĂN DỌC':
+    Columns: ['🔨  CĂN DỌC — Thrust Washer (Danh mục căn dọc tra cứu)']
+  Sheet 'BẠC CAM':
+    Columns: ['🔩  BẠC CAM (C) — Camshaft Bearing — Danh mục tra cứu', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8']
+  Sheet 'BẠC THAU':
+    Columns: ['🔧  BẠC THAU ĐUÔI DÊN (P) — Con Rod Small-End Bushing — Danh mục tra cứu', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8']
+  Sheet 'TAIHO':
+    Columns: ['HÃNG', 'MODEL', 'LOẠI BẠC', 'TAIHO SET NO', 'SHAFT DIA (min)', 'HOUSING DIA (max)', 'DÀY (max)', 'DÀI (max)', 'TAIHO PART NO', 'Unnamed: 9', 'MÃ THAM CHIẾU (REF NO)', 'SL/BỘ', 'VỊ TRÍ', 'DUNG TÍCH / BORE×STROKE', 'XE ỨNG DỤNG']
+  Sheet 'NDC':
+    Columns: ['HÃNG', 'MODEL', 'LOẠI BẠC', 'NDC SET NO', 'NDC PART NO', 'SHAFT DIA (min)', 'HOUSING DIA (max)', 'DÀY (max)', 'DÀI (max)', 'MÃ THAM CHIẾU (REF NO)', 'SL/BỘ', 'VỊ TRÍ', 'XE ỨNG DỤNG']
+  Sheet 'DAIDO':
+    Columns: ['HÃNG', 'MODEL', 'LOẠI BẠC', 'DAIDO SET NO', 'DAIDO PART NO', 'SHAFT DIA (min)', 'HOUSING DIA (max)', 'DÀY (max)', 'DÀI (max)', 'MÃ THAM CHIẾU (REF NO)', 'SL/BỘ', 'VỊ TRÍ', 'DUNG TÍCH / BORE×STROKE', 'XE ỨNG DỤNG']
+  Sheet 'TNC':
+    Columns: ['HÃNG', 'MÃ VT', 'TÊN SẢN PHẨM', 'MÃ ĐỘNG CƠ', 'GHI CHÚ']
+
+--- Analyzing: TRA_CUU_TURBO MASTER TỔNG HỢP 2 FILE.xlsx ---
+Sheets: ['📊 DASHBOARD', '🚗 ĐA HÃNG - Theo Hãng Máy', '🔍 ĐA HÃNG - TRA OEM', '📋 SL - DANH SÁCH TURBO', '⚙️ SL - RUỘT CHRA', '🌀 SL - CÁNH GIÓ CW', '🔥 SL - CÁNH LỬA TW', '🏠 SL - THÂN BEARING']
+  Sheet '📊 DASHBOARD':
+    Columns: ['Unnamed: 0', 'Unnamed: 1']
+  Sheet '🚗 ĐA HÃNG - Theo Hãng Máy':
+    Columns: ['📋  DANH SÁCH TURBO  —  TRA CỨU THEO HÃNG MÁY /BẢN CHUẨN CHO TẤT CẢ CÁC BẢNG CON LẠI ', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13', 'Unnamed: 14']
+  Sheet '🔍 ĐA HÃNG - TRA OEM':
+    Columns: ['🔍  TRA CỨU THEO MÃ OEM  —  MỖI MÃ 1 DÒNG  —  CTRL+F RA NGAY', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8']
+  Sheet '📋 SL - DANH SÁCH TURBO':
+    Columns: ['📋  DANH SÁCH TURBO SL  —  Catalog tra cứu tổng hợp  |  Dữ liệu từ SLTURBO Catalog 2024-10-22', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13', 'Unnamed: 14', 'Unnamed: 15', 'Unnamed: 16', 'Unnamed: 17', 'Unnamed: 18', 'Unnamed: 19', 'Unnamed: 20', 'Unnamed: 21', 'Unnamed: 22', 'Unnamed: 23', 'Unnamed: 24']
+  Sheet '⚙️ SL - RUỘT CHRA':
+    Columns: ['⚙️  RUỘT CHRA (Core)  —  2.033 loại ruột turbo  |  Kích thước cánh gió + cánh lửa', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10']
+  Sheet '🌀 SL - CÁNH GIÓ CW':
+    Columns: ['🌀  CÁNH GIÓ (Compressor Wheel - CW)  —  1.939 loại  |  Kích thước đầy đủ A/B/C/D', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12']
+  Sheet '🔥 SL - CÁNH LỬA TW':
+    Columns: ['🔥  CÁNH LỬA (Turbine Wheel - TW)  —  1.160 loại  |  Kích thước + ren trục + số piston ring', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13']
+  Sheet '🏠 SL - THÂN BEARING':
+    Columns: ['🏠  THÂN BEARING HOUSING (BH)  —  1.046 loại  |  Kích thước lắp ghép + ren dầu + làm mát', 'Unnamed: 1', 'Unnamed: 2', 'Unnamed: 3', 'Unnamed: 4', 'Unnamed: 5', 'Unnamed: 6', 'Unnamed: 7', 'Unnamed: 8', 'Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11', 'Unnamed: 12', 'Unnamed: 13', 'Unnamed: 14', 'Unnamed: 15']
+

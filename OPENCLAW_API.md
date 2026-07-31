@@ -528,7 +528,7 @@ save_quotation(customer_id, product_ids, staff_name?)
 
 Nên yêu cầu user xác nhận trước khi gọi endpoint này vì nó tạo dữ liệu thật.
 
-### Export Excel
+### Export Excel Báo Giá (Template Chuẩn Mới)
 
 ```http
 POST /quotations/export-excel/
@@ -539,7 +539,10 @@ Request:
 ```json
 {
   "customer_id": 123,
-  "product_ids": [14978, 14977]
+  "product_ids": [14978, 14977],
+  "items_custom": [
+    { "product_id": 14978, "custom_price": 5000000, "price_label": "GIÁ ĐẠI LÝ", "quantity": 1 }
+  ]
 }
 ```
 
@@ -550,49 +553,43 @@ Binary .xlsx file
 Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 ```
 
-OpenClaw tool gợi ý:
+Ghi chú: Template Excel Báo Giá đã được nâng cấp theo chuẩn mới (`BG20260731_Anh_Nguyen_MienNam_2.xlsx`), tách biệt Cột B (Tên hàng) và Cột C (Mã HH), tự động điền các dòng công thức `Cộng tiền hàng (chưa VAT)`, `Thuế GTGT 8%`, `TỔNG CỘNG (đã có VAT)` và `Bằng chữ`.
 
-```text
-export_quotation_excel(customer_id, product_ids)
-```
-
-Ghi chú: endpoint này chỉ xuất file Excel, không nhất thiết lưu quotation. Nếu muốn chắc chắn lưu lịch sử, gọi `/quotations/save/` trước.
-
-### Export CSV
+### Export PDF / Preview PDF Báo Giá
 
 ```http
-POST /quotations/export-csv/
-```
-
-Request giống Excel.
-
-Response:
-
-```text
-CSV text
-```
-
-### Export PDF
-
-```http
+POST /quotations/preview-pdf/
 POST /quotations/export-pdf/
 ```
 
-Hiện endpoint này trả:
+- Endpoint `preview-pdf/`: Trả về binary PDF để xem trước.
+- Endpoint `export-pdf/`: Trả về binary PDF và tạo bản ghi lưu lịch sử báo giá.
+
+### Export Phiếu Đặt Hàng Khách Hàng (Customer Order Sheet)
+
+```http
+POST /orders/export-excel/
+POST /orders/preview-pdf/
+POST /orders/export-pdf/
+```
+
+Request:
 
 ```json
 {
-  "error": "PDF export is disabled. Please use Excel export."
+  "customer_id": 123,
+  "product_ids": [14978, 14977],
+  "nhan_vien": "Nguyễn Văn Luân",
+  "items_custom": [
+    { "product_id": 14978, "custom_price": 5000000, "price_label": "GIÁ ĐẠI LÝ", "quantity": 1 }
+  ]
 }
 ```
 
-Status:
+Response:
 
-```text
-410 Gone
-```
-
-OpenClaw không nên dùng endpoint PDF backend hiện tại.
+- `export-excel/`: Binary file `.xlsx` dựa trên mẫu `PHIEU_DAT_HANG_KHÁCH HÀNG.xlsx`, có kèm công thức tự động sinh chuỗi tin nhắn Zalo gửi đơn ở Cột K.
+- `preview-pdf/` & `export-pdf/`: Binary file PDF xem trước và xuất đơn hàng.
 
 ### Today Quotations
 

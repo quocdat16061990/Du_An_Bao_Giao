@@ -35,11 +35,13 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewError, setPreviewError] = useState<string | null>(null)
   const [customPrices, setCustomPrices] = useState<Record<number, PriceChoice>>({})
+  const [mode, setMode] = useState<'quote' | 'order'>('quote')
   
   useEffect(() => {
     if (!isOpen) {
       setCustomPrices({})
       setPreviewError(null)
+      setMode('quote')
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl)
         setPreviewUrl(null)
@@ -142,11 +144,12 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
     return fallback
   }
 
-  const refreshPreview = async (payload: QuotePayload, signal?: AbortSignal) => {
+  const refreshPreview = async (payload: QuotePayload, currentMode: 'quote' | 'order', signal?: AbortSignal) => {
     setIsPreviewLoading(true)
     setPreviewError(null)
+    const endpoint = currentMode === 'quote' ? '/quotations/preview-pdf/' : '/orders/preview-pdf/'
     try {
-      const response = await apiClient.post('/quotations/preview-pdf/', payload, {
+      const response = await apiClient.post(endpoint, payload, {
         responseType: 'blob',
         timeout: 120000,
         signal,
@@ -171,27 +174,29 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
 
     const controller = new AbortController()
     const timer = window.setTimeout(() => {
-      void refreshPreview(quotePayload, controller.signal)
+      void refreshPreview(quotePayload, mode, controller.signal)
     }, 350)
 
     return () => {
       window.clearTimeout(timer)
       controller.abort()
     }
-  }, [isOpen, quotePayload])
+  }, [isOpen, quotePayload, mode])
 
   const handleDownloadExcel = async () => {
     if (!selectedCustomer || !quotePayload) return
     setIsDownloadingExcel(true)
+    const endpoint = mode === 'quote' ? '/quotations/export-excel/' : '/orders/export-excel/'
+    const defaultPrefix = mode === 'quote' ? 'bao_gia' : 'phieu_dat_hang'
     try {
-      const response = await apiClient.post('/quotations/export-excel/', quotePayload, {
+      const response = await apiClient.post(endpoint, quotePayload, {
         responseType: 'blob',
         timeout: 60000,
       })
       const disposition = response.headers['content-disposition']
       const match = /filename="?([^"]+)"?/i.exec(disposition ?? '')
       const safeName = selectedCustomer.ten_kh.replace(/[^a-zA-Z0-9À-ỹ]/g, '_').substring(0, 30)
-      downloadBlob(response.data, match?.[1] ?? `bao_gia_${safeName}_${new Date().toISOString().slice(0, 10)}.xlsx`)
+      downloadBlob(response.data, match?.[1] ?? `${defaultPrefix}_${safeName}_${new Date().toISOString().slice(0, 10)}.xlsx`)
     } catch (err: unknown) {
       const message = await readApiError(err, 'Tải Excel thất bại.')
       toast.error(message)
@@ -203,8 +208,10 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
   const handleDownloadPDF = async () => {
     if (!selectedCustomer || !quotePayload) return
     setIsDownloadingPdf(true)
+    const endpoint = mode === 'quote' ? '/quotations/export-pdf/' : '/orders/export-pdf/'
+    const defaultPrefix = mode === 'quote' ? 'bao_gia' : 'phieu_dat_hang'
     try {
-      const response = await apiClient.post('/quotations/export-pdf/', quotePayload, {
+      const response = await apiClient.post(endpoint, quotePayload, {
         responseType: 'blob',
         timeout: 120000,
       })
@@ -214,7 +221,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
       const safeName = selectedCustomer.ten_kh.replace(/[^a-zA-Z0-9À-ỹ]/g, '_').substring(0, 30)
       downloadBlob(
         response.data,
-        match?.[1] ?? `bao_gia_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`,
+        match?.[1] ?? `${defaultPrefix}_${safeName}_${new Date().toISOString().slice(0, 10)}.pdf`,
       )
     } catch (err: unknown) {
       const message = await readApiError(err, PDF_ERROR_FALLBACK)
@@ -235,11 +242,35 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) closeQuotation() }}>
       <DialogContent className="max-w-[1120px] h-[92vh] p-0 flex flex-col">
-        <DialogHeader className="px-6 pt-5 pb-3 border-b">
-          <DialogTitle>Báo Giá - {selectedCustomer.ten_kh}</DialogTitle>
-          <DialogDescription>
-            Preview bên dưới được render trực tiếp từ file Excel mẫu trước khi tải PDF.
-          </DialogDescription>
+        <DialogHeader className="px-6 pt-5 pb-3 border-b flex flex-row items-center justify-between">
+          <div className="space-y-1">
+            <DialogTitle>Tạo Tài Liệu - {selectedCustomer.ten_kh}</DialogTitle>
+            <DialogDescription>
+              Preview bên dưới được render trực tiếp từ file Excel mẫu trước khi tải PDF.
+            </DialogDescription>
+          </div>
+          <div className="flex bg-muted/60 p-1 rounded-lg mr-8 shrink-0">
+            <button
+              onClick={() => setMode('quote')}
+              className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                mode === 'quote'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Báo giá
+            </button>
+            <button
+              onClick={() => setMode('order')}
+              className={`px-4 py-1.5 rounded-md text-sm font-semibold transition-all ${
+                mode === 'order'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Phiếu đặt hàng
+            </button>
+          </div>
         </DialogHeader>
 
         <div className="grid min-h-0 flex-1 grid-cols-[300px_minmax(0,1fr)]">
@@ -311,7 +342,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
           <main className="relative min-h-0 bg-slate-100">
             {previewUrl && !previewError ? (
               <iframe
-                title="Preview báo giá PDF"
+                title={mode === 'quote' ? "Preview báo giá PDF" : "Preview đơn đặt hàng PDF"}
                 src={previewUrl}
                 className="h-full w-full border-0"
               />
@@ -330,7 +361,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
 
         <div className="flex justify-end gap-2 border-t px-6 py-4">
           <Button variant="outline" onClick={closeQuotation}>Đóng</Button>
-          <Button variant="outline" onClick={() => quotePayload && refreshPreview(quotePayload)} disabled={isPreviewLoading}>
+          <Button variant="outline" onClick={() => quotePayload && refreshPreview(quotePayload, mode)} disabled={isPreviewLoading}>
             {isPreviewLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
             Làm mới
           </Button>
@@ -343,7 +374,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
             ) : (
               <FileDown className="mr-2 h-4 w-4" />
             )}
-            Tải PDF
+            {mode === 'quote' ? 'Tải PDF Báo Giá' : 'Tải PDF Đặt Hàng'}
           </Button>
           <Button onClick={handleDownloadExcel} className="bg-turbo-blue hover:bg-turbo-blue/90" disabled={isDownloadingExcel || isDownloadingPdf}>
             {isDownloadingExcel ? (
@@ -351,7 +382,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
             ) : (
               <FileSpreadsheet className="mr-2 h-4 w-4" />
             )}
-            Tải Excel
+            {mode === 'quote' ? 'Tải Excel Báo Giá' : 'Tải Excel Đặt Hàng'}
           </Button>
         </div>
       </DialogContent>
