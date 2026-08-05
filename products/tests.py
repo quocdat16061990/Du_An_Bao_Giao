@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from django.contrib.auth.models import User
 from decimal import Decimal
-from .models import Product, Category, HangMay, Customer
+from .models import Product, Category, HangMay, HangSx, ThuongHieu, Customer
 
 
 class SmartSearchTestCase(TestCase):
@@ -174,6 +174,8 @@ class QuotationExportExcelTestCase(TestCase):
         self.user = User.objects.create_user(username='quote_admin', password='password123')
         self.client.force_authenticate(user=self.user)
 
+        self.hang_may, _ = HangMay.objects.get_or_create(ten="ISUZU", slug="isuzu")
+
         self.customer = Customer.objects.create(
             ma_kh="KH_QT_01",
             ten_kh="Công Ty Anh Nguyên",
@@ -186,12 +188,14 @@ class QuotationExportExcelTestCase(TestCase):
             ma_vt="HH070412",
             ten_hang="Piston 6BD1 nổ vuông dài 104",
             dvt="BỘ 6",
+            hang_may=self.hang_may,
             gia_dai_ly=Decimal("5000000"),
         )
         self.p2 = Product.objects.create(
             ma_vt="HH083107",
             ten_hang="Séc măng 6BD1 3-2.5-5",
             dvt="BỘ 6",
+            hang_may=self.hang_may,
             gia_dai_ly=Decimal("700000"),
         )
 
@@ -261,6 +265,8 @@ class OrderExportExcelTestCase(TestCase):
         self.user = User.objects.create_user(username='order_admin', password='password123')
         self.client.force_authenticate(user=self.user)
 
+        self.hang_may, _ = HangMay.objects.get_or_create(ten="ISUZU", slug="isuzu")
+
         self.customer = Customer.objects.create(
             ma_kh="KH_OD_01",
             ten_kh="Gara Hoàng Long",
@@ -273,12 +279,14 @@ class OrderExportExcelTestCase(TestCase):
             ma_vt="HH001",
             ten_hang="Bộ Ron Isuzu 6BD1",
             dvt="Bộ",
+            hang_may=self.hang_may,
             gia_gara=Decimal("1030000"),
         )
         self.p2 = Product.objects.create(
             ma_vt="HH002",
             ten_hang="Xy lanh 6BD1 kiếng",
             dvt="BỘ 6",
+            hang_may=self.hang_may,
             gia_gara=Decimal("2800000"),
         )
 
@@ -334,3 +342,95 @@ class OrderExportExcelTestCase(TestCase):
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         )
         self.assertTrue(len(response.content) > 0)
+
+
+class ProductUpdateSerializerTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(username='admin', password='password123')
+        self.client.force_authenticate(user=self.user)
+
+        self.hang_may1, _ = HangMay.objects.get_or_create(ten="MITSUBISHI", slug="mitsubishi")
+        self.hang_may2, _ = HangMay.objects.get_or_create(ten="KOMATSU", slug="komatsu")
+        self.hang_sx, _ = HangSx.objects.get_or_create(ten="Mitsubishi", slug="mitsubishi-sx")
+        self.thuong_hieu, _ = ThuongHieu.objects.get_or_create(ten="SL", slug="sl")
+        self.category, _ = Category.objects.get_or_create(ten="Ruột Turbo", slug="ruot-turbo")
+
+        self.product = Product.objects.create(
+            ma_vt="HH080019",
+            ten_hang="Ruột Turbo S6R",
+            loai="ruot",
+            hang_may=self.hang_may1,
+            hang_sx=self.hang_sx,
+            thuong_hieu=self.thuong_hieu,
+            category=self.category,
+            gia_vip=Decimal("7800000"),
+            gia_uu_dai=Decimal("7500000"),
+            gia_dl_10=Decimal("8580000"),
+        )
+
+    def test_patch_product_with_nested_dicts(self):
+        url = reverse('product-detail', kwargs={'pk': self.product.id})
+        payload = {
+            "loai": "ruot",
+            "ma_vt": "HH080019",
+            "hang_may": {"id": self.hang_may2.id, "ten": "KOMATSU", "slug": "komatsu"},
+            "hang_sx": {"id": self.hang_sx.id, "ten": "Mitsubishi"},
+            "thuong_hieu": {"id": self.thuong_hieu.id, "ten": "SL"},
+            "category": {"id": self.category.id, "ten": "Ruột Turbo"},
+            "gia_vip": 8000000,
+            "ghi_chu": "Cập nhật với nested dict"
+        }
+        response = self.client.patch(url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.hang_may, self.hang_may2)
+        self.assertEqual(int(self.product.gia_vip), 8000000)
+        self.assertEqual(self.product.ghi_chu, "Cập nhật với nested dict")
+
+    def test_patch_product_with_integer_pks(self):
+        url = reverse('product-detail', kwargs={'pk': self.product.id})
+        payload = {
+            "hang_may": self.hang_may2.id,
+            "gia_vip": 8200000
+        }
+        response = self.client.patch(url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.hang_may, self.hang_may2)
+        self.assertEqual(int(self.product.gia_vip), 8200000)
+
+    def test_patch_product_set_null_optional_fields(self):
+        url = reverse('product-detail', kwargs={'pk': self.product.id})
+        payload = {
+            "hang_sx": None,
+            "thuong_hieu": None,
+            "category": None
+        }
+        response = self.client.patch(url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.product.refresh_from_db()
+        self.assertIsNone(self.product.hang_sx)
+        self.assertIsNone(self.product.thuong_hieu)
+        self.assertIsNone(self.product.category)
+
+    def test_patch_product_invalid_dict_without_id(self):
+        url = reverse('product-detail', kwargs={'pk': self.product.id})
+        payload = {
+            "hang_may": {"ten": "Invalid Dict"}
+        }
+        response = self.client.patch(url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("hang_may", response.data)
+
+    def test_patch_product_non_existent_pk(self):
+        url = reverse('product-detail', kwargs={'pk': self.product.id})
+        payload = {
+            "hang_may": 999999
+        }
+        response = self.client.patch(url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("hang_may", response.data)
