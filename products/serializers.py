@@ -38,7 +38,32 @@ class NhaXeSerializer(serializers.ModelSerializer):
         fields = ['id', 'ten_nha_xe', 'dien_thoai', 'dia_chi', 'gio_nhan', 'ghi_chu']
 
 
+class FlexiblePrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    """
+    Cho phép nhận cả:
+    - ID kiểu int/str (VD: 227 hoặc "227")
+    - Object dictionary có chứa key 'id' (VD: {"id": 227, "ten": "MITSUBISHI"})
+    - None / null / "" nếu allow_null=True
+    """
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            if 'id' in data:
+                data = data['id']
+            else:
+                raise serializers.ValidationError('Object dictionary must contain "id" field.')
+        if data == '' or data is None:
+            if self.allow_null:
+                return None
+            raise serializers.ValidationError('This field may not be null.')
+        return super().to_internal_value(data)
+
+
 class ProductListSerializer(serializers.ModelSerializer):
+    hang_may = FlexiblePrimaryKeyRelatedField(queryset=models.HangMay.objects.all())
+    hang_sx = FlexiblePrimaryKeyRelatedField(queryset=models.HangSx.objects.all(), required=False, allow_null=True)
+    thuong_hieu = FlexiblePrimaryKeyRelatedField(queryset=models.ThuongHieu.objects.all(), required=False, allow_null=True)
+    category = FlexiblePrimaryKeyRelatedField(queryset=models.Category.objects.all(), required=False, allow_null=True)
+
     hang_may_name = serializers.CharField(source='hang_may.ten', read_only=True)
     hang_sx_name = serializers.CharField(source='hang_sx.ten', read_only=True, default='')
     thuong_hieu_name = serializers.CharField(source='thuong_hieu.ten', read_only=True, default='')
