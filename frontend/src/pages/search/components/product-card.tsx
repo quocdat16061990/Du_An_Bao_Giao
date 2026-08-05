@@ -175,12 +175,22 @@ export const ProductCard = memo(function ProductCard({
       }
     }
 
+    if (product.gia_gara) {
+      return {
+        value: product.gia_gara,
+        label: 'Gara',
+        colorClass: 'price-gara',
+        badgeClass: 'bg-purple-700 border-purple-800 text-white shadow-sm',
+        barClass: 'bg-purple-700',
+      }
+    }
+
     return {
-      value: product.gia_dl_10,
-      label: 'ĐL+10%',
-      colorClass: 'price-dl10',
-      badgeClass: 'bg-teal-700 border-teal-800 text-white shadow-sm',
-      barClass: 'bg-teal-700',
+      value: null,
+      label: 'Liên hệ',
+      colorClass: 'price-lh',
+      badgeClass: 'bg-slate-700 border-slate-800 text-white shadow-sm',
+      barClass: 'bg-slate-700',
     }
   }
 
@@ -295,14 +305,9 @@ export const ProductCard = memo(function ProductCard({
             {product.gia_dai_ly ? formatVnd(product.gia_dai_ly) : 'Liên hệ'}
           </span>
         </td>
-        <td className="border-e border-border text-right w-[176px]">
+        <td className={user?.is_staff ? "border-e border-border text-right w-[176px]" : "text-right w-[176px]"}>
           <span className="font-bold tabular-nums tracking-tight text-[13px] text-purple-600 dark:text-purple-400">
             {product.gia_gara ? formatVnd(product.gia_gara) : 'Liên hệ'}
-          </span>
-        </td>
-        <td className={user?.is_staff ? "border-e border-border text-right w-[192px]" : "text-right w-[192px]"}>
-          <span className="font-bold tabular-nums tracking-tight text-[13px] text-slate-600 dark:text-slate-400">
-            {product.gia_dl_10 ? formatVnd(product.gia_dl_10) : 'Liên hệ'}
           </span>
         </td>
         {user?.is_staff && (
@@ -495,12 +500,6 @@ export const ProductCard = memo(function ProductCard({
               <span className="shrink-0 text-muted-foreground font-semibold">Gara:</span>
               <span className="min-w-0 truncate text-right font-bold tabular-nums text-purple-600 dark:text-purple-400" title={product.gia_gara ? formatVnd(product.gia_gara) : 'Liên hệ'}>
                 {product.gia_gara ? formatVnd(product.gia_gara) : 'L.Hệ'}
-              </span>
-            </div>
-            <div className="flex min-w-0 justify-between items-center gap-1 bg-slate-500/5 dark:bg-slate-500/10 px-1 sm:px-1.5 py-0.5 rounded border border-slate-500/15">
-              <span className="shrink-0 text-muted-foreground font-semibold">ĐL+10%:</span>
-              <span className="min-w-0 truncate text-right font-bold tabular-nums text-slate-600 dark:text-slate-400" title={product.gia_dl_10 ? formatVnd(product.gia_dl_10) : 'Liên hệ'}>
-                {product.gia_dl_10 ? formatVnd(product.gia_dl_10) : 'L.Hệ'}
               </span>
             </div>
           </div>

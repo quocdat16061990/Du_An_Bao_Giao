@@ -67,11 +67,8 @@ export function ProductGrid({
                 <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[14px] px-4 border-e border-border w-[110px]">
                   Giá đại lý
                 </th>
-                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[14px] px-4 border-e border-border w-[110px]">
+                <th className={user?.is_staff ? "relative h-10 text-right align-middle font-medium text-secondary-foreground text-[14px] px-4 border-e border-border w-[110px]" : "relative h-10 text-right align-middle font-medium text-secondary-foreground text-[14px] px-4 w-[110px]"}>
                   Giá Gara
-                </th>
-                <th className="relative h-10 text-right align-middle font-medium text-secondary-foreground text-[14px] px-4 w-[120px]">
-                  Giá ĐL+10%
                 </th>
                 {user?.is_staff && (
                   <th className="relative h-10 text-center align-middle font-medium text-secondary-foreground text-[14px] px-4 w-[176px]">

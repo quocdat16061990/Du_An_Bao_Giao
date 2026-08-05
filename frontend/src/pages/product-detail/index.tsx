@@ -92,7 +92,6 @@ export default function ProductDetailPage() {
     { label: 'Giá ưu đãi', value: product.gia_uu_dai, accent: 'border-l-orange-500', textColor: 'text-orange-600' },
     { label: 'Giá đại lý', value: product.gia_dai_ly, accent: 'border-l-blue-500', textColor: 'text-blue-600' },
     { label: 'Giá Gara', value: product.gia_gara ?? null, accent: 'border-l-purple-500', textColor: 'text-purple-600' },
-    { label: 'Giá ĐL+10%', value: product.gia_dl_10, accent: 'border-l-slate-500', textColor: 'text-slate-600' },
   ]
 
   // ── Tech specs ──
@@ -353,7 +352,6 @@ export default function ProductDetailPage() {
                           {p.label === 'Giá ưu đãi' && 'Khách ưu đãi'}
                           {p.label === 'Giá đại lý' && 'Khách đại lý'}
                           {p.label === 'Giá Gara' && 'Gara/sửa chữa'}
-                          {p.label === 'Giá ĐL+10%' && 'Giá niêm yết'}
                         </span>
                       )}
                     </div>

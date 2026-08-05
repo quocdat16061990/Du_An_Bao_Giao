@@ -537,17 +537,6 @@ export function ProductFormDialog({
                       className="h-9 text-[13px] font-mono text-purple-600 dark:text-purple-400 font-bold"
                     />
                   </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="gia_dl_10" className="text-[13px] font-semibold text-slate-500">Giá ĐL+10%</Label>
-                    <Input
-                      id="gia_dl_10"
-                      type="number"
-                      {...register('gia_dl_10')}
-                      placeholder="Liên hệ"
-                      className="h-9 text-[13px] font-mono text-slate-600 dark:text-slate-400 font-bold"
-                    />
-                  </div>
                 </div>
               </div>
 
