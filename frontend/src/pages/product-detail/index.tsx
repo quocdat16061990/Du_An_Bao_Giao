@@ -88,7 +88,6 @@ export default function ProductDetailPage() {
 
   // ── Price tiers ──
   const prices = [
-    { label: 'Giá vốn', value: product.gia_von ?? null, accent: 'border-l-red-500', textColor: 'text-red-600' },
     { label: 'Giá VIP', value: product.gia_vip, accent: 'border-l-amber-500', textColor: 'text-amber-600' },
     { label: 'Giá ưu đãi', value: product.gia_uu_dai, accent: 'border-l-orange-500', textColor: 'text-orange-600' },
     { label: 'Giá đại lý', value: product.gia_dai_ly, accent: 'border-l-blue-500', textColor: 'text-blue-600' },
@@ -350,7 +349,6 @@ export default function ProductDetailPage() {
                       </span>
                       {p.value && (
                         <span className="text-[10px] text-muted-foreground font-medium">
-                          {p.label === 'Giá vốn' && 'Giá nhập kho'}
                           {p.label === 'Giá VIP' && 'Khách VIP'}
                           {p.label === 'Giá ưu đãi' && 'Khách ưu đãi'}
                           {p.label === 'Giá đại lý' && 'Khách đại lý'}
