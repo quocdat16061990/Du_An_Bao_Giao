@@ -52,13 +52,13 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
   const getDefaultPriceChoice = (product: Product): PriceChoice => {
     switch (selectedCustomer?.phan_loai) {
       case 'VIP':
-        return { price: product.gia_vip ?? product.gia_dl_10 ?? 0, label: 'GIÁ VIP' }
+        return { price: product.gia_vip ?? product.gia_gara ?? 0, label: 'GIÁ VIP' }
       case 'ƯU_ĐÃI':
-        return { price: product.gia_uu_dai ?? product.gia_dl_10 ?? 0, label: 'GIÁ ƯU ĐÃI' }
+        return { price: product.gia_uu_dai ?? product.gia_gara ?? 0, label: 'GIÁ ƯU ĐÃI' }
       case 'ĐẠI_LÝ':
-        return { price: product.gia_dai_ly ?? product.gia_dl_10 ?? 0, label: 'GIÁ ĐẠI LÝ' }
+        return { price: product.gia_dai_ly ?? product.gia_gara ?? 0, label: 'GIÁ ĐẠI LÝ' }
       default:
-        return { price: product.gia_dl_10 ?? 0, label: 'GIÁ ĐL+10%' }
+        return { price: product.gia_gara ?? 0, label: 'GIÁ GARA' }
     }
   }
 
@@ -70,7 +70,7 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
     product.gia_vip ? { value: 'GIÁ VIP', label: 'VIP', price: product.gia_vip } : null,
     product.gia_uu_dai ? { value: 'GIÁ ƯU ĐÃI', label: 'Ưu đãi', price: product.gia_uu_dai } : null,
     product.gia_dai_ly ? { value: 'GIÁ ĐẠI LÝ', label: 'Đại lý', price: product.gia_dai_ly } : null,
-    product.gia_dl_10 ? { value: 'GIÁ ĐL+10%', label: 'ĐL+10%', price: product.gia_dl_10 } : null,
+    product.gia_gara ? { value: 'GIÁ GARA', label: 'Gara', price: product.gia_gara } : null,
   ].filter((item): item is { value: string; label: string; price: number } => item !== null)
 
   const quotePayload = useMemo<QuotePayload | null>(() => {
@@ -85,13 +85,13 @@ export function QuotationDialog({ selectedProducts }: QuotationDialogProps) {
         const selectedPrice = customPrices[product.id] ?? (() => {
           switch (selectedCustomer.phan_loai) {
             case 'VIP':
-              return { price: product.gia_vip ?? product.gia_dl_10 ?? 0, label: 'GIÁ VIP' }
+              return { price: product.gia_vip ?? product.gia_gara ?? 0, label: 'GIÁ VIP' }
             case 'ƯU_ĐÃI':
-              return { price: product.gia_uu_dai ?? product.gia_dl_10 ?? 0, label: 'GIÁ ƯU ĐÃI' }
+              return { price: product.gia_uu_dai ?? product.gia_gara ?? 0, label: 'GIÁ ƯU ĐÃI' }
             case 'ĐẠI_LÝ':
-              return { price: product.gia_dai_ly ?? product.gia_dl_10 ?? 0, label: 'GIÁ ĐẠI LÝ' }
+              return { price: product.gia_dai_ly ?? product.gia_gara ?? 0, label: 'GIÁ ĐẠI LÝ' }
             default:
-              return { price: product.gia_dl_10 ?? 0, label: 'GIÁ ĐL+10%' }
+              return { price: product.gia_gara ?? 0, label: 'GIÁ GARA' }
           }
         })()
         const qty = productQuantities[product.id] ?? 1

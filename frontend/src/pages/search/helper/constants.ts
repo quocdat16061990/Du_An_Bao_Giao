@@ -8,7 +8,7 @@ export const PHAN_LOAI_OPTIONS: Array<{
   { value: 'vip', label: 'VIP', tag: 'VIP' },
   { value: 'uu_dai', label: 'Ưu đãi', tag: 'ƯU_ĐÃI' },
   { value: 'dai_ly', label: 'Đại lý', tag: 'ĐẠI_LÝ' },
-  { value: 'dl_10', label: 'ĐL+10%', tag: 'KHÁC' },
+  { value: 'gara', label: 'Gara', tag: 'GARA' },
 ] as const
 
 export const SORT_OPTIONS: Array<{ value: string; label: string }> = [

@@ -434,3 +434,21 @@ class ProductUpdateSerializerTestCase(TestCase):
         response = self.client.patch(url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("hang_may", response.data)
+
+    def test_patch_single_field_leaves_others_intact(self):
+        url = reverse('product-detail', kwargs={'pk': self.product.id})
+        payload = {
+            "ghi_chu": "Chỉ cập nhật ghi chú mới"
+        }
+        response = self.client.patch(url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.product.refresh_from_db()
+        self.assertEqual(self.product.ghi_chu, "Chỉ cập nhật ghi chú mới")
+        # Ensure other fields remain completely intact
+        self.assertEqual(self.product.ma_vt, "HH080019")
+        self.assertEqual(self.product.hang_may, self.hang_may1)
+        self.assertEqual(self.product.hang_sx, self.hang_sx)
+        self.assertEqual(self.product.thuong_hieu, self.thuong_hieu)
+        self.assertEqual(self.product.category, self.category)
+        self.assertEqual(int(self.product.gia_vip), 7800000)
