@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from decimal import Decimal
 from .models import Product, Category, HangMay, HangSx, ThuongHieu, Customer
 
@@ -452,3 +453,44 @@ class ProductUpdateSerializerTestCase(TestCase):
         self.assertEqual(self.product.thuong_hieu, self.thuong_hieu)
         self.assertEqual(self.product.category, self.category)
         self.assertEqual(int(self.product.gia_vip), 7800000)
+
+
+class ProductImageUploadTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(username='upload_admin', password='password123')
+        self.client.force_authenticate(user=self.user)
+        self.url = reverse('product-upload-image')
+
+    def test_upload_jpg_image_success(self):
+        file_obj = SimpleUploadedFile("test_turbo.jpg", b"fake_jpg_content", content_type="image/jpeg")
+        response = self.client.post(self.url, {'file': file_obj}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('url', response.data)
+        self.assertEqual(response.data['name'], "test_turbo.jpg")
+        self.assertTrue(response.data['url'].endswith('.jpg'))
+
+    def test_upload_uppercase_jpg_success(self):
+        file_obj = SimpleUploadedFile("20260407153611.JPG", b"fake_jpg_content", content_type="image/jpeg")
+        response = self.client.post(self.url, {'file': file_obj}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('url', response.data)
+        self.assertEqual(response.data['name'], "20260407153611.JPG")
+        self.assertTrue(response.data['url'].endswith('.jpg'))
+
+    def test_upload_png_image_success(self):
+        file_obj = SimpleUploadedFile("sample.png", b"fake_png_content", content_type="image/png")
+        response = self.client.post(self.url, {'file': file_obj}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.data['url'].endswith('.png'))
+
+    def test_upload_invalid_extension_fails(self):
+        file_obj = SimpleUploadedFile("document.pdf", b"fake_pdf_content", content_type="application/pdf")
+        response = self.client.post(self.url, {'file': file_obj}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)
+
+    def test_upload_no_file_fails(self):
+        response = self.client.post(self.url, {}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('error', response.data)

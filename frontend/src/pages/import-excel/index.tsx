@@ -168,7 +168,6 @@ function uploadExcel<T>(url: string, file: File): Promise<T> {
   formData.append('file', file)
   return apiClient
     .post<T>(url, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 120_000,
     })
     .then(({ data }) => data)

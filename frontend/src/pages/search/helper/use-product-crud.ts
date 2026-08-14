@@ -81,11 +81,7 @@ export function useProductCrud() {
     mutationFn: async (file) => {
       const formData = new FormData()
       formData.append('file', file)
-      const res = await apiClient.post<{ url: string; name: string }>('/products/upload-image/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      })
+      const res = await apiClient.post<{ url: string; name: string }>('/products/upload-image/', formData)
       return res.data
     },
   })
