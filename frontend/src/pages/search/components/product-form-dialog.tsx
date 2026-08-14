@@ -90,6 +90,7 @@ export function ProductFormDialog({
   // ── Image States ──
   const [mainImage, setMainImage] = useState<string>('')
   const [imageList, setImageList] = useState<string[]>([])
+  const [isDragging, setIsDragging] = useState<boolean>(false)
 
   // ── Fetch associations ──
   const { data: categories = [] } = useQuery<Array<{ id: number; ten: string }>>({
@@ -254,13 +255,23 @@ export function ProductFormDialog({
   }
 
   // ── Image Handlers ──
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
+  const processFiles = async (filesToProcess: FileList | File[]) => {
+    if (!filesToProcess || filesToProcess.length === 0) return
+
+    const validFiles: File[] = []
+    for (let i = 0; i < filesToProcess.length; i++) {
+      const file = filesToProcess[i]
+      if (file.type.startsWith('image/') || /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(file.name)) {
+        validFiles.push(file)
+      } else {
+        toast.error(`Tệp ${file.name} không đúng định dạng hình ảnh được hỗ trợ`)
+      }
+    }
+
+    if (validFiles.length === 0) return
 
     const uploadedUrls: string[] = []
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
+    for (const file of validFiles) {
       try {
         const res = await uploadImage(file)
         uploadedUrls.push(res.url)
@@ -276,7 +287,35 @@ export function ProductFormDialog({
       if (!mainImage) {
         setMainImage(uploadedUrls[0])
       }
-      toast.success('Tải ảnh lên thành công!')
+      toast.success(`Đã tải lên ${uploadedUrls.length} hình ảnh!`)
+    }
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      await processFiles(e.target.files)
+      e.target.value = ''
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!isDragging) setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await processFiles(e.dataTransfer.files)
     }
   }
 
@@ -555,20 +594,37 @@ export function ProductFormDialog({
                 </div>
 
                 {/* Upload zone */}
-                <div className="border-2 border-dashed border-border hover:border-primary/50 transition-colors rounded-xl p-6 text-center cursor-pointer relative group">
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={cn(
+                    'border-2 border-dashed transition-all rounded-xl p-6 text-center cursor-pointer relative group',
+                    isDragging
+                      ? 'border-primary bg-primary/10 ring-2 ring-primary/20 scale-[1.01]'
+                      : 'border-border hover:border-primary/50 bg-muted/5'
+                  )}
+                >
                   <input
                     type="file"
                     multiple
-                    accept="image/*"
+                    accept="image/*,.jpg,.jpeg,.png,.webp,.gif,.bmp"
                     onChange={handleImageUpload}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
                     disabled={isUploading}
                   />
-                  <div className="flex flex-col items-center justify-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="flex flex-col items-center justify-center gap-2 pointer-events-none">
+                    <div
+                      className={cn(
+                        'w-10 h-10 rounded-full flex items-center justify-center transition-transform',
+                        isDragging ? 'bg-primary text-primary-foreground scale-110' : 'bg-primary/10 text-primary group-hover:scale-105'
+                      )}
+                    >
                       <Upload className="h-5 w-5" />
                     </div>
-                    <div className="text-[13px] font-bold text-foreground">Kéo thả hoặc bấm để tải ảnh lên</div>
+                    <div className="text-[13px] font-bold text-foreground">
+                      {isDragging ? 'Thả ảnh vào đây để tải lên' : 'Kéo thả hoặc bấm để tải ảnh lên'}
+                    </div>
                     <div className="text-[12px] text-muted-foreground">Định dạng hỗ trợ: JPG, JPEG, PNG, WEBP, GIF</div>
                   </div>
                 </div>
