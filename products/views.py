@@ -12,6 +12,7 @@ from django.db.models import Q, Count, Min, Max, Case, When, Value, IntegerField
 from django.http import FileResponse, HttpResponse
 from django.utils import timezone
 from rest_framework import generics, status
+from rest_framework.permissions import AllowAny
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -90,6 +91,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
 class ProductImageUploadView(APIView):
     """API upload hình ảnh cho sản phẩm."""
     parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [AllowAny]
 
     def post(self, request):
         file_obj = request.FILES.get('file')
@@ -107,6 +109,7 @@ class ProductImageUploadView(APIView):
 
         unique_name = f"products/{uuid.uuid4().hex}{ext}"
         saved_path = default_storage.save(unique_name, ContentFile(file_obj.read()))
+        saved_path = saved_path.replace('\\', '/')
         url = f"{settings.MEDIA_URL}{saved_path}"
 
         return Response({
