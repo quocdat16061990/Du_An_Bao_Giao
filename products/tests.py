@@ -484,6 +484,15 @@ class ProductImageUploadTestCase(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(response.data['url'].endswith('.png'))
 
+    def test_upload_unauthenticated_png_success(self):
+        self.client.logout()
+        file_obj = SimpleUploadedFile("ecowaterdog_nobg.png", b"fake_png_content", content_type="image/png")
+        response = self.client.post(self.url, {'file': file_obj}, format='multipart')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('url', response.data)
+        self.assertNotIn('\\', response.data['url'])
+        self.assertEqual(response.data['name'], "ecowaterdog_nobg.png")
+
     def test_upload_invalid_extension_fails(self):
         file_obj = SimpleUploadedFile("document.pdf", b"fake_pdf_content", content_type="application/pdf")
         response = self.client.post(self.url, {'file': file_obj}, format='multipart')
